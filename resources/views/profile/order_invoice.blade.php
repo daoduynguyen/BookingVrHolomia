@@ -1,15 +1,19 @@
 <div class="text-white" style="font-family: 'Consolas', 'Monaco', 'Segoe UI', sans-serif;">
     
     {{-- 1. HEADER --}}
-    <div class="text-center mb-3 pb-2 border-bottom border-secondary border-opacity-25" style="border-style: dashed !important;">
-        <h5 class="fw-bold text-uppercase text-info mb-1 ls-1">HOLOMIA VR</h5>
-        {{-- Đã sửa text-white-50 thành text-white --}}
-        <div class="d-flex justify-content-center gap-3 text-white small">
-            <span>#{{ $order->id }}</span>
-            <span>{{ $order->created_at->format('d/m/Y H:i') }}</span>
-        </div>
+<div class="text-center mb-3 pb-2 border-bottom border-secondary border-opacity-25" style="border-style: dashed !important;">
+    <h5 class="fw-bold text-uppercase text-info mb-1 ls-1">HOLOMIA VR</h5>
+    <div class="d-flex justify-content-center gap-3 text-white small">
+        <span>#{{ $order->id }}</span>
+        {{-- THÊM DÒNG NÀY ĐỂ HIỆN GIỜ --}}
+        <span>
+            <i class="bi bi-clock"></i> 
+            @php $slot = $order->slot; @endphp
+            {{ $slot ? substr($slot->start_time, 0, 5) . ' - ' . substr($slot->end_time, 0, 5) : 'N/A' }}
+        </span>
+        <span>{{ $order->created_at->format('d/m/Y') }}</span>
     </div>
-
+</div>
     {{-- 2. THÔNG TIN KHÁCH --}}
     <div class="mb-3 px-1 small">
         <div class="d-flex justify-content-between mb-1">
@@ -26,23 +30,27 @@
     </div>
 
     {{-- 3. BẢNG VÉ --}}
-    <div class="mb-3">
+    <div class="mb-3 receipt-scroll" style="max-height: 180px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;">
         <table class="table table-sm table-borderless mb-0" style="--bs-table-bg: transparent; --bs-table-accent-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-hover-bg: transparent; color: #fff;">
-            {{-- Header bảng chuyển sang màu trắng --}}
-            <thead class="text-white border-bottom border-secondary border-opacity-25" style="border-style: dashed !important; font-size: 0.85rem;">
+            
+            {{-- Thêm position: sticky để cố định Header khi cuộn --}}
+            <thead class="text-white border-bottom border-secondary border-opacity-25" style="border-style: dashed !important; font-size: 0.85rem; position: sticky; top: 0; background-color: #1a1d20; z-index: 1;">
                 <tr>
-                    <th class="ps-0 text-start text-white ">Loại vé</th>
+                    <th class="ps-0 text-start text-white">Loại vé</th>
                     <th class="text-center text-white" style="width: 30px;">SL</th>
                     <th class="pe-0 text-end text-white">Tiền</th>
                 </tr>
             </thead>
+            
             <tbody style="border-bottom: 1px dashed rgba(255,255,255,0.2);">
                 @foreach($order->orderItems as $item)
                 <tr>
                     <td class="ps-0 py-2">
-                        <div class="text-truncate fw-bold text-white" style="max-width: 170px;">{{ $item->ticket_name }}</div>
+                        {{-- Đã thêm title để trỏ chuột vào hiện full tên nếu bị cắt --}}
+                        <div class="text-truncate fw-bold text-white" style="max-width: 170px;" title="{{ $item->ticket_name }}">
+                            {{ $item->ticket_name }}
+                        </div>
                     </td>
-                    {{-- Số lượng chuyển sang màu trắng --}}
                     <td class="text-center py-2 text-white">x{{ $item->quantity }}</td>
                     <td class="pe-0 py-2 text-end text-white">{{ number_format($item->price * $item->quantity) }}</td>
                 </tr>

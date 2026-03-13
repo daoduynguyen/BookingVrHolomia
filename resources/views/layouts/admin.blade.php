@@ -13,32 +13,36 @@
 
     {{-- CUSTOM CSS CHO SIDEBAR ADMIN --}}
     <style>
+        /* 1. Reset Body để ẩn thanh cuộn thừa của toàn trang */
         body {
             background-color: #121212;
-            /* Nền tổng tối hơn chút cho đỡ mỏi mắt */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
+            overflow: hidden; /* CẤM TOÀN TRANG CUỘN */
+            margin: 0;
+            padding: 0;
         }
 
-        /* 1. Khung Sidebar */
+        /* 2. Layout Bọc Ngoài Cùng */
+        .admin-wrapper {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 3. Khung Sidebar (Bên trái) */
         .sidebar-container {
             width: 280px;
             background: #0f0f0f;
-            /* Đen sâu */
             border-right: 1px solid #2d2d2d;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            /* Cố định chiều cao bằng màn hình */
-            overflow-y: auto;
-            /* Cho phép cuộn nếu menu dài */
+            flex-shrink: 0; /* Ngăn không cho menu bị bóp méo khi màn hình nhỏ */
+            z-index: 100;
         }
 
-        /* 2. Logo */
+        /* 4. Logo */
         .sidebar-brand {
             padding: 2.5rem 1.5rem;
             text-align: center;
@@ -56,14 +60,24 @@
 
         .sidebar-brand .highlight {
             color: #0dcaf0;
-            /* Màu Cyan */
             font-weight: 800;
         }
 
-        /* 3. Menu Item */
+        /* 5. Menu Container (Có thể cuộn nếu menu quá dài) */
+        .sidebar-menu-wrapper {
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Tinh chỉnh thanh cuộn của Menu (Mỏng, đẹp) */
+        .sidebar-menu-wrapper::-webkit-scrollbar { width: 4px; }
+        .sidebar-menu-wrapper::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .sidebar-menu-wrapper::-webkit-scrollbar-thumb:hover { background: #0dcaf0; }
+
+        /* 6. Menu Item */
         .nav-link {
             color: #a0a0a0 !important;
-            /* Màu xám nhạt mặc định */
             padding: 12px 24px;
             margin-bottom: 4px;
             font-weight: 500;
@@ -72,10 +86,8 @@
             display: flex;
             align-items: center;
             border-left: 3px solid transparent;
-            /* Chuẩn bị cho border active */
         }
 
-        /* QUAN TRỌNG: Cố định độ rộng icon để chữ luôn thẳng hàng */
         .nav-link i {
             width: 30px;
             font-size: 1.1rem;
@@ -84,19 +96,16 @@
             transition: 0.3s;
         }
 
-        /* Hiệu ứng khi di chuột (Hover) */
         .nav-link:hover {
             color: #ffffff !important;
             background-color: rgba(255, 255, 255, 0.05);
             padding-left: 28px;
-            /* Đẩy nhẹ sang phải */
         }
 
         .nav-link:hover i {
             color: #0dcaf0;
         }
 
-        /* Trạng thái đang chọn (Active) */
         .nav-link.active {
             color: #0dcaf0 !important;
             background: linear-gradient(90deg, rgba(13, 202, 240, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
@@ -108,11 +117,11 @@
             transform: scale(1.1);
         }
 
-        /* Nút đăng xuất */
+        /* 7. Nút đăng xuất */
         .logout-container {
-            margin-top: auto;
             padding: 1.5rem;
             border-top: 1px solid #2d2d2d;
+            background: #0f0f0f; /* Đảm bảo màu nền dính liền */
         }
 
         .btn-logout {
@@ -131,12 +140,27 @@
             color: white;
             box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
         }
+
+        /* 8. KHU VỰC NỘI DUNG CHÍNH (Bên Phải) */
+        .main-content {
+            flex-grow: 1;
+            height: 100vh;
+            overflow-y: auto; /* THANH CUỘN CHÍNH NẰM Ở ĐÂY */
+            background-color: #121212;
+            padding: 2rem; /* Giảm padding xuống một chút cho đỡ trống */
+        }
+
+        /* Tinh chỉnh thanh cuộn của phần nội dung */
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+        .main-content::-webkit-scrollbar-thumb:hover { background: #0dcaf0; }
+
     </style>
 </head>
 
 <body class="text-white">
 
-    <div class="d-flex">
+    <div class="admin-wrapper">
 
         {{-- === SIDEBAR === --}}
         <div class="sidebar-container">
@@ -147,11 +171,9 @@
             </div>
 
             {{-- MENU --}}
-            <div class="flex-grow-1 px-0">
+            <div class="sidebar-menu-wrapper">
                 <ul class="nav flex-column">
 
-                    {{-- 1. Dashboard --}}
-                    {{-- Logic: Nếu đang ở trang dashboard thì thêm class 'active' --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}"
                             class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -160,8 +182,6 @@
                         </a>
                     </li>
 
-                    {{-- 2. Quản lý Vé --}}
-                    {{-- Logic: Nếu đang ở bất kỳ trang nào của vé (index, create, edit...) thì active --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.tickets.index') }}"
                             class="nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
@@ -170,7 +190,13 @@
                         </a>
                     </li>
 
-                    {{-- 3. Duyệt đơn hàng --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.slots.*') ? 'active' : '' }}" href="{{ route('admin.slots.index') }}">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Lịch khung giờ</span>
+                        </a>
+                    </li>
+
                     <li class="nav-item">
                         <a href="{{ route('admin.bookings.index') }}"
                             class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
@@ -180,13 +206,12 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.coupons.index') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}" href="{{ route('admin.coupons.index') }}">
                             <i class="bi bi-ticket-perforated-fill"></i>
                             <span>Kho Voucher</span>
                         </a>
                     </li>
 
-                    {{-- 4. Người dùng --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.users') }}"
                             class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
@@ -195,7 +220,6 @@
                         </a>
                     </li>
 
-                    {{-- 5. Tin nhắn --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.contacts') }}"
                             class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}">
@@ -219,10 +243,8 @@
         {{-- === END SIDEBAR === --}}
 
         {{-- === MAIN CONTENT === --}}
-        <div class="flex-grow-1" style="background-color: #121212; min-height: 100vh;">
-            <div class="p-5">
-                @yield('admin_content')
-            </div>
+        <div class="main-content">
+            @yield('admin_content')
         </div>
 
     </div>
@@ -234,20 +256,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function () {
-                // Tìm tất cả các thông báo (alert)
                 var alerts = document.querySelectorAll('.alert');
-
                 alerts.forEach(function (alert) {
-                    // Sử dụng Bootstrap API để đóng alert mượt mà
                     var bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
                 });
-            }, 3000); // 3000ms = 3 giây
+            }, 3000);
         });
     </script>
-</body>
-
-</html>
 </body>
 
 </html>

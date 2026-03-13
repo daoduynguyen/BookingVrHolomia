@@ -364,6 +364,7 @@
                                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                                     <td class="fw-bold">{{ number_format($order->total_amount) }}đ</td>
                                                     <td>
+                                                        
                                                         @if($order->status == 'pending')
                                                             <span
                                                                 class="badge bg-warning text-dark border border-warning bg-opacity-75">Chờ
@@ -550,7 +551,7 @@
                                                 <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary border-opacity-25 pb-2">
                                                     <span class="text-white-50">Tổng tiền:</span>
                                                     <span class="text-info fw-bold fs-5">
-                                                        {{ number_format(session('amount')) }}đ
+                                                        {{ number_format(session('total_amount')) }}đ
                                                     </span>
                                                 </div>
 

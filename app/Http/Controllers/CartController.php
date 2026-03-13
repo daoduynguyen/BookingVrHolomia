@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 
-//Giỏ hàng
+// Giỏ hàng
 class CartController extends Controller
 {
     // 1. Thêm vào giỏ
@@ -35,12 +35,22 @@ class CartController extends Controller
     public function index()
     {
         $cart = session()->get('cart', []);
+        
+        // BỘ LỌC RÁC: Xóa sạch các phần tử lỗi (không có giá) bị kẹt từ trước
+        foreach ($cart as $key => $item) {
+            if (!is_array($item) || !isset($item['price'])) {
+                unset($cart[$key]);
+            }
+        }
+        session()->put('cart', $cart); // Lưu lại giỏ hàng sạch
+
         return view('cart.index', compact('cart'));
     }
 
+    // 3. Xóa 1 vé
     public function remove($id)
     {
-        $cart = session()->get('cart');
+        $cart = session()->get('cart', []);
 
         if(isset($cart[$id])) {
             unset($cart[$id]); // Xóa khỏi mảng
@@ -50,36 +60,66 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Đã xóa vé khỏi giỏ hàng!');
     }
 
-    // 5. Xóa sạch giỏ hàng
+    // 4. Xóa sạch giỏ hàng
     public function clear()
     {
         session()->forget('cart');
         return redirect()->route('ticket.shop')->with('success', 'Đã xóa sạch giỏ hàng!');
     }
 
+   // 5. Cập nhật số lượng (AJAX)
     public function update(Request $request)
     {
         if ($request->id && $request->quantity) {
-            $cart = session()->get('cart');
+            $cart = session()->get('cart', []);
 
-            // 1. Cập nhật số lượng
-            $cart[$request->id]['quantity'] = $request->quantity;
-            session()->put('cart', $cart);
+            // 1. CHỈ cập nhật nếu sản phẩm có thật
+            if (isset($cart[$request->id])) {
+                // Cập nhật số lượng mới
+                $cart[$request->id]['quantity'] = $request->quantity;
+                
+                // Tính lại tiền Tạm tính (Subtotal) của riêng dòng vé này
+                $price = $cart[$request->id]['price'];
+                $subTotal = $price * $request->quantity;
 
-            // 2. Tính lại tiền
-            $itemSubtotal = $cart[$request->id]['price'] * $cart[$request->id]['quantity'];
+                // 2. TÍNH LẠI MÃ GIẢM GIÁ (Dành riêng cho vé này)
+                $discountAmount = 0;
+                $couponCode = $cart[$request->id]['coupon_code'] ?? null;
 
-            $total = 0;
-            foreach ($cart as $item) {
-                $total += $item['price'] * $item['quantity'];
+                // Nếu vé này có xài mã giảm giá thì mới tính toán lại
+                if ($couponCode) {
+                    // Truy vấn DB để lấy % giảm giá hoặc số tiền cố định
+                    $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
+                    
+                    if ($coupon) {
+                        // Tính tiền được giảm dựa trên SubTotal mới
+                        if ($coupon->type == 'percent') {
+                            $discountAmount = ($subTotal * $coupon->value) / 100;
+                        } else {
+                            $discountAmount = $coupon->value;
+                        }
+                        
+                        // Không cho phép số tiền được giảm vượt quá tiền gốc của vé
+                        if ($discountAmount > $subTotal) {
+                            $discountAmount = $subTotal;
+                        }
+                    }
+                }
+
+                // 3. Cập nhật lại số tiền giảm vào đúng cái vé đó trong Giỏ hàng
+                $cart[$request->id]['discount'] = $discountAmount;
+                
+                // Lưu lại Session
+                session()->put('cart', $cart);
+
+                // Trả về JSON để Frontend tự Reload lại trang
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đã cập nhật giỏ hàng!'
+                ]);
             }
-
-            // 3. Trả về kết quả JSON (Quan trọng: tên biến phải khớp với file View)
-            return response()->json([
-                'success' => true,
-                'item_subtotal' => number_format($itemSubtotal) . 'đ', // Tiền từng món
-                'grand_total' => number_format($total) . 'đ'           // Tổng cộng
-            ]);
         }
+        
+        return response()->json(['success' => false, 'message' => 'Lỗi cập nhật']);
     }
 }

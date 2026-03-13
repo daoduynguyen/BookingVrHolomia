@@ -17,7 +17,7 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         // Lấy đơn hàng (Code cũ của bạn)
-        $orders = Order::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+        $orders = Order::where('user_id', $user->id)->with('slot')->orderBy('created_at', 'desc')->get();
 
         // 2. Lấy Voucher đang hoạt động từ Admin
         $coupons = Coupon::where('expiry_date', '>=', now()) // Chỉ lấy mã còn hạn
@@ -78,15 +78,16 @@ class ProfileController extends Controller
     {
         try {
             // 1. Lấy thông tin đơn hàng
-            $order = Order::with('orderItems')
+            $order = Order::with('orderItems','slot')
                 ->where('user_id', operator: Auth::id())
                 ->findOrFail($id);
+           
 
             // 2. Render HTML
             // KIỂM TRA KỸ ĐƯỜNG DẪN FILE VIEW
-            $html = view('profile.order_invoice', compact('order'))->render();
+            $html = view('profile.order_invoice', compact('order'))->render();  
 
-            return response()->json(['html' => $html]);
+            return response()->json(['order' => $order,'html' => $html ]);
 
         } catch (\Exception $e) {
             // Trả về lỗi chi tiết để hiện lên Popup

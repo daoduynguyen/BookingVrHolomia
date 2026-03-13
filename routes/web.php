@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+use App\Http\Controllers\Admin\SlotController;
 
 // --- QUY TRÌNH ĐẶT VÉ MỚI (Booking Flow) ---
 
@@ -43,6 +44,8 @@ Route::post('/wishlist/toggle/{id}', [WishlistController::class, 'toggle'])->nam
 */
 Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 
+    
+
     // Middleware kiểm tra quyền Admin (Role = admin)
     Route::group([
         'middleware' => function ($request, $next) {
@@ -59,6 +62,24 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             // 1. Dashboard
             Route::get('/', [AdminController::class, 'index'])->name('dashboard');
             Route::get('/dashboard', [AdminController::class, 'index']); // Dự phòng
+
+            // Quản lý khung giờ (Lịch)
+            Route::get('/slots', [SlotController::class, 'index'])->name('slots.index');
+    
+           // API tạo lịch tự động hàng loạt (Sẽ làm ở bước sau)
+            Route::post('/slots/generate', [SlotController::class, 'generate'])->name('slots.generate');
+
+            // Thêm ca lẻ mới
+            Route::post('/slots/store-single', [SlotController::class, 'storeSingle'])->name('slots.store-single');
+
+            // Cập nhật (Sửa) ca
+            Route::put('/slots/{id}', [SlotController::class, 'update'])->name('slots.update');
+
+            // Xóa ca
+            Route::delete('/slots/{id}', [SlotController::class, 'destroy'])->name('slots.destroy');
+            
+            // Lấy danh sách khách hàng đặt chỗ theo khung giờ
+            Route::get('/slots/{id}/customers', [SlotController::class, 'getCustomers'])->name('slots.customers');
 
             // 2. QUẢN LÝ VÉ (SỬ DỤNG AdminTicketController MỚI)
             Route::prefix('tickets')->name('tickets.')->group(function () {
@@ -126,6 +147,8 @@ Route::post('/lien-he', [ContactController::class, 'send'])->name('contact.send'
 // AI Chat
 Route::post('/ai-chat', [ChatAIController::class, 'chat'])->name('ai.chat');
 
+// Route lấy khung giờ cho AJAX (Đặt bên ngoài middleware auth để khách chưa log cũng thấy)
+Route::get('/api/get-slots', [App\Http\Controllers\CheckoutController::class, 'getSlots'])->name('api.slots');
 
 /*
 |--------------------------------------------------------------------------
@@ -150,6 +173,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/banking/{id}', [CheckoutController::class, 'banking'])->name('checkout.banking');
     Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('checkout.check_coupon');
     Route::get('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
+    Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('check.coupon');
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
