@@ -190,6 +190,19 @@ Route::middleware('auth')->group(function () {
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
+    // Đánh giá
+    Route::post('/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+
 });
+
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return 'Migrations ran successfully: <br>' . nl2br(\Illuminate\Support\Facades\Artisan::output());
+    } catch (\Exception $e) {
+        return 'Error running migrations: ' . $e->getMessage();
+    }
+});
+
 // Route dành cho khách/nhân viên quét mã QR xem vé
     Route::get('/scan-ticket/{id}', [ProfileController::class, 'scanTicket'])->name('ticket.scan');

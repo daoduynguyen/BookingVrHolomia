@@ -42,4 +42,10 @@ class Ticket extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    // Quan hệ: 1 Vé có nhiều đánh giá
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

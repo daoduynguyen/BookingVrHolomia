@@ -125,7 +125,22 @@ class ProfileController extends Controller
     public function showOrder($id)
     {
         try {
-            $order = Order::with('orderItems', 'slot')
+            // Force create reviews table in the EXACT same database the web app is using
+            \Illuminate\Support\Facades\DB::statement("
+                CREATE TABLE IF NOT EXISTS `reviews` (
+                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                  `user_id` bigint(20) unsigned NOT NULL,
+                  `ticket_id` bigint(20) unsigned NOT NULL,
+                  `order_item_id` bigint(20) unsigned DEFAULT NULL,
+                  `rating` int(11) NOT NULL DEFAULT 5,
+                  `comment` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                  `created_at` timestamp NULL DEFAULT NULL,
+                  `updated_at` timestamp NULL DEFAULT NULL,
+                  PRIMARY KEY (`id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+
+            $order = Order::with(['orderItems.review', 'slot'])
                 ->where('user_id', Auth::id())
                 ->findOrFail($id);
 
@@ -134,7 +149,9 @@ class ProfileController extends Controller
             return response()->json(['order' => $order, 'html' => $html]);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            $errorMsg = 'Lỗi: ' . $e->getMessage() . '<br>At: ' . $e->getFile() . ':' . $e->getLine();
+            \Log::error($errorMsg);
+            return response()->json(['html' => '<div class="text-danger p-3 bg-white">' . $errorMsg . '</div>']);
         }
     }
 

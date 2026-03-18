@@ -69,4 +69,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Location::class);
     }
+
+    // Quan hệ: 1 User có thể viết nhiều đánh giá
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

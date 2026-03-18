@@ -61,7 +61,26 @@
                         </div>
                     </td>
                     <td class="text-center py-2 text-white">x{{ $item->quantity }}</td>
-                    <td class="pe-0 py-2 text-end text-white">{{ number_format($item->price * $item->quantity) }}</td>
+                    <td class="pe-0 py-2 text-end text-white">
+                        <div class="d-flex flex-column align-items-end">
+                            <span>{{ number_format($item->price * $item->quantity) }}</span>
+                            
+                            {{-- Button đánh giá --}}
+                            @if(in_array($order->status, ['paid', 'expired']))
+                                @if($item->review)
+                                    <div class="mt-1" style="font-size: 0.75rem;">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <i class="bi bi-star-fill text-warning {{ $i > $item->review->rating ? 'opacity-25' : '' }}"></i>
+                                        @endfor
+                                    </div>
+                                @else
+                                    <button id="review-btn-{{ $item->id }}" class="btn btn-outline-info btn-sm mt-1 px-3 py-1 text-info fw-bold" style="font-size: 0.75rem; border: 1px solid #0dcaf0 !important; border-radius: 20px;" onclick="openReviewModal({{ $item->ticket_id }}, {{ $item->id }}, '{{ addslashes($item->ticket_name) }}')">
+                                        Đánh giá
+                                    </button>
+                                @endif
+                            @endif
+                        </div>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

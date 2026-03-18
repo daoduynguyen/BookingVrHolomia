@@ -20,4 +20,9 @@ class OrderItem extends Model
     public function ticket() {
         return $this->belongsTo(Ticket::class);
     }
+
+    // Quan hệ: 1 OrderItem có thể có 1 Đánh giá
+    public function review() {
+        return $this->hasOne(Review::class);
+    }
 }
