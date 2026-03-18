@@ -16,59 +16,72 @@ class AdminController extends Controller
 {
     public function index()
     {
-        // --- 1. SỐ LIỆU CHO 4 THẺ THỐNG KÊ (TOP CARDS) ---
+        $user = \Illuminate\Support\Facades\Auth::user();
 
-        // Thẻ 1: Doanh thu
-        $totalRevenue = Order::where('status', 'paid')->sum('total_amount');
+        // Khởi tạo các câu Query gốc
+        $ordersQuery = Order::query();
+        $ticketsQuery = Ticket::query();
+        $usersQuery = User::where('role', 'customer');
 
-        // Thẻ 2: Đơn chờ (View mới dùng biến $pendingOrders làm Số lượng đếm)
-        $pendingOrders = Order::where('status', 'pending')->count();
+        // 🔥 CHỐT CHẶN PHÂN QUYỀN
+        if ($user && $user->role !== 'super_admin') {
+            if ($user->location_id) {
+                $ordersQuery->where('location_id', $user->location_id);
+                $ticketsQuery->where('location_id', $user->location_id);
+            } else {
+                $ordersQuery->where('id', '<', 0);
+                $ticketsQuery->where('id', '<', 0);
+            }
+        }
 
-        // Thẻ 3: Tổng vé (QUAN TRỌNG: Đã đổi tên từ $ticketsCount thành $totalTickets)
-        $totalTickets = Ticket::count();
+        // 1. TOP CARDS
+        $totalRevenue = (clone $ordersQuery)->where('status', 'paid')->sum('total_amount');
+        $pendingOrders = (clone $ordersQuery)->where('status', 'pending')->count();
+        $totalTickets = (clone $ticketsQuery)->count();
+        $totalUsers = $usersQuery->count();
 
-        // Thẻ 4: Khách hàng (Bổ sung biến này vì View đang thiếu)
-        $totalUsers = User::where('role', 'customer')->count();
-
-
-        // --- 2. DỮ LIỆU BIỂU ĐỒ CỘT (DOANH THU 7 NGÀY) ---
-        $chartStats = Order::where('status', 'paid')
+        // 2. CHART DOANH THU 7 NGÀY
+        // 2. DỮ LIỆU BIỂU ĐỒ CỘT & ĐƯỜNG (7 NGÀY QUA)
+        $chartStats = (clone $ordersQuery)->where('status', 'paid')
             ->select(
                 DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(total_amount) as total')
+                DB::raw('SUM(total_amount) as total'),
+                DB::raw('COUNT(id) as order_count') // DÒNG NÀY ĐỂ ĐẾM ĐƠN
             )
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->take(7)
             ->get();
 
-        // Tách dữ liệu ra 2 mảng riêng để gửi sang Chart.js
-        $revenueLabels = $chartStats->pluck('date')->toArray(); // Trục ngang: Ngày
-        $revenueData = $chartStats->pluck('total')->toArray();  // Trục dọc: Tiền
+        $orderCountData = $chartStats->pluck('order_count')->toArray(); // LẤY MẢNG SỐ LƯỢNG ĐƠN RA
+        $revenueLabels = $chartStats->pluck('date')->toArray();
+        $revenueData = $chartStats->pluck('total')->toArray();
 
-
-        // --- 3. DỮ LIỆU BIỂU ĐỒ TRÒN (TRẠNG THÁI ĐƠN) ---
-        // View cần biến $pieData dạng mảng: [Số đã trả, Số chờ, Số hủy]
+        // 3. PIE CHART TRẠNG THÁI
         $pieData = [
-            Order::where('status', 'paid')->count(),
-            Order::where('status', 'pending')->count(),
-            Order::where('status', 'cancelled')->count()
+            (clone $ordersQuery)->where('status', 'paid')->count(),
+            (clone $ordersQuery)->where('status', 'pending')->count(),
+            (clone $ordersQuery)->where('status', 'cancelled')->count()
         ];
 
+        //  4. BẢNG XẾP HẠNG DOANH THU THEO CƠ SỞ (CHỈ SUPER ADMIN CÓ)
+        $revenueByLocation = collect(); // Mặc định là rỗng (để Admin cơ sở không bị lỗi biến)
+        
+        if ($user && $user->role === 'super_admin') {
+            $revenueByLocation = Order::where('status', 'paid')
+                ->join('locations', 'orders.location_id', '=', 'locations.id')
+                ->select('locations.name', DB::raw('SUM(orders.total_amount) as total'))
+                ->groupBy('locations.id', 'locations.name')
+                ->orderBy('total', 'desc') // Đứa nào doanh thu cao xếp lên đầu
+                ->get();
+        }
 
-        // --- 4. TRẢ VỀ VIEW (Compact đủ các biến) ---
         return view('admin.dashboard', compact(
-            'totalRevenue',
-            'pendingOrders', // Số lượng đơn chờ
-            'totalTickets',  // <--- Biến bạn đang bị lỗi
-            'totalUsers',    // <--- Biến đếm User
-            'revenueLabels', // Dữ liệu biểu đồ cột
-            'revenueData',
-            'pieData'        // Dữ liệu biểu đồ tròn
+            'totalRevenue', 'pendingOrders', 'totalTickets', 'totalUsers',    
+            'revenueLabels', 'revenueData', 'pieData',
+            'revenueByLocation','orderCountData'
         ));
-
     }
-
 
     public function manageTickets()
     {
@@ -101,28 +114,33 @@ class AdminController extends Controller
     }
 
     //Quản lý vé
+    // Quản lý đơn hàng (Đã phân quyền theo cơ sở)
     public function manageOrders()
     {
-        $orders = Order::with('user')->orderBy('created_at', 'desc')->get();
+        $user = \Illuminate\Support\Facades\Auth::user();
+        
+        // Khởi tạo Query lấy danh sách đơn hàng
+        $query = Order::with('user');
+
+        // 🔥 CHỐT CHẶN: Nếu là Admin chi nhánh, ép chỉ lấy đơn của cơ sở đó
+        if ($user && $user->role !== 'super_admin' && $user->location_id) {
+            $query->where('location_id', $user->location_id);
+        }
+
+        // Thực thi truy vấn và trả về view
+        $orders = $query->orderBy('created_at', 'desc')->get();
         return view('admin.orders.index', compact('orders'));
-    }
-
-    // Xử lý duyệt đơn hàng
-    public function approveOrder($id)
-    {
-        $order = Order::findOrFail($id);
-        $order->status = 'paid'; // Chuyển sang trạng thái đã thanh toán
-        $order->save();
-
-        return back()->with('success', 'Đã duyệt đơn hàng #' . $id . ' thành công!');
     }
    
     //Quản lý người dùng
     public function manageUsers()
     {
-        // Lấy tất cả user trừ chính Admin đang đăng nhập để tránh tự xóa mình
+        // Lấy tất cả user trừ chính Admin đang đăng nhập
         $users = User::where('id', '!=', auth()->id())->get();
-        return view('admin.users.index', compact('users'));
+        // Lấy danh sách cơ sở để hiện trong form Phân quyền
+        $locations = \App\Models\Location::all(); 
+
+        return view('admin.users.index', compact('users', 'locations'));
     }
 
     // Xử lý xóa người dùng
@@ -166,5 +184,53 @@ class AdminController extends Controller
         Mail::to($contact->email)->send(new ReplyContactMail($request->reply_content, $contact->name));
 
         return redirect()->back()->with('success', 'Đã gửi phản hồi tới khách hàng thành công!');
+    }
+
+    // Xử lý Phân quyền Người dùng
+    public function updateUserRole(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Cập nhật Role
+        $user->role = $request->role;
+
+        // Nếu là Admin chi nhánh thì bắt buộc phải gắn location_id, ngược lại thì xóa location_id
+        if ($request->role === 'branch_admin') {
+            $user->location_id = $request->location_id;
+        } else {
+            $user->location_id = null; // super_admin hoặc customer thì không ghim cứng 1 cơ sở
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Đã cập nhật phân quyền cho tài khoản: ' . $user->email);
+    }
+
+    // 1. Hiển thị Form thêm User
+    public function createUser()
+    {
+        $locations = \App\Models\Location::all();
+        return view('admin.users.create', compact('locations'));
+    }
+
+    // 2. Lưu User mới vào Database
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'role'     => 'required'
+        ]);
+
+        User::create([
+            'name'        => $request->name,
+            'email'       => $request->email,
+            'password'    => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role'        => $request->role,
+            'location_id' => $request->role === 'branch_admin' ? $request->location_id : null,
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'Đã thêm tài khoản mới thành công!');
     }
 }

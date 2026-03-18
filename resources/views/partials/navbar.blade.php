@@ -11,23 +11,23 @@
         </button>
 
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-            <ul class="navbar-nav align-items-center gap-3">
+            <ul class="navbar-nav align-items-center gap-2"> <!-- Sửa gap lớn hơn xíu -->
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}"
+                    <a class="nav-link border border-secondary rounded px-3 py-2 {{ request()->routeIs('home') ? 'active bg-secondary bg-opacity-25 border-info' : '' }}"
                         href="{{ route('home') }}">Trang chủ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}"
+                    <a class="nav-link border border-secondary rounded px-3 py-2 {{ request()->routeIs('about') ? 'active bg-secondary bg-opacity-25 border-info' : '' }}"
                         href="{{ route('about') }}">Giới thiệu</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}"
+                    <a class="nav-link border border-secondary rounded px-3 py-2 {{ request()->routeIs('contact') ? 'active bg-secondary bg-opacity-25 border-info' : '' }}"
                         href="{{ route('contact') }}">Liên hệ</a>
                 </li>
 
                 {{-- 5. ĐẶT VÉ (Dropdown Hover) --}}
                 <li class="nav-item dropdown group-hover">
-                    <a class="nav-link dropdown-toggle {{ request()->routeIs('ticket.*') ? 'active' : '' }}"
+                    <a class="nav-link dropdown-toggle border border-secondary rounded px-3 py-2 {{ request()->routeIs('ticket.*') ? 'active bg-secondary bg-opacity-25 border-info' : '' }}"
                         href="{{ route('ticket.shop') }}" id="navbarDropdown" role="button">
                         Đặt vé
                     </a>

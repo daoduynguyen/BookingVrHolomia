@@ -32,8 +32,45 @@
             <div class="col-lg-7 mb-4">
                 <div class="custom-scroll-container">
 
-                    <img src="{{ $ticket->image_url }}" class="img-fluid rounded-4 shadow w-100 mb-4"
-                        style="object-fit: cover; max-height: 450px;">
+                   {{-- 1. VIDEO TRAILER --}}
+                    @if($ticket->trailer_url)
+                        @php
+                            $embedUrl = str_replace('watch?v=', 'embed/', $ticket->trailer_url);
+                        @endphp
+                        <div class="ratio ratio-16x9 mb-4 shadow-lg rounded-4 overflow-hidden border border-secondary border-opacity-25">
+                            <iframe src="{{ $embedUrl }}" title="YouTube video" allowfullscreen></iframe>
+                        </div>
+                    @endif
+
+                    {{-- 2. TRƯỢT ẢNH CAROUSEL --}}
+                    @if($ticket->gallery && count($ticket->gallery) > 0)
+                        <div id="gameGallery" class="carousel slide mb-4 shadow-lg rounded-4 overflow-hidden border border-secondary border-opacity-25" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {{-- Lấy ảnh bìa làm ảnh đầu tiên --}}
+                                <div class="carousel-item active">
+                                    <img src="{{ $ticket->image_url }}" class="d-block w-100" style="object-fit: cover; height: 450px;" alt="Bìa game">
+                                </div>
+                                {{-- Các ảnh upload phụ --}}
+                                @foreach($ticket->gallery as $img)
+                                    <div class="carousel-item">
+                                        <img src="{{ asset('storage/' . $img) }}" class="d-block w-100" style="object-fit: cover; height: 450px;" alt="Hình ảnh game">
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#gameGallery" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px;"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#gameGallery" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px;"></span>
+                            </button>
+                        </div>
+                    @endif
+
+                    {{-- 3. NẾU KHÔNG CÓ CẢ TRAILER LẪN GALLERY THÌ MỚI HIỆN ẢNH BÌA GỐC --}}
+                    @if(!$ticket->trailer_url && empty($ticket->gallery))
+                        <img src="{{ $ticket->image_url }}" class="img-fluid rounded-4 shadow w-100 mb-4"
+                            style="object-fit: cover; max-height: 450px;">
+                    @endif
 
                     <div class="content-box">
                         <h5 class="section-title text-info"><i class="bi bi-file-text-fill me-2"></i> Mô tả trò chơi
@@ -130,19 +167,22 @@
                                 <i class="bi bi-ticket-perforated me-2 text-info"></i> Chọn loại vé
                             </h5>
 
-                            <div
-                                class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 bg-white bg-opacity-5">
-                                <span class="text-light">Ngày thường <small class="text-white-50">(T2-T6)</small></span>
-                                <span class="fw-bold fs-5 text-white">{{ number_format($ticket->price) }}đ</span>
-                            </div>
-
-                            <div
-                                class="d-flex justify-content-between align-items-center mb-4 p-3 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-25">
-                                <span class="text-warning fw-bold">Cuối tuần <small class="opacity-75">(T7,
-                                        CN)</small></span>
-                                <span
-                                    class="fw-bold fs-4 text-warning">{{ number_format($ticket->price_weekend) }}đ</span>
-                            </div>
+                            {{-- HIỂN THỊ DANH SÁCH LOẠI VÉ TỪ DATABASE --}}
+                            @if($ticket->ticket_types && count($ticket->ticket_types) > 0)
+                                @foreach($ticket->ticket_types as $index => $type)
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 bg-white bg-opacity-5 border border-secondary border-opacity-25 hover-scale" style="cursor: pointer;" onclick="document.getElementById('type_{{ $index }}').checked = true;">
+                                        <div class="form-check m-0">
+                                            <input class="form-check-input border-info" type="radio" name="selected_ticket_type" id="type_{{ $index }}" value="{{ $type['name'] }}" {{ $index == 0 ? 'checked' : '' }}>
+                                            <label class="form-check-label text-light ms-2 fw-bold" for="type_{{ $index }}">
+                                                {{ $type['name'] }}
+                                            </label>
+                                        </div>
+                                        <span class="fw-bold fs-5 text-warning">{{ number_format($type['price']) }}đ</span>
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="text-secondary text-center fst-italic mb-3">Vé này đang cập nhật bảng giá.</div>
+                            @endif
 
                             {{-- Logic Button --}}
                             @if($ticket->status == 'maintenance')
@@ -152,10 +192,12 @@
                                     <i class="bi bi-cone-striped me-2"></i> ĐANG BẢO TRÌ
                                 </button>
                             @else
-                                <a href="{{ route('booking.form', $ticket->id) }}"
-                                    class="btn btn-info w-100 btn-lg fw-bold text-uppercase py-3 shadow-lg text-dark rounded-pill hover-scale">
-                                    ĐẶT VÉ NGAY <i class="bi bi-arrow-right-circle-fill ms-2"></i>
-                                </a>
+                               <form action="{{ route('booking.form', $ticket->id) }}" method="GET">
+    
+                                  <button type="submit" class="btn btn-info w-100 btn-lg fw-bold text-uppercase py-3 shadow-lg text-dark rounded-pill hover-scale">
+                                       ĐẶT VÉ NGAY <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                                  </button>
+                               </form>
                             @endif
 
                             <div class="mt-3 text-center small text-secondary fst-italic">

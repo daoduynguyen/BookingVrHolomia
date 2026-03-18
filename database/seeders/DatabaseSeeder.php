@@ -9,6 +9,10 @@ use App\Models\Category;
 use App\Models\Location;
 use App\Models\Ticket;
 use App\Models\Coupon;
+use App\Models\Setting;
+use App\Models\TimeSlot;
+use App\Models\Order;
+use App\Models\OrderItem;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,6 +26,10 @@ class DatabaseSeeder extends Seeder
         Category::truncate(); 
         Location::truncate(); 
         Ticket::truncate();
+        Setting::truncate();
+        TimeSlot::truncate();
+        Order::truncate();
+        OrderItem::truncate();
         // Nếu có bảng booking thì truncate luôn
         // \App\Models\Booking::truncate(); 
 
@@ -195,6 +203,14 @@ class DatabaseSeeder extends Seeder
             'quantity' => 10,
             'expiry_date' => '2023-01-01', // Ngày quá khứ
           
+        ]);
+
+        // ==========================================
+        // PHẦN 6: THIẾT LẬP CHUNG (SETTINGS)
+        // ==========================================
+        Setting::create([
+            'key' => 'weekend_surcharge_percentage',
+            'value' => '30'
         ]);
     }
 }

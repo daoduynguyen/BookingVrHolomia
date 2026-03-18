@@ -17,7 +17,8 @@
         body {
             background-color: #121212;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; /* CẤM TOÀN TRANG CUỘN */
+            overflow: hidden;
+            /* CẤM TOÀN TRANG CUỘN */
             margin: 0;
             padding: 0;
         }
@@ -38,7 +39,8 @@
             display: flex;
             flex-direction: column;
             box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
-            flex-shrink: 0; /* Ngăn không cho menu bị bóp méo khi màn hình nhỏ */
+            flex-shrink: 0;
+            /* Ngăn không cho menu bị bóp méo khi màn hình nhỏ */
             z-index: 100;
         }
 
@@ -71,9 +73,18 @@
         }
 
         /* Tinh chỉnh thanh cuộn của Menu (Mỏng, đẹp) */
-        .sidebar-menu-wrapper::-webkit-scrollbar { width: 4px; }
-        .sidebar-menu-wrapper::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        .sidebar-menu-wrapper::-webkit-scrollbar-thumb:hover { background: #0dcaf0; }
+        .sidebar-menu-wrapper::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-menu-wrapper::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .sidebar-menu-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #0dcaf0;
+        }
 
         /* 6. Menu Item */
         .nav-link {
@@ -121,7 +132,8 @@
         .logout-container {
             padding: 1.5rem;
             border-top: 1px solid #2d2d2d;
-            background: #0f0f0f; /* Đảm bảo màu nền dính liền */
+            background: #0f0f0f;
+            /* Đảm bảo màu nền dính liền */
         }
 
         .btn-logout {
@@ -145,16 +157,26 @@
         .main-content {
             flex-grow: 1;
             height: 100vh;
-            overflow-y: auto; /* THANH CUỘN CHÍNH NẰM Ở ĐÂY */
+            overflow-y: auto;
+            /* THANH CUỘN CHÍNH NẰM Ở ĐÂY */
             background-color: #121212;
-            padding: 2rem; /* Giảm padding xuống một chút cho đỡ trống */
+            padding: 2rem;
+            /* Giảm padding xuống một chút cho đỡ trống */
         }
 
         /* Tinh chỉnh thanh cuộn của phần nội dung */
-        .main-content::-webkit-scrollbar { width: 8px; }
-        .main-content::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
-        .main-content::-webkit-scrollbar-thumb:hover { background: #0dcaf0; }
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
 
+        .main-content::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: #0dcaf0;
+        }
     </style>
 </head>
 
@@ -171,64 +193,66 @@
             </div>
 
             {{-- MENU --}}
-            <div class="sidebar-menu-wrapper">
-                <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Thống kê</span>
+                </a>
+            </li>
 
-                    <li class="nav-item">
-                        <a href="{{ route('admin.dashboard') }}"
-                            class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                            <i class="bi bi-speedometer2"></i>
-                            <span>Thống kê</span>
-                        </a>
-                    </li>
+            
 
-                    <li class="nav-item">
-                        <a href="{{ route('admin.tickets.index') }}"
-                            class="nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
-                            <i class="bi bi-ticket-perforated"></i>
-                            <span>Quản lý vé</span>
-                        </a>
-                    </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.slots.*') ? 'active' : '' }}"
+                    href="{{ route('admin.slots.index') }}">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Lịch khung giờ</span>
+                </a>
+            </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.slots.*') ? 'active' : '' }}" href="{{ route('admin.slots.index') }}">
-                            <i class="bi bi-calendar3"></i>
-                            <span>Lịch khung giờ</span>
-                        </a>
-                    </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.bookings.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
+                    <i class="bi bi-cart-check"></i>
+                    <span>Duyệt đơn hàng</span>
+                </a>
+            </li>
 
-                    <li class="nav-item">
-                        <a href="{{ route('admin.bookings.index') }}"
-                            class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
-                            <i class="bi bi-cart-check"></i>
-                            <span>Duyệt đơn hàng</span>
-                        </a>
-                    </li>
+            {{-- BỌC QUYỀN: Chỉ Sếp tổng (super_admin) mới thấy các Menu bên dưới --}}
+            @if(Auth::check() && Auth::user()->role === 'super_admin')
+                <li class="nav-item">
+                <a href="{{ route('admin.tickets.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>Quản lý vé</span>
+                   </a>
+                </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}" href="{{ route('admin.coupons.index') }}">
-                            <i class="bi bi-ticket-perforated-fill"></i>
-                            <span>Kho Voucher</span>
-                        </a>
-                    </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}"
+                        href="{{ route('admin.coupons.index') }}">
+                        <i class="bi bi-ticket-perforated-fill"></i>
+                        <span>Kho Voucher</span>
+                    </a>
+                </li>
 
-                    <li class="nav-item">
-                        <a href="{{ route('admin.users') }}"
-                            class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-                            <i class="bi bi-people"></i>
-                            <span>Người dùng</span>
-                        </a>
-                    </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.users') }}"
+                        class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i>
+                        <span>Người dùng</span>
+                    </a>
+                </li>
 
-                    <li class="nav-item">
-                        <a href="{{ route('admin.contacts') }}"
-                            class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}">
-                            <i class="bi bi-chat-dots"></i>
-                            <span>Tin nhắn</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+                <li class="nav-item">
+                    <a href="{{ route('admin.contacts') }}"
+                        class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Tin nhắn</span>
+                    </a>
+                </li>
+            @endif
 
             {{-- FOOTER (LOGOUT) --}}
             <div class="logout-container">

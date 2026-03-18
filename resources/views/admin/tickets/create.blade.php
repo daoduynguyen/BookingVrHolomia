@@ -9,7 +9,7 @@
     </div>
 
     <div class="profile-content shadow-lg p-4 bg-dark rounded">
-        <form action="{{ route('admin.tickets.store') }}" method="POST">
+        <form action="{{ route('admin.tickets.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             {{-- Hiển thị lỗi --}}
@@ -60,29 +60,43 @@
                 </div>
             </div>
 
-            {{-- 4. Link Ảnh --}}
-            <div class="mb-4">
-                <label class="form-label text-white">Link ảnh (URL)</label>
-                <textarea name="image_url" class="form-control" rows="2" placeholder="https://..." required></textarea>
+            {{-- 4. Link Ảnh & Media --}}
+            <div class="row mb-4">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label text-white">Ảnh bìa chính (URL)</label>
+                    <textarea name="image_url" class="form-control bg-dark text-white border-secondary" rows="1" placeholder="https://..." required></textarea>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-white">Video Trailer (Link Youtube)</label>
+                    <input type="text" name="trailer_url" class="form-control bg-dark text-white border-secondary" placeholder="Ví dụ: https://www.youtube.com/watch?v=...">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-white">Upload Các Ảnh Phụ (Chọn nhiều)</label>
+                    <input type="file" name="gallery[]" class="form-control bg-dark text-white border-secondary" multiple accept="image/*">
+                </div>
             </div>
 
+            {{-- 5. PHÂN LOẠI VÉ (MỚI) --}}
             <div class="row">
-                {{-- 5. GIÁ VÉ (SỬA LẠI NAME CHO KHỚP) --}}
-                
-                {{-- Giá Ngày Thường -> name="price" (Để khớp với cột gốc trong DB) --}}
-                <div class="col-md-4 mb-4">
-                    <label class="form-label text-white">Giá Ngày Thường</label>
-                    <input type="number" name="price" class="form-control" placeholder="100000" required>
+                <div class="col-md-9 mb-4">
+                    <div class="p-3 border border-info rounded bg-black bg-opacity-25">
+                        <label class="form-label text-info fw-bold mb-3">
+                            <i class="bi bi-tags"></i> Bảng giá & Loại vé (Người lớn, Trẻ em, VIP...)
+                        </label>
+                        
+                        {{-- Vùng chứa các dòng phân loại vé --}}
+                        <div id="ticket-types-container"></div>
+                        
+                        <button type="button" class="btn btn-sm btn-outline-info mt-3 fw-bold" onclick="addTicketTypeRow()">
+                            <i class="bi bi-plus-circle me-1"></i> THÊM LOẠI VÉ MỚI
+                        </button>
+                    </div>
                 </div>
 
-                {{-- Giá Cuối Tuần -> name="price_weekend" --}}
-                <div class="col-md-4 mb-4">
-                    <label class="form-label text-warning">Giá Cuối Tuần</label>
-                    <input type="number" name="price_weekend" class="form-control" placeholder="Để trống nếu bằng giá thường">
-                </div>
-
-                {{-- 6. Thời lượng --}}
-                <div class="col-md-4 mb-4">
+                {{-- 6. Thời lượng (Giữ nguyên) --}}
+                <div class="col-md-3 mb-4">
                     <label class="form-label text-white">Thời lượng (Phút)</label>
                     <input type="number" name="duration" class="form-control" value="30">
                 </div>
@@ -104,4 +118,31 @@
         </form>
     </div>
 </div>
+
+<script>
+    function addTicketTypeRow(name = '', price = '') {
+        const container = document.getElementById('ticket-types-container');
+        const row = document.createElement('div');
+        row.className = 'row mb-2 type-row align-items-center';
+        row.innerHTML = `
+            <div class="col-md-5">
+                <input type="text" name="type_name[]" class="form-control bg-dark text-white border-secondary" placeholder="Tên loại (VD: Trẻ em, Combo...)" value="${name}" required>
+            </div>
+            <div class="col-md-5">
+                <input type="number" name="type_price[]" class="form-control text-warning bg-dark border-secondary fw-bold" placeholder="Giá vé (VD: 150000)" value="${price}" required>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-danger w-100 shadow-sm" onclick="this.closest('.type-row').remove()">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    // Tự động load 1 dòng trống khi mới vào trang thêm vé
+    document.addEventListener('DOMContentLoaded', function() {
+        addTicketTypeRow('Vé tiêu chuẩn', '');
+    });
+</script>
 @endsection

@@ -23,16 +23,10 @@ use App\Http\Controllers\Admin\SlotController;
 // BƯỚC 1: Màn hình nhập thông tin & chọn ngày (Thay vì thêm thẳng vào giỏ)
 Route::get('/booking/nhap-thong-tin/{id}', [CheckoutController::class, 'bookingForm'])->name('booking.form');
 
-// BƯỚC 2: Xử lý thông tin từ Form -> Lưu vào Session Giỏ hàng -> Chuyển sang trang Review
-Route::post('/booking/xac-nhan', [CheckoutController::class, 'confirmToCart'])->name('booking.confirm');
-
 // BƯỚC 3: Màn hình Giỏ hàng (Đóng vai trò trang Review - Xem lại đơn)
 Route::get('/gio-hang', [CartController::class, 'index'])->name('cart.index');
 Route::get('/gio-hang/xoa/{id}', [CartController::class, 'remove'])->name('cart.remove');
 Route::patch('/gio-hang/cap-nhat', [CartController::class, 'update'])->name('cart.update'); // Để sửa số lượng nếu muốn
-
-// BƯỚC 4: Xử lý Thanh toán cuối cùng (Chốt đơn từ trang Giỏ hàng)
-Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])->name('payment.final'); 
 
 
 Route::post('/wishlist/toggle/{id}', [WishlistController::class, 'toggle'])->name('wishlist.toggle')->middleware('auth');
@@ -49,9 +43,10 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     // Middleware kiểm tra quyền Admin (Role = admin)
     Route::group([
         'middleware' => function ($request, $next) {
-            if (auth()->user() && auth()->user()->role === 'admin') {
-                return $next($request);
-            }
+           // web.php - Sửa middleware cho phép cả 3 role
+          if (auth()->user() && in_array(auth()->user()->role, ['super_admin', 'admin', 'branch_admin'])) {
+            return $next($request);
+          }
             return redirect('/')->with('error', 'Bạn không có quyền truy cập vùng Admin!');
         }
     ], function () {
@@ -108,10 +103,20 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             Route::get('/contacts', [AdminController::class, 'listContacts'])->name('contacts');
             Route::delete('/contacts/{id}', [AdminController::class, 'deleteContact'])->name('contacts.delete');
             //Phản hồi khách hàng
-            Route::post('/contacts/reply/{id}', [AdminController::class, 'replyContact'])->name('admin.contacts.reply');
+            Route::post('/contacts/reply/{id}', [AdminController::class, 'replyContact'])->name('contacts.reply');
             
             // 5. Quản lý Mã giảm giá
             Route::resource('coupons', CouponController::class);
+
+            // Cập nhật quyền người dùng
+           Route::post('/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('users.updateRole');
+
+           // Route hiển thị form và lưu User mới
+           Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
+           Route::post('/users/store', [AdminController::class, 'storeUser'])->name('users.store');
+
+           // Route xóa ảnh phụ trong Gallery
+           Route::delete('/tickets/{id}/remove-gallery-image', [TicketController::class, 'removeGalleryImage'])->name('tickets.remove_gallery');
         });
     });
 });
@@ -174,12 +179,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('checkout.check_coupon');
     Route::get('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
     Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('check.coupon');
+    Route::get('/order/refund/{id}', [CheckoutController::class, 'refundOrder'])->name('order.refund');
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar');
     Route::post('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
     Route::get('/profile/order/{id}', [ProfileController::class, 'showOrder'])->name('profile.order.detail');
 
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
 });
+// Route dành cho khách/nhân viên quét mã QR xem vé
+    Route::get('/scan-ticket/{id}', [ProfileController::class, 'scanTicket'])->name('ticket.scan');

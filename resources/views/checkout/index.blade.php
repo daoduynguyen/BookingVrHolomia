@@ -31,7 +31,7 @@
         <form action="{{ route('booking.confirm') }}" method="POST">
             @csrf
             <input type="hidden" name="ticket_id" value="{{ $ticket_id ?? '' }}">
-            <div id="price-data" data-week="{{ $totalWeek ?? 0 }}" data-weekend="{{ $totalWeekend ?? 0 }}"
+            <div id="price-data" data-base="{{ $ticket->price }}" data-surcharge="{{ $surchargeRate ?? 0 }}"
                 style="display: none;"></div>
 
             <div class="row g-4">
@@ -70,12 +70,35 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-info"><i class="bi bi-people-fill me-1"></i> Số lượng
-                                vé</label>
-                            <input type="number" name="quantity" id="quantity" value="1" min="1" max="50"
-                                class="form-control bg-dark text-white border-secondary" style="width: 120px;">
-                        </div>
+                        {{-- CHỌN SỐ LƯỢNG / DUYỆT CÁC LOẠI VÉ MỚI --}}
+                        @if($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0)
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-info"><i class="bi bi-ticket-detailed me-1"></i> Chọn số lượng vé</label>
+                                @php
+                                    $selectedType = request()->query('selected_ticket_type');
+                                @endphp
+                                @foreach($ticket->ticket_types as $index => $type)
+                                    <div class="d-flex justify-content-between align-items-center p-3 border border-secondary rounded mb-2 bg-dark bg-opacity-25 hover-scale">
+                                        <div>
+                                            <div class="fw-bold">{{ $type['name'] }}</div>
+                                            <div class="text-warning small">{{ number_format($type['price']) }}đ/vé</div>
+                                        </div>
+                                        <div style="width: 120px;">
+                                            <input type="number" name="ticket_types[{{ $type['name'] }}]" value="{{ ($selectedType === $type['name'] || (!$selectedType && $index === 0)) ? 1 : 0 }}" min="0" max="50"
+                                                class="form-control bg-dark text-white border-secondary ticket-qty-input" data-price="{{ $type['price'] }}" data-name="{{ $type['name'] }}">
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <input type="hidden" name="quantity" id="quantity" class="ticket-global-qty" value="1">
+                        @else
+                            {{-- LOGIC CŨ NẾU VÉ KHÔNG CÓ LOẠI --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-info"><i class="bi bi-people-fill me-1"></i> Số lượng vé</label>
+                                <input type="number" name="quantity" id="quantity" value="1" min="1" max="50"
+                                    class="form-control bg-dark text-white border-secondary ticket-qty-input" data-price="{{ $ticket->price }}" data-name="{{ $ticket->name }}" style="width: 120px;">
+                            </div>
+                        @endif
 
                         <div class="mb-3">
                             <label class="form-label">Ghi chú đơn hàng (Không bắt buộc)</label>
@@ -85,41 +108,66 @@
 
                     <div class="card bg-secondary text-white border-0 rounded-4 p-4 shadow">
                         <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Phương thức thanh toán</h5>
-                        <div class="form-check mb-3 p-3 border border-dark rounded bg-dark bg-opacity-25">
-                            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod"
-                                checked>
-                            <label class="form-check-label d-flex align-items-center gap-2" for="cod">
+                        
+                        {{-- Tiền mặt --}}
+                        <div class="form-check mb-3 p-3 border border-dark rounded bg-dark bg-opacity-25 payment-box" style="transition: 0.3s;">
+                            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
+                            <label class="form-check-label d-flex align-items-center gap-2 w-100" for="cod" style="cursor: pointer;">
                                 <i class="bi bi-cash-coin text-success fs-4"></i>
                                 <div><strong>Thanh toán tại quầy</strong></div>
                             </label>
                         </div>
-                        <div class="form-check p-3 border border-dark rounded bg-dark bg-opacity-25">
-                            <input class="form-check-input" type="radio" name="payment_method" id="banking"
-                                value="banking">
-                            <label class="form-check-label d-flex align-items-center gap-2" for="banking">
+                        
+                        {{-- Chuyển khoản --}}
+                        <div class="form-check mb-3 p-3 border border-dark rounded bg-dark bg-opacity-25 payment-box" style="transition: 0.3s;">
+                            <input class="form-check-input" type="radio" name="payment_method" id="banking" value="banking">
+                            <label class="form-check-label d-flex align-items-center gap-2 w-100" for="banking" style="cursor: pointer;">
                                 <i class="bi bi-qr-code-scan text-info fs-4"></i>
                                 <div><strong>Chuyển khoản / Mã QR</strong></div>
                             </label>
                         </div>
+
+                        {{-- Ví Holomia --}}
+                        <div class="form-check p-3 border border-dark rounded bg-dark bg-opacity-25 payment-box" style="transition: 0.3s;">
+                            <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                            <label class="form-check-label d-flex align-items-center gap-2 w-100" for="wallet" style="cursor: pointer;">
+                                <i class="bi bi-wallet2 text-info fs-4"></i>
+                                <div>
+                                    <strong class="text-white text-uppercase">Ví Holomia</strong>
+                                    <div class="small text-white-50">Số dư: <span id="user-balance-text" data-balance="{{ Auth::check() ? Auth::user()->balance : 0 }}">{{ number_format(Auth::check() ? Auth::user()->balance : 0) }}đ</span></div>
+                                </div>
+                            </label>
+                            {{-- Báo lỗi nếu thiếu tiền --}}
+                            <div id="wallet-error" class="text-danger small fw-bold mt-2" style="display: none;">
+                                <i class="bi bi-exclamation-circle-fill me-1"></i> Số dư không đủ để thanh toán hóa đơn này!
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                {{-- CỘT PHẢI: TÓM TẮT TIỀN GỐC --}}
                 {{-- CỘT PHẢI: TÓM TẮT TIỀN GỐC --}}
                 <div class="col-lg-5">
                     <div class="card bg-black border border-secondary rounded-4 p-4 shadow-lg sticky-top"
                         style="top: 100px;">
                         <h5 class="fw-bold mb-4 text-center text-white border-bottom border-secondary pb-3">TÓM TẮT VÉ
                         </h5>
+                        
+                        {{-- Hiển thị Cơ sở --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3 bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
+                            <span class="text-white-50"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cơ sở:</span>
+                            <span class="text-warning fw-bold text-end">{{ $ticket->location->name ?? 'Đang cập nhật' }}</span>
+                        </div>
 
                         <div class="d-flex align-items-center gap-3 mb-4">
                             <img src="{{ Str::startsWith($ticket->image ?? $ticket->image_url, 'http') ? ($ticket->image ?? $ticket->image_url) : asset('storage/' . ($ticket->image ?? $ticket->image_url)) }}"
                                 class="rounded" width="70" height="70" style="object-fit: cover;">
                             <div>
                                 <h5 class="mb-1 text-white fw-bold">{{ $ticket->name }}</h5>
-                                <span class="badge bg-secondary" id="display-qty">Số lượng: 1</span>
+                                <span class="badge bg-secondary" id="display-qty">Số lượng: 0</span>
                             </div>
                         </div>
+
+                        {{-- DANH SÁCH CHI TIẾT TỪNG LOẠI VÉ ĐƯỢC CHỌN SẼ HIỂN THỊ DƯỚI ĐÂY BẰNG JS --}}
+                        <div id="summary-ticket-list" class="mb-3"></div>
 
                         {{-- Tạm tính (Tiền gốc * Số lượng) --}}
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -182,31 +230,64 @@
             // ==========================================
             function updateSummary() {
                 var dateVal = $('#booking_date').val();
-                var qty = parseInt($('#quantity').val()) || 1;
+                var surchargeRate = parseFloat($('#price-data').data('surcharge')) || 0;
+                var isWeekend = false;
                 
-                // Cập nhật text hiển thị số lượng
-                $('#display-qty').text('Số lượng: ' + qty);
-                $('#calc-qty').text(qty);
-
-                var weekPrice = parseFloat($('#price-data').data('week'));
-                var weekendPrice = parseFloat($('#price-data').data('weekend'));
-                var unitPrice = weekPrice; // Mặc định là giá ngày thường
-
-                // Nếu đã chọn ngày, kiểm tra xem có phải cuối tuần không
                 if (dateVal) {
                     var dayOfWeek = new Date(dateVal).getUTCDay();
-                    var isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-                    unitPrice = isWeekend ? weekendPrice : weekPrice;
-                    
-                    $('#date-message').html(isWeekend ? '<span class="text-warning fw-bold">Giá CUỐI TUẦN</span>' : '<span class="text-success fw-bold">Giá NGÀY THƯỜNG</span>');
+                    isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
                 }
 
-                // Tính TỔNG TẠM TÍNH (Chưa giảm giá)
-                var total = unitPrice * qty;
-                $('#temp-total').text(formatMoney(total));
+                var totalQty = 0;
+                var totalPrice = 0;
+                var summaryHtml = '';
+
+                // Duyệt qua tất cả các input số lượng
+                $('.ticket-qty-input').each(function() {
+                    var qty = parseInt($(this).val()) || 0;
+                    if (qty > 0) {
+                        totalQty += qty;
+                        var basePrice = parseFloat($(this).data('price'));
+                        var name = $(this).data('name');
+                        
+                        var currentPrice = basePrice;
+                        if (isWeekend) {
+                            currentPrice += (basePrice * surchargeRate / 100);
+                        }
+                        
+                        var subtotal = currentPrice * qty;
+                        totalPrice += subtotal;
+
+                        summaryHtml += `
+                            <div class="d-flex justify-content-between align-items-center mb-2 small border-bottom border-dark pb-2">
+                                <span class="text-white-50"><i class="bi bi-check-circle-fill text-info me-1"></i> ${name} x${qty}</span>
+                                <span class="text-warning fw-bold">${formatMoney(subtotal)}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                // Cập nhật input hidden cho quantity tổng (nếu Form yêu cầu submit quantity chung)
+                if ($('#quantity').hasClass('ticket-global-qty')) {
+                    $('#quantity').val(totalQty);
+                }
+
+                // Cập nhật text hiển thị số lượng
+                $('#display-qty').text('Số lượng: ' + totalQty);
+                $('#calc-qty').text(totalQty);
+                $('#summary-ticket-list').html(summaryHtml);
+
+                if (isWeekend) {
+                    $('#date-message').html('<span class="text-warning fw-bold">Giá CUỐI TUẦN (Phụ thu +' + surchargeRate + '%)</span>');
+                } else if (dateVal) {
+                    $('#date-message').html('<span class="text-success fw-bold">Giá NGÀY THƯỜNG</span>');
+                }
+
+                // Tính TỔNG TẠM TÍNH (Chưa giảm giá) và lưu vào data-total để Coupon lấy
+                $('#temp-total').text(formatMoney(totalPrice)).data('total', totalPrice);
 
                 // Xử lý khóa phương thức thanh toán
-                if (qty >= 4) {
+                if (totalQty >= 4) {
                     $('#cod').prop('disabled', true);
                     $('#banking').prop('checked', true);
                     if ($('#cod-warning').length === 0) {
@@ -221,11 +302,11 @@
                 let appliedCode = $('#hidden_coupon_code').val();
                 if (appliedCode) {
                     // Nếu đang có mã, gọi hàm API để tính lại tiền giảm dựa trên Tổng tiền mới
-                    applyCoupon(appliedCode, total);
+                    applyCoupon(appliedCode, totalPrice);
                 } else {
                     // Nếu không có mã, Tổng cuối = Tạm tính
                     $('#discount-row').addClass('d-none');
-                    $('#final-total').text(formatMoney(total));
+                    $('#final-total').text(formatMoney(totalPrice));
                 }
             }
 
@@ -269,7 +350,54 @@
 }
 
             // LẮNG NGHE SỰ KIỆN TĂNG/GIẢM SỐ LƯỢNG
-            $('#quantity').on('input change', updateSummary);
+            $('.ticket-qty-input').on('input change', updateSummary);
+
+        // ==========================================
+            // HÀM 4: KIỂM TRA TIỀN VÍ LIÊN TỤC
+            // ==========================================
+            function checkWalletBalance() {
+                let userBalance = parseFloat($('#user-balance-text').data('balance')) || 0;
+                
+                // Lấy tổng tiền cuối cùng đang hiển thị trên màn hình (Bỏ chữ đ và dấu phẩy)
+                let totalStr = $('#final-total').text().replace(/\./g, '').replace('đ', '');
+                let finalTotalToPay = parseInt(totalStr) || 0;
+                
+                if ($('#wallet').is(':checked')) {
+                    if (userBalance < finalTotalToPay) {
+                        $('#wallet-error').slideDown();
+                        $('button[type="submit"]').prop('disabled', true);
+                    } else {
+                        $('#wallet-error').slideUp();
+                        $('button[type="submit"]').prop('disabled', false);
+                    }
+                } else {
+                    $('#wallet-error').slideUp();
+                    $('button[type="submit"]').prop('disabled', false); // Mở khóa nếu chọn COD/Bank
+                }
+            }
+
+            // ==========================================
+            // HÀM 5: HIỆU ỨNG CHẠY VIỀN XANH CHO PHƯƠNG THỨC THANH TOÁN
+            // ==========================================
+            function updatePaymentStyle() {
+                // 1. Reset tất cả các ô về viền tối, nền tối
+                $('.payment-box').removeClass('border-info bg-info bg-opacity-10')
+                                 .addClass('border-dark bg-dark bg-opacity-25');
+                
+                // 2. Tóm cái ô đang được tích chọn (checked), đổi viền và nền sang xanh
+                $('input[name="payment_method"]:checked').closest('.payment-box')
+                                 .removeClass('border-dark bg-dark bg-opacity-25')
+                                 .addClass('border-info bg-info bg-opacity-10');
+            }
+
+            // Gọi hàm khi khách bấm đổi phương thức thanh toán
+            $('input[name="payment_method"]').change(checkWalletBalance);
+            
+            // Tự động kiểm tra lại khi khách đổi số lượng vé hoặc nhập mã giảm giá
+            // Dùng setTimeout để đợi hệ thống tính xong Tổng tiền rồi mới kiểm tra Ví
+            $('.ticket-qty-input, #booking_date, #btn_apply_coupon').on('change input click', function() {
+                setTimeout(checkWalletBalance, 500); 
+            });
 
             // BẮT SỰ KIỆN CLICK NÚT "ÁP DỤNG"
             $('#btn_apply_coupon').click(function() {
@@ -282,18 +410,7 @@
                 }
 
                 // Lấy giá trị Tạm tính hiện tại để gửi lên server
-                var dateVal = $('#booking_date').val();
-                var qty = parseInt($('#quantity').val()) || 1;
-                var weekPrice = parseFloat($('#price-data').data('week'));
-                var weekendPrice = parseFloat($('#price-data').data('weekend'));
-                var unitPrice = weekPrice;
-                
-                if (dateVal) {
-                    var dayOfWeek = new Date(dateVal).getUTCDay();
-                    unitPrice = (dayOfWeek === 0 || dayOfWeek === 6) ? weekendPrice : weekPrice;
-                }
-                var subTotal = unitPrice * qty;
-
+                var subTotal = parseFloat($('#temp-total').data('total')) || 0;
                 applyCoupon(code, subTotal);
             });
 
@@ -329,6 +446,35 @@
 
             // Khởi chạy tính toán ngay khi vừa load trang
             updateSummary();
+        });
+
+        // SCRIPT HIỆU ỨNG VIỀN XANH CHO PHƯƠNG THỨC THANH TOÁN 
+        $(document).ready(function() {
+            // Hàm xử lý đổi màu
+            function updatePaymentStyle() {
+                // 1. Reset tất cả các ô .form-check về màu xám tối
+                $('input[name="payment_method"]').closest('.form-check')
+                    .removeClass('border-info bg-info bg-opacity-10')
+                    .addClass('border-dark bg-dark bg-opacity-25');
+                    
+                // 2. Tìm ô đang được tích chọn (checked) và cho nó phát sáng màu xanh
+                $('input[name="payment_method"]:checked').closest('.form-check')
+                    .removeClass('border-dark bg-dark bg-opacity-25')
+                    .addClass('border-info bg-info bg-opacity-10');
+            }
+
+            // Lắng nghe mọi hành động click vào nút thanh toán
+            $(document).on('change', 'input[name="payment_method"]', function() {
+                updatePaymentStyle(); // Chạy hiệu ứng đổi màu
+                
+                // Chạy luôn hàm kiểm tra số dư ví (nếu bạn đã cài ở bước trước)
+                if (typeof checkWalletBalance === 'function') {
+                    checkWalletBalance();
+                }
+            });
+
+            // Delay 0.1s khi vừa vào trang để đảm bảo code chạy mượt mà bôi xanh ô mặc định
+            setTimeout(updatePaymentStyle, 100);
         });
     </script>
 </body>

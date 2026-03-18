@@ -81,40 +81,53 @@
                     {{-- Avatar & Info --}}
                     <div class="text-center mb-4 pb-4 border-bottom border-secondary border-opacity-25">
                         <div class="position-relative d-inline-block">
-                            <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0dcaf0&color=000&size=128' }}"
-                                class="rounded-circle mb-3 border border-4 border-dark shadow" width="100" height="100"
-                                style="object-fit: cover;">
-                            <span
-                                class="position-absolute bottom-0 end-0 bg-success border border-dark rounded-circle p-2"
+                            <!-- Clickable Avatar -->
+                            <label for="avatarInput" style="cursor: pointer;">
+                                <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0dcaf0&color=000&size=128' }}"
+                                    class="rounded-circle mb-3 border border-4 border-dark shadow" width="100" height="100"
+                                    style="object-fit: cover; transition: opacity 0.3s;"
+                                    title="Bấm để đổi ảnh đại diện">
+                                <div class="position-absolute translate-middle px-2 py-1 bg-dark bg-opacity-75 rounded-pill shadow-sm" style="bottom: -10px; left: 50%; font-size: 0.75rem; color: #0dcaf0; white-space: nowrap; pointer-events: none;">
+                                    <i class="bi bi-camera me-1"></i>Đổi ảnh
+                                </div>
+                            </label>
+
+                            <!-- Hidden Form -->
+                            <form id="avatarForm" action="{{ route('profile.avatar') }}" method="POST" enctype="multipart/form-data" class="d-none">
+                                @csrf
+                                <input type="file" id="avatarInput" name="avatar" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
+                            </form>
+
+                            <span class="position-absolute bottom-0 end-0 bg-success border border-dark rounded-circle p-2"
                                 title="Online"></span>
                         </div>
-                        <h5 class="fw-bold mb-1 text-white">{{ $user->name }}</h5>
+                        <h5 class="fw-bold mb-1 mt-3 text-white">{{ $user->name }}</h5>
                         <p class="text-secondary small mb-0">{{ $user->email }}</p>
                     </div>
 
                     {{-- Menu --}}
                     <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                        <button class="nav-link active d-flex align-items-center gap-3" id="v-pills-profile-tab"
+                        <button class="nav-link active d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-profile-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab">
                             <i class="bi bi-person-gear fs-5"></i> Hồ sơ cá nhân
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3" id="v-pills-voucher-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-voucher-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-voucher" type="button" role="tab">
                             <i class="bi bi-ticket-perforated fs-5"></i> Kho Voucher
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3" id="v-pills-orders-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-orders-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-orders" type="button" role="tab">
                             <i class="bi bi-box-seam fs-5"></i> Đơn hàng của tôi
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3" id="v-pills-wishlist-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-wishlist-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-wishlist" type="button" role="tab">
                             <i class="bi bi-heart fs-5"></i> Sản phẩm yêu thích
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3" id="v-pills-password-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary" id="v-pills-password-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-password" type="button" role="tab">
                             <i class="bi bi-shield-lock fs-5"></i> Đổi mật khẩu
                         </button>
@@ -124,7 +137,7 @@
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit"
-                                class="nav-link w-100 text-start text-danger hover-danger d-flex align-items-center gap-3">
+                                class="nav-link w-100 text-start text-danger hover-danger d-flex align-items-center gap-3 border border-danger">
                                 <i class="bi bi-box-arrow-right fs-5"></i> Đăng xuất
                             </button>
                         </form>
@@ -161,6 +174,66 @@
                                 class="text-info fw-bold text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-3">
                                 <i class="bi bi-person-lines-fill me-2"></i> Hồ sơ của tôi
                             </h4>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div
+                                        class="bg-secondary bg-opacity-10 border border-info border-opacity-25 rounded-3 p-3 h-100 d-flex align-items-center">
+                                        <div class="bg-info bg-opacity-25 p-3 rounded-circle me-3">
+                                            <i class="bi bi-wallet2 text-info fs-3"></i>
+                                        </div>
+                                        <div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <p class="text-white-40 mb-0 small text-uppercase fw-bold me-2">Tổng số dư</p>
+                                            {{-- Biểu tượng con mắt (Mặc định nhắm) --}}
+                                            <i class="bi bi-eye-slash text-secondary fs-5" id="toggleBalanceIcon" style="cursor: pointer; transition: 0.3s;" title="Hiện/Ẩn số dư"></i>
+                                        </div>
+                                        {{-- Số tiền mặc định là các dấu sao. Tiền thật giấu trong thuộc tính data-balance --}}
+                                        <h4 class="text-info fw-bold mb-0" id="balanceAmount" data-balance="{{ number_format(Auth::user()->balance ?? 0) }}đ">
+                                            ********
+                                        </h4>
+                                    </div>
+                                    </div>
+                                </div>
+                               <div class="col-md-6">
+                                    {{-- Khởi tạo logic màu sắc theo Hạng --}}
+                                    @php
+$tier = Auth::user()->tier ?? 'Thành viên';
+
+// Bảng màu cho từng hạng
+$tierStyles = [
+    'Thành viên' => ['color' => '#ffffff', 'bg' => 'rgba(255, 255, 255, 0.15)'], // Trắng
+    'Bạc' => ['color' => '#c0c0c0', 'bg' => 'rgba(192, 192, 192, 0.15)'], // Bạc
+    'Vàng' => ['color' => '#ffc107', 'bg' => 'rgba(255, 193, 7, 0.15)'],   // Vàng
+    'Kim Cương' => ['color' => '#0dcaf0', 'bg' => 'rgba(13, 202, 240, 0.15)'],  // Xanh dương (Cyan)
+    'VIP' => ['color' => '#b321ff', 'bg' => 'rgba(179, 33, 255, 0.15)']   // Tím VIP
+];
+
+// Nếu lỗi không lấy được hạng thì lấy màu mặc định
+$style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
+                                    @endphp
+
+                                    <div class="bg-secondary bg-opacity-10 border rounded-3 p-3 h-100 d-flex align-items-center" 
+                                         style="border-color: {{ $style['color'] }}50 !important; box-shadow: 0 0 15px {{ $style['bg'] }};">
+                                         
+                                        {{-- Icon Ngôi sao đổi màu --}}
+                                        <div class="p-3 rounded-circle me-3" style="background-color: {{ $style['bg'] }};">
+                                            <i class="bi bi-star-fill fs-3" style="color: {{ $style['color'] }}; text-shadow: 0 0 10px {{ $style['color'] }};"></i>
+                                        </div>
+                                        
+                                        {{-- Tên hạng đổi màu --}}
+                                        <div>
+                                            <p class="text-white-40 mb-0 small text-uppercase fw-bold">Hạng thành viên</p>
+                                            <h4 class="fw-bold mb-0 text-uppercase" style="color: {{ $style['color'] }}; letter-spacing: 1px;">
+                                                {{ $tier }}
+                                                <span class="fs-6 text-white-50 fw-normal text-capitalize" style="letter-spacing: 0;">
+                                                    ({{ Auth::user()->points ?? 0 }} điểm)
+                                                </span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <form action="{{ route('profile.update') }}" method="POST">
                                 @csrf
@@ -364,29 +437,29 @@
                                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                                     <td class="fw-bold">{{ number_format($order->total_amount) }}đ</td>
                                                     <td>
-                                                        
                                                         @if($order->status == 'pending')
-                                                            <span
-                                                                class="badge bg-warning text-dark border border-warning bg-opacity-75">Chờ
-                                                                xử lý</span>
+                                                            <span class="badge bg-warning text-dark border border-warning bg-opacity-75">Chờ xử lý</span>
                                                         @elseif($order->status == 'paid')
-                                                            <span class="badge bg-success border border-success bg-opacity-75">Đã
-                                                                thanh toán</span>
+                                                            <span class="badge bg-success border border-success bg-opacity-75">Đã thanh toán</span>
                                                         @elseif($order->status == 'cancelled')
-                                                            <span class="badge bg-danger border border-danger bg-opacity-75">Đã
-                                                                hủy</span>
+                                                            <span class="badge bg-danger border border-danger bg-opacity-75">Đã hủy</span>
+
+                                                            {{-- Cập nhật thêm Hoàn vé --}}
+                                                        @elseif($order->status == 'refunded')
+                                                            <span class="badge bg-light text-dark text-uppercase border border-secondary">Hoàn vé</span>
+
+                                                            {{-- Trạng thái Hết hạn --}}
+                                                        @elseif($order->status == 'expired')
+                                                            <span class="badge bg-light text-dark text-uppercase border border-secondary">Hết hạn</span>
                                                         @else
                                                             <span class="badge bg-secondary">{{ $order->status }}</span>
                                                         @endif
                                                     </td>
                                                     <td class="text-end">
-                                                        <button
-                                                            class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-view-order"
-                                                            data-id="{{ $order->id }}">
+                                                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-view-order" data-id="{{ $order->id }}">
                                                             Xem <i class="bi bi-eye ms-1"></i>
                                                         </button>
-                                                    </td>
-                                                </tr>
+                                                    </td>                                 </tr>
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -519,95 +592,101 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{-- Thêm dòng này để chạy được AJAX --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             @if(session('payment_success'))
 
-                // 1. Tự động chuyển sang Tab "Đơn hàng"
-                const ordersTabTrigger = document.getElementById('v-pills-orders-tab');
-                if (ordersTabTrigger) {
-                    const tab = new bootstrap.Tab(ordersTabTrigger);
-                    tab.show();
-                }
-
-                // 2. Hiển thị Popup "Mini"
-                Swal.fire({
-                    title: '',
-                    html: `
-                                        <div class="text-center">
-                                            <div class="mb-3">
-                                                <div class="rounded-circle d-inline-flex align-items-center justify-content-center" 
-                                                     style="width: 60px; height: 60px; background: rgba(25, 135, 84, 0.2); box-shadow: 0 0 15px rgba(25, 135, 84, 0.3);">
-                                                    <i class="bi bi-check-lg text-success" style="font-size: 2rem;"></i>
-                                                </div>
-                                            </div>
-
-                                            <h5 class="text-white fw-bold text-uppercase mb-1">Thanh toán thành công</h5>
-                                            <p class="text-secondary" style="font-size: 0.9rem;">Đơn hàng đã được ghi nhận.</p>
-
-                                            <div class="bg-secondary bg-opacity-10 rounded-3 p-3 mb-3 border border-secondary border-opacity-25 mx-auto text-start" style="font-size: 0.9rem;">
-
-                                                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary border-opacity-25 pb-2">
-                                                    <span class="text-white-50">Tổng tiền:</span>
-                                                    <span class="text-info fw-bold fs-5">
-                                                        {{ number_format(session('total_amount')) }}đ
-                                                    </span>
-                                                </div>
-
-                                                <div class="d-flex justify-content-between mb-1">
-                                                    <span class="text-white-50">Mã đơn:</span>
-                                                    <strong class="text-white">#{{ session('order_id') }}</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span class="text-white-50">Phương thức:</span>
-                                                    <span class="text-white">{{ session('method') == 'cod' ? 'Tiền mặt' : 'Chuyển khoản' }}</span>
-                                                </div>
-                                            </div>
-
-                                            <p class="small text-while fst-italic mb-0" style="font-size: 0.8rem;">
-                                                <i class="bi bi-envelope-check me-1"></i> Vé đã được gửi tới hệ thống.
-                                            </p>
-                                        </div>
-                                    `,
-                    background: '#1a1d20',
-                    color: '#fff',
-                    showConfirmButton: true,
-                    confirmButtonText: 'Đóng',
-                    confirmButtonColor: '#0dcaf0',
-                    width: '360px',  // Thu nhỏ chiều rộng popup
-                    padding: '1.5em', // Thu nhỏ khoảng cách lề
-                    allowOutsideClick: false,
-                    backdrop: `rgba(0,0,0,0.8)`
-                });
-
-                // 3. Hiệu ứng pháo hoa "Nhẹ nhàng"
-                var duration = 2000; // Giảm thời gian xuống 2s
-                var end = Date.now() + duration;
-
-                (function frame() {
-                    // Bắn ít hạt hơn (particleCount thấp)
-                    confetti({
-                        particleCount: 2,
-                        angle: 60,
-                        spread: 40, // Góc bắn hẹp lại
-                        origin: { x: 0 },
-                        scalar: 0.7, // Hạt nhỏ đi (0.7 so với bình thường là 1)
-                        colors: ['#0dcaf0', '#ffffff']
-                    });
-                    confetti({
-                        particleCount: 2,
-                        angle: 120,
-                        spread: 40,
-                        origin: { x: 1 },
-                        scalar: 0.7,
-                        colors: ['#0dcaf0', '#ffffff']
-                    });
-
-                    if (Date.now() < end) {
-                        requestAnimationFrame(frame);
+                            // MÓC DỮ LIỆU TỪ DATABASE LÊN DỰA VÀO ID ĐƠN HÀNG
+                            @php
+                $pMethod = 'banking';
+                $locationName = 'Đang cập nhật'; // Thêm biến này
+                if (session('order_id')) {
+                    // Nạp luôn relation location vào
+                    $orderData = \App\Models\Order::with('location')->find(session('order_id'));
+                    if ($orderData) {
+                        $pMethod = $orderData->payment_method;
+                        // Lấy tên cơ sở từ Order
+                        $locationName = $orderData->location ? $orderData->location->name : 'Đang cập nhật';
                     }
-                }());
+                }
+                            @endphp
+
+                            // 1. Tự động chuyển sang Tab "Đơn hàng"
+                            const ordersTabTrigger = document.getElementById('v-pills-orders-tab');
+                            if (ordersTabTrigger) {
+                                const tab = new bootstrap.Tab(ordersTabTrigger);
+                                tab.show();
+                            }
+
+                            // 2. Hiển thị Popup "Mini"
+                            Swal.fire({
+                                title: '',
+                                html: `
+                                    <div class="text-center">
+                                        <div class="mb-3">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                                 style="width: 60px; height: 60px; background: rgba(25, 135, 84, 0.2); box-shadow: 0 0 15px rgba(25, 135, 84, 0.3);">
+                                                <i class="bi bi-check-lg text-success" style="font-size: 2rem;"></i>
+                                            </div>
+                                        </div>
+
+                                        <h5 class="text-white fw-bold text-uppercase mb-1">Thanh toán thành công</h5>
+                                        <p class="text-secondary" style="font-size: 0.9rem;">Đơn hàng đã được ghi nhận.</p>
+
+                                        <div class="bg-secondary bg-opacity-10 rounded-3 p-3 mb-3 border border-secondary border-opacity-25 mx-auto text-start" style="font-size: 0.9rem;">
+
+                                            {{-- DÒNG MỚI CHÈN THÊM: HIỂN THỊ CƠ SỞ --}}
+                                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary border-opacity-25 pb-2">
+                                               <span class="text-white-50">Cơ sở:</span>
+                                               <span class="text-warning fw-bold text-end">{{ $locationName }}</span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary border-opacity-25 pb-2">
+
+                                                <span class="text-white-50">Tổng tiền:</span>
+                                                <span class="text-info fw-bold fs-5">
+                                                    {{ number_format(session('total_amount')) }}đ
+                                                </span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-white-50">Mã đơn:</span>
+                                                <strong class="text-white">#{{ session('order_id') }}</strong>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-white-50">Phương thức:</span>
+                                                <span class="fw-bold text-white">
+                                                    {{ $pMethod == 'wallet' ? 'Ví Holomia' : ($pMethod == 'cod' ? 'Tiền mặt' : 'Chuyển khoản') }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <p class="small text-white fst-italic mb-0" style="font-size: 0.8rem;">
+                                            <i class="bi bi-envelope-check me-1"></i> Vé đã được gửi tới hệ thống.
+                                        </p>
+                                    </div>
+                                `,
+                                background: '#1a1d20',
+                                color: '#fff',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Đóng',
+                                confirmButtonColor: '#0dcaf0',
+                                width: '360px',
+                                padding: '1.5em',
+                                allowOutsideClick: false,
+                                backdrop: `rgba(0,0,0,0.8)`
+                            });
+
+                            // 3. Hiệu ứng pháo hoa "Nhẹ nhàng"
+                            var duration = 2000; 
+                            var end = Date.now() + duration;
+
+                            (function frame() {
+                                confetti({ particleCount: 2, angle: 60, spread: 40, origin: { x: 0 }, scalar: 0.7, colors: ['#0dcaf0', '#ffffff'] });
+                                confetti({ particleCount: 2, angle: 120, spread: 40, origin: { x: 1 }, scalar: 0.7, colors: ['#0dcaf0', '#ffffff'] });
+                                if (Date.now() < end) { requestAnimationFrame(frame); }
+                            }());
 
             @endif
 
@@ -616,7 +695,6 @@
                 e.preventDefault();
                 let orderId = $(this).data('id');
 
-                // 1. Hiện loading trước
                 Swal.fire({
                     title: 'Đang tải hóa đơn...',
                     background: '#1a1d20',
@@ -626,30 +704,27 @@
                     }
                 });
 
-                // 2. Gọi AJAX lấy HTML hóa đơn
                 $.ajax({
-                    url: '/profile/order/' + orderId, // Gọi route đã tạo ở Bước 1
+                    url: '/profile/order/' + orderId,
                     method: 'GET',
                     success: function (response) {
-                        // 3. Hiển thị Popup hóa đơn
                         Swal.fire({
-                            html: response.html, // Chèn HTML nhận được vào popup
+                            html: response.html,
                             background: '#1a1d20',
                             color: '#fff',
                             showConfirmButton: true,
                             confirmButtonText: 'Đóng lại',
-                            confirmButtonColor: '#6c757d', // Màu xám
+                            confirmButtonColor: '#6c757d',
                             showCancelButton: true,
                             cancelButtonText: '<i class="bi bi-printer"></i> In hóa đơn',
-                            cancelButtonColor: '#0dcaf0', // Màu xanh
-                            width: '500px', // Chiều rộng vừa phải cho hóa đơn
+                            cancelButtonColor: '#0dcaf0',
+                            width: '500px',
                             padding: '2em',
                             allowOutsideClick: true,
                             backdrop: `rgba(0,0,0,0.85)`
                         }).then((result) => {
-                            // Nếu bấm nút In (Cancel button)
                             if (result.dismiss === Swal.DismissReason.cancel) {
-                                window.print(); // Hoặc xử lý in riêng
+                                window.print();
                             }
                         });
                     },
@@ -728,6 +803,60 @@
             });
         });
     </script>
+    {{-- Script ẩn/hiện số dư --}}
+    <script>
+        $(document).ready(function () {
+            $('#toggleBalanceIcon').click(function () {
+                let icon = $(this);
+                let balanceText = $('#balanceAmount');
+                let realBalance = balanceText.data('balance'); // Lấy số tiền thật đang giấu
+
+                // Nếu mắt đang nhắm -> Mở ra
+                if (icon.hasClass('bi-eye-slash')) {
+                    icon.removeClass('bi-eye-slash text-secondary').addClass('bi-eye text-info');
+                    balanceText.text(realBalance).hide().fadeIn(200); // Hiệu ứng mờ dần cho sang chảnh
+                } 
+                // Nếu mắt đang mở -> Nhắm lại
+                else {
+                    icon.removeClass('bi-eye text-info').addClass('bi-eye-slash text-secondary');
+                    balanceText.text('********');
+                }
+            });
+        });
+    </script>
 </body>
 
+{{-- Thư viện Popup và Script Hoàn vé (ĐẶT Ở ĐÂY ĐỂ KHÔNG BỊ AJAX CHẶN) --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmRefund(orderId) {
+        Swal.fire({
+            title: 'Hoàn trả vé?',
+            text: "Bạn có chắc chắn muốn hoàn trả vé này không? Tiền sẽ được hoàn về số dư ví của bạn.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Có, hoàn vé!',
+            cancelButtonText: 'Không, thoát',
+            background: '#1a1d20',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Chuyển hướng tới route xử lý
+                window.location.href = '/order/refund/' + orderId;
+            }
+        });
+    }
+
+    // Hiển thị thông báo khi Controller trả về Success/Error
+    document.addEventListener('DOMContentLoaded', function () {
+        @if(session('success'))
+            Swal.fire({ icon: 'success', title: 'Thành công!', text: "{{ session('success') }}", background: '#1a1d20', color: '#fff' });
+        @endif
+        @if(session('error'))
+            Swal.fire({ icon: 'error', title: 'Lỗi!', text: "{{ session('error') }}", background: '#1a1d20', color: '#fff' });
+        @endif
+    });
+</script>
 </html>

@@ -12,7 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'customer_name', 'customer_phone', 'customer_email', 
         'total_amount', 'status', 'payment_method', 'notes','shipping_address','booking_date','slot_id',
-        'quantity'
+        'quantity','location_id',
     ];
 
     public function user() {
@@ -35,5 +35,10 @@ class Order extends Model
     {
         // Đơn hàng này thuộc về một Khung giờ (TimeSlot)
         return $this->belongsTo(\App\Models\TimeSlot::class, 'slot_id');
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
     }
 }

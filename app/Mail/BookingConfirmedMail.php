@@ -2,9 +2,10 @@
 
 namespace App\Mail;
 
-use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class BookingConfirmedMail extends Mailable
@@ -12,17 +13,25 @@ class BookingConfirmedMail extends Mailable
     use Queueable, SerializesModels;
 
     public $order;
-    public $qr;
 
-    public function __construct(Order $order, $qr)
+    // Hàm này để nhận đơn hàng từ CheckoutController truyền sang
+    public function __construct($order)
     {
         $this->order = $order;
-        $this->qr = $qr;
     }
 
-    public function build()
+    public function envelope(): Envelope
     {
-        return $this->subject('🎟️ Xác nhận đặt vé thành công tại Holomia VR')
-                    ->view('emails.booking_confirmed');
+        return new Envelope(
+            subject: '🎟️ Vé Điện Tử Thực Tế Ảo - Holomia VR (Đơn #' . $this->order->id . ')',
+        );
+    }
+
+    public function content(): Content
+    {
+        // Trỏ đúng vào file giao diện booking_confirmed.blade.php
+        return new Content(
+            view: 'emails.booking_confirmed', 
+        );
     }
 }

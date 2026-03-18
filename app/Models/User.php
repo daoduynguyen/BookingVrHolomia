@@ -64,4 +64,9 @@ class User extends Authenticatable
         // Quan hệ nhiều-nhiều với bảng Ticket thông qua bảng phụ 'wishlists'
         return $this->belongsToMany(Ticket::class, 'wishlists', 'user_id', 'ticket_id')->withTimestamps();
     }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
 }

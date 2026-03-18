@@ -51,38 +51,33 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ], [
-            'email.required' => 'Vui lòng nhập email',
-            'password.required' => 'Vui lòng nhập mật khẩu'
-        ]);
+   public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
 
-        // Thử đăng nhập
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+    // Nếu đăng nhập thành công (Đoạn này thường là if (Auth::attempt(...)) )
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            // Lấy thông tin user vừa đăng nhập
-            $user = Auth::user();
+            // BẮT ĐẦU KIỂM TRA QUYỀN LỰC ĐỂ CHỈ ĐƯỜNG
+            $userRole = Auth::user()->role;
 
-            // Kiểm tra chính xác giá trị 'admin'
-            if ($user->role === 'admin') {
-                return redirect()->intended('/admin/dashboard')->with('success', 'Chào Admin!');
+            // Nếu là nhóm Admin (Sếp tổng hoặc Admin chi nhánh) -> Mời vào cửa VIP
+            if (in_array($userRole, ['super_admin', 'admin', 'branch_admin'])) {
+                return redirect()->route('admin.dashboard')->with('success', 'Chào mừng Quản trị viên trở lại!');
             }
 
-            // Nếu không phải admin thì vào trang cá nhân
-            return redirect()->route('profile.index');
+            // Nếu là khách hàng bình thường -> Cho ra cửa hàng mua vé
+            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
 
-        // Nếu sai
-        return back()->withErrors([
-            'email' => 'Email hoặc mật khẩu không chính xác.',
-        ])->onlyInput('email');
-    }
-
+    return back()->withErrors([
+        'email' => 'Thông tin đăng nhập không chính xác.',
+    ]);
+}
     // --- 3. ĐĂNG XUẤT ---
     public function logout(Request $request)
     {

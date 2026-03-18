@@ -12,22 +12,35 @@ class SlotController extends Controller
 {
     public function index(Request $request)
     {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        
         // 1. Mặc định hiển thị lịch của ngày hôm nay (Hoặc ngày Admin chọn)
-        $selectedDate = $request->input('date', Carbon::today()->format('Y-m-d'));
+        $selectedDate = $request->input('date', \Carbon\Carbon::today()->format('Y-m-d'));
 
-        // 2. Lấy danh sách tất cả các trò chơi/vé để làm bộ lọc
-        $tickets = Ticket::all();
+        // Khởi tạo Query gốc
+        $ticketQuery = \App\Models\Ticket::query();
+        $slotQuery = \App\Models\TimeSlot::with('ticket')->where('date', $selectedDate);
 
-        // 3. Lấy toàn bộ Khung giờ của ngày được chọn, nhóm theo từng Trò chơi
-        $slots = TimeSlot::with('ticket')
-            ->where('date', $selectedDate)
-            ->orderBy('start_time')
-            ->get()
-            ->groupBy('ticket_id');
+        // 🔥 CHỐT CHẶN BẢO MẬT: ÉP THEO CƠ SỞ
+        if ($user && $user->role !== 'super_admin' && $user->location_id) {
+            
+            // a. Ép bộ lọc Game/Vé chỉ hiện game của cơ sở này
+            $ticketQuery->where('location_id', $user->location_id);
+            
+            // b. Ép các Khung giờ (Slot) chỉ lấy của những Game thuộc cơ sở này
+            $slotQuery->whereHas('ticket', function($query) use ($user) {
+                $query->where('location_id', $user->location_id);
+            });
+        }
+
+        // 2. Lấy danh sách Trò chơi/vé sau khi đã qua bộ lọc
+        $tickets = $ticketQuery->get();
+
+        // 3. Lấy toàn bộ Khung giờ sau khi đã lọc, sắp xếp và nhóm theo Trò chơi
+        $slots = $slotQuery->orderBy('start_time')->get()->groupBy('ticket_id');
 
         return view('admin.slots.index', compact('slots', 'tickets', 'selectedDate'));
     }
-   
     // 1. Thêm 1 ca lẻ
     public function storeSingle(Request $request)
     {

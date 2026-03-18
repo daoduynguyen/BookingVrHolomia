@@ -16,6 +16,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Tự động truyền danh sách Cơ sở vào file giao diện partials.navbar
+        View::composer('partials.navbar', function ($view) {
+            $view->with('locations', Location::all());
+        });
         // 3. Chia sẻ biến $globalLocations cho TẤT CẢ các View
         // Lấy tất cả địa điểm đang hoạt động
         Paginator::useBootstrapFive();

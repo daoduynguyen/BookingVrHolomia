@@ -21,7 +21,14 @@ class Ticket extends Model
         'duration',
         'status',
         'avg_rating',
-        'play_count'
+        'play_count',
+        'trailer_url', 
+        'gallery',
+    ];
+    
+    protected $casts = [
+        'gallery' => 'array',
+        'ticket_types' => 'array',
     ];
 
     // Quan hệ: 1 Vé thuộc về 1 Danh mục

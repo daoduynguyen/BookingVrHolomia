@@ -15,6 +15,7 @@ use App\Services\QrTicketService;
 use App\Mail\BookingConfirmedMail;
 use Carbon\Carbon;
 
+
 class CheckoutController extends Controller
 {
     // 1. Hiển thị Form nhập thông tin
@@ -22,12 +23,14 @@ class CheckoutController extends Controller
     {
         $ticket = Ticket::findOrFail($id);
 
+        $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
+        $surchargeRate = (int)$surchargeStr;
+
         $totalWeek    = $ticket->price;
-        $totalWeekend = ($ticket->price_weekend > 0) ? $ticket->price_weekend : $ticket->price;
 
         return view('checkout.index', [
             'totalWeek'    => $totalWeek,
-            'totalWeekend' => $totalWeekend,
+            'surchargeRate'=> $surchargeRate,
             'ticket_id'    => $id,
             'ticket'       => $ticket,
         ]);
@@ -41,19 +44,12 @@ class CheckoutController extends Controller
             'customer_name'  => 'required',
             'customer_phone' => 'required',
             'ticket_id'      => 'required|exists:tickets,id',
-            'quantity'       => 'required|integer|min:1|max:50',
             'slot_id'        => 'nullable|exists:time_slots,id',
         ]);
 
-        $ticket    = Ticket::findOrFail($request->ticket_id);
-        $date      = Carbon::parse($request->booking_date);
+        $ticket = Ticket::findOrFail($request->ticket_id);
+        $date = Carbon::parse($request->booking_date);
         
-        // Tính giá ngày thường / cuối tuần
-        $price = $ticket->price;
-        if ($date->isWeekend() && $ticket->price_weekend > 0) {
-            $price = $ticket->price_weekend;
-        }
-
         // Kiểm tra khung giờ còn chỗ không
         if ($request->slot_id) {
             $slot = TimeSlot::findOrFail($request->slot_id);
@@ -62,60 +58,114 @@ class CheckoutController extends Controller
             }
         }
 
-        // 🔥 GIẢI QUYẾT VẤN ĐỀ 3: TÁCH GIỎ HÀNG DỰA TRÊN KHUNG GIỜ
-        // Thêm slot_id vào khóa bảo mật. Khác giờ = Tách dòng mới. Trùng giờ = Cộng dồn số lượng.
-        $cartKey  = $ticket->id . '_' . $date->format('Ymd') . '_' . ($request->slot_id ?? 'none');
-        $quantity = $request->input('quantity', 1);
+        // Lấy % phụ thu cuối tuần
+        $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
+        $surchargeRate = (int)$surchargeStr / 100;
 
         $cart = session()->get('cart', []);
+        $couponCode = $request->input('applied_coupon'); 
 
-        // 🔥 GIẢI QUYẾT VẤN ĐỀ 2: XỬ LÝ MÃ GIẢM GIÁ CHO TỪNG VÉ
-        $couponCode = $request->input('applied_coupon'); // Lấy mã khách đã nhập ở trang trước
-        $discountAmount = 0;
-
-        // Hàm ẩn để tính tiền giảm giá cho 1 vé
         $calculateDiscount = function($subTotal, $code) {
             if (!$code) return 0;
-            $coupon = \App\Models\Coupon::where('code', $code)->first();
-            if (!$coupon) return 0;
-            
-            $discount = $coupon->type == 'percent' ? ($subTotal * $coupon->value) / 100 : $coupon->value;
+            $dbCoupon = Coupon::where('code', $code)->first();
+            if (!$dbCoupon) return 0;
+            $discount = $dbCoupon->type == 'percent' ? ($subTotal * $dbCoupon->value) / 100 : $dbCoupon->value;
             return $discount > $subTotal ? $subTotal : $discount; // Không giảm lố tiền
         };
 
-        if (isset($cart[$cartKey])) {
-            // NẾU TRÙNG MỌI THỨ -> CỘNG DỒN SỐ LƯỢNG VÀ TÍNH LẠI TIỀN GIẢM
-            $cart[$cartKey]['quantity'] += $quantity;
-            
-            // Lấy mã giảm giá (Ưu tiên mã mới nhập, không có thì lấy mã cũ)
-            $currentCoupon = $couponCode ? $couponCode : ($cart[$cartKey]['coupon_code'] ?? null);
-            $newSubTotal = $price * $cart[$cartKey]['quantity'];
-            
-            $cart[$cartKey]['coupon_code'] = $currentCoupon;
-            $cart[$cartKey]['discount'] = $calculateDiscount($newSubTotal, $currentCoupon);
+        // Lấy mảng ticket_types khách gửi lên (dạng ['Tên loại' => Số lượng])
+        $submittedTypes = $request->input('ticket_types'); // e.g. ['Vé Thường' => 2, 'VIP' => 1]
+        $totalQuantitySubmitted = 0;
 
+        // Nếu ticket có loại vé và khách gửi lên
+        if ($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0 && is_array($submittedTypes)) {
+            foreach ($submittedTypes as $typeName => $qty) {
+                $qty = (int)$qty;
+                if ($qty > 0) {
+                    $totalQuantitySubmitted += $qty;
+                    // Tìm giá của loại vé này
+                    $basePrice = $ticket->price; // fallback
+                    foreach ($ticket->ticket_types as $type) {
+                        if ($type['name'] === $typeName) {
+                            $basePrice = (int)$type['price'];
+                            break;
+                        }
+                    }
+
+                    // Tính phụ thu nếu là T7, CN
+                    $finalPrice = $basePrice;
+                    if ($date->isWeekend()) {
+                        $finalPrice += $basePrice * $surchargeRate;
+                    }
+
+                    $cartKey = $ticket->id . '_' . $date->format('Ymd') . '_' . ($request->slot_id ?? 'none') . '_' . $typeName;
+                    
+                    if (isset($cart[$cartKey])) {
+                        $cart[$cartKey]['quantity'] += $qty;
+                        $cart[$cartKey]['price'] = $finalPrice; // Cập nhật lại giá lỡ đổi cuối tuần
+                        $currentCoupon = $couponCode ?: ($cart[$cartKey]['coupon_code'] ?? null);
+                        $newSubTotal = $finalPrice * $cart[$cartKey]['quantity'];
+                        $cart[$cartKey]['coupon_code'] = $currentCoupon;
+                        $cart[$cartKey]['discount'] = $calculateDiscount($newSubTotal, $currentCoupon);
+                    } else {
+                        $cart[$cartKey] = [
+                            "id" => $ticket->id,
+                            "name" => $ticket->name . ' - ' . $typeName,
+                            "ticket_type" => $typeName,
+                            "quantity" => $qty,
+                            "price" => $finalPrice,
+                            "image" => $ticket->image ?? $ticket->image_url,
+                            "booking_date" => $request->booking_date,
+                            "slot_id" => $request->slot_id,
+                            "coupon_code" => $couponCode,
+                            "discount" => $calculateDiscount($finalPrice * $qty, $couponCode),
+                            "customer_info" => $request->only(['customer_name', 'customer_phone', 'payment_method', 'shipping_address', 'note']),
+                        ];
+                    }
+                }
+            }
         } else {
-            // NẾU LÀ VÉ MỚI (Khác Game, Khác Ngày hoặc Khác Giờ) -> TẠO DÒNG MỚI
-            $cart[$cartKey] = [
-                "id"           => $ticket->id,
-                "name"         => $ticket->name,
-                "quantity"     => $quantity,
-                "price"        => $price,
-                "image"        => $ticket->image ?? $ticket->image_url,
-                "booking_date" => $request->booking_date,
-                "slot_id"      => $request->slot_id, 
-                "coupon_code"  => $couponCode, // Lưu riêng tên mã
-                "discount"     => $calculateDiscount($price * $quantity, $couponCode), // Lưu số tiền giảm
-                "customer_info" => $request->only([
-                    'customer_name', 'customer_phone',
-                    'payment_method', 'shipping_address', 'note',
-                ]),
-            ];
+            // VÉ BÌNH THƯỜNG (KHÔNG CÓ TICKET_TYPES)
+            $qty = $request->input('quantity') ? (int)$request->input('quantity') : 1;
+            $totalQuantitySubmitted = $qty;
+            
+            $basePrice = $ticket->price;
+            $finalPrice = $basePrice;
+            if ($date->isWeekend()) {
+                $finalPrice += $basePrice * $surchargeRate;
+            }
+
+            $cartKey = $ticket->id . '_' . $date->format('Ymd') . '_' . ($request->slot_id ?? 'none') . '_base';
+            
+            if (isset($cart[$cartKey])) {
+                $cart[$cartKey]['quantity'] += $qty;
+                $cart[$cartKey]['price'] = $finalPrice; 
+                $currentCoupon = $couponCode ?: ($cart[$cartKey]['coupon_code'] ?? null);
+                $newSubTotal = $finalPrice * $cart[$cartKey]['quantity'];
+                $cart[$cartKey]['coupon_code'] = $currentCoupon;
+                $cart[$cartKey]['discount'] = $calculateDiscount($newSubTotal, $currentCoupon);
+            } else {
+                $cart[$cartKey] = [
+                    "id" => $ticket->id,
+                    "name" => $ticket->name,
+                    "ticket_type" => null,
+                    "quantity" => $qty,
+                    "price" => $finalPrice,
+                    "image" => $ticket->image ?? $ticket->image_url,
+                    "booking_date" => $request->booking_date,
+                    "slot_id" => $request->slot_id,
+                    "coupon_code" => $couponCode,
+                    "discount" => $calculateDiscount($finalPrice * $qty, $couponCode),
+                    "customer_info" => $request->only(['customer_name', 'customer_phone', 'payment_method', 'shipping_address', 'note']),
+                ];
+            }
         }
 
-        // Đẩy lại vào Session
-        session()->put('cart', $cart);
+        if ($totalQuantitySubmitted <= 0) {
+            return back()->with('error', 'Vui lòng chọn ít nhất 1 vé!')->withInput();
+        }
 
+        session()->put('cart', $cart);
         return redirect()->route('cart.index')->with('success', 'Đã lưu thông tin vào giỏ hàng!');
     }
 
@@ -170,6 +220,22 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Khung giờ vừa hết chỗ! Vui lòng chọn giờ khác.');
             }
 
+            $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? null;
+        $locationId = null;
+        if (!empty($cart)) {
+            $firstItem = reset($cart); // Lấy món đầu tiên trong giỏ
+            
+            // Quét tìm ID vé (có thể là 'id', 'ticket_id', hoặc chính là cái key của mảng $cart)
+            $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? key($cart);
+            
+            if ($ticketId) {
+                $ticketForLocation = \App\Models\Ticket::find($ticketId);
+                if ($ticketForLocation) {
+                    $locationId = $ticketForLocation->location_id;
+                }
+            }
+        }
+
             // 2. TẠO ĐƠN HÀNG MỚI VÀO DATABASE
             $order = Order::create([
                 'user_id'          => Auth::id(),
@@ -185,6 +251,7 @@ class CheckoutController extends Controller
                 'booking_date'     => $firstItem['booking_date'] ?? Carbon::tomorrow()->format('Y-m-d'),
                 'slot_id'          => $slotId,
                 'quantity'         => $totalQty,
+                'location_id'      => $locationId,
             ]);
 
             // 3. TẠO CHI TIẾT ĐƠN HÀNG (OrderItem)
@@ -212,11 +279,22 @@ class CheckoutController extends Controller
 
             // Tạo QR Code
             $qr = app(QrTicketService::class)->generate($order);
+            
+            // LOGIC CỘNG ĐIỂM (1.000đ = 1 điểm)
+            if ($user) {
+                // Lấy tổng tiền thực trả chia 1000, làm tròn xuống
+                $pointsEarned = floor($order->total_amount / 1000); 
+                $user->increment('points', $pointsEarned);
+                
+                // Xét thăng hạng
+                $this->updateUserTier($user);
+            }
 
-            // Gửi Email
-            if ($user?->email) {
+            //  GỬI EMAIL VÉ ĐIỆN TỬ CHO KHÁCH HÀNG 
+            if ($user && $user->email) {
                 try {
-                    Mail::to($user->email)->send(new BookingConfirmedMail($order->load('slot.ticket', 'slot.location'), $qr));
+                    // Gọi class BookingConfirmedMail thay vì E_TicketMail
+                    Mail::to($user->email)->send(new BookingConfirmedMail($order));
                 } catch (\Exception $mailErr) {
                     \Log::warning('Lỗi gửi mail: ' . $mailErr->getMessage());
                 }
@@ -272,7 +350,7 @@ class CheckoutController extends Controller
         return response()->json([]);
     }
 
-    $slots = \App\Models\TimeSlot::where('ticket_id', $request->ticket_id)
+    $slots = TimeSlot::where('ticket_id', $request->ticket_id)
         ->where('date', $request->date)
         ->where('status', 'open') // Chỉ lấy slot đang mở
         ->whereColumn('booked_count', '<', 'capacity') // Chỉ lấy slot còn chỗ
@@ -281,11 +359,100 @@ class CheckoutController extends Controller
         ->map(function($slot) {
             return [
                 'id' => $slot->id,
-                'label' => \Carbon\Carbon::parse($slot->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($slot->end_time)->format('H:i'),
+                'label' => Carbon::parse($slot->start_time)->format('H:i') . ' - ' . Carbon::parse($slot->end_time)->format('H:i'),
                 'available' => $slot->capacity - $slot->booked_count
             ];
         });
 
     return response()->json($slots);
 }
+
+public function refundOrder($id)
+{
+    $order = Order::with('slot')->findOrFail($id);
+    $user = auth()->user();
+    
+    // 1. Kiểm tra thời gian
+    $now = Carbon::now();
+    $createdAt = $order->created_at;
+    
+    // SỬA LỖI: Dùng booking_date thay vì play_date. Xử lý trường hợp không có slot.
+    $startTime = $order->slot ? $order->slot->start_time : '00:00:00';
+    $playTime = Carbon::parse($order->booking_date . ' ' . $startTime);
+
+    $diffCreation = $now->diffInHours($createdAt); 
+    $diffPlay = $now->diffInHours($playTime, false); // false để lấy số âm nếu đã qua giờ chơi
+
+    // KIỂM TRA ĐIỀU KIỆN
+    // Nếu quá 24h từ lúc đặt -> Lỗi
+    if ($diffCreation > 24) {
+        return back()->with('error', 'Chỉ được hoàn vé trong vòng 24h sau khi đặt!');
+    }
+
+    // Nếu khoảng cách đến giờ chơi < 48h (hoặc đã quá giờ chơi) -> Lỗi
+    if ($diffPlay < 48) {
+        return back()->with('error', 'Chỉ được hoàn vé trước giờ chơi ít nhất 48h!');
+    }
+
+    // 2. Thực hiện hoàn tiền và Nhả slot
+    \DB::transaction(function () use ($order, $user) {
+        // Chỉ cộng tiền vào ví nếu thanh toán không phải bằng tiền mặt
+        if ($order->payment_method !== 'cod') {
+            $user->increment('balance', $order->total_amount);
+        }
+       
+        //  LOGIC TRỪ ĐIỂM KHI HOÀN VÉ
+        $pointsToDeduct = floor($order->total_amount / 1000);
+        
+        // Trừ điểm nhưng không để bị âm điểm
+        $user->points = max(0, $user->points - $pointsToDeduct);
+        $user->save();
+
+        // Xét rớt hạng (nếu điểm bị tuột khỏi mốc)
+        app(\App\Http\Controllers\CheckoutController::class)->updateUserTier($user);
+        // Đổi trạng thái đơn hàng
+        $order->status = 'refunded'; 
+        $order->save();
+
+        // 3. LOGIC NHẢ SLOT TRỐNG CHO KHÁCH KHÁC ĐẶT LẠI
+        if ($order->slot_id) {
+            $slot = TimeSlot::find($order->slot_id);
+            if ($slot) {
+                // Trừ đi số lượng khách đã hủy (Hạ booked_count xuống)
+                $slot->decrement('booked_count', $order->quantity);
+                
+                // Đảm bảo không bị âm và cập nhật lại trạng thái open nếu trước đó bị full
+                if ($slot->booked_count < $slot->capacity) {
+                    $slot->update(['status' => 'open']);
+                }
+            }
+        }
+    });
+
+    return redirect()->route('profile.index')->with('success', 'Hoàn vé thành công! Tiền đã được cộng vào Ví của bạn.');
+}
+
+// HÀM TỰ ĐỘNG CẬP NHẬT HẠNG THÀNH VIÊN THEO MỐC MỚI
+    public function updateUserTier($user)
+    {
+        $points = $user->points;
+        $newTier = 'Thành viên'; // Mặc định khi chưa đủ 1500 điểm
+
+        // Xét từ cao xuống thấp
+        if ($points >= 8000) {
+            $newTier = 'VIP';
+        } elseif ($points >= 5000) {
+            $newTier = 'Kim Cương';
+        } elseif ($points >= 3000) {
+            $newTier = 'Vàng';
+        } elseif ($points >= 1500) {
+            $newTier = 'Bạc';
+        }
+
+        // Cập nhật nếu có sự thay đổi hạng
+        if ($user->tier !== $newTier) {
+            $user->tier = $newTier;
+            $user->save();
+        }
+    }
 }

@@ -57,7 +57,7 @@
         </div>
     </div>
 
-    {{-- 2. BIỂU ĐỒ (CHARTS) --}}
+    {{-- 2. BIỂU ĐỒ CỘT + TRÒN --}}
     <div class="row">
         {{-- Biểu đồ cột: Doanh thu 7 ngày --}}
         <div class="col-md-8 mb-4">
@@ -88,9 +88,63 @@
             </div>
         </div>
     </div>
-</div>
 
-{{-- SCRIPT VẼ BIỂU ĐỒ (CHART.JS) --}}
+    {{-- 3. BIỂU ĐỒ ĐƯỜNG: XU HƯỚNG ĐƠN HÀNG -- canvas phải nằm TRƯỚC script --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-secondary shadow h-100">
+                <div class="card-header bg-transparent border-0 mt-3 ms-3">
+                    <h5 class="text-white fw-bold"><i class="bi bi-graph-up text-success me-2"></i>Xu hướng lượng đơn hàng 7 ngày qua</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="lineChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 4. BẢNG XẾP HẠNG DOANH THU CƠ SỞ (CHỈ super_admin MỚI THẤY) --}}
+    @if(Auth::check() && Auth::user()->role === 'super_admin')
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <div class="card bg-dark border-secondary shadow">
+                <div class="card-header bg-transparent border-bottom border-secondary mt-2 ms-2">
+                    <h5 class="text-warning fw-bold"><i class="bi bi-trophy-fill me-2"></i>Bảng xếp hạng doanh thu theo chi nhánh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                            <thead>
+                                <tr class="text-secondary">
+                                    <th class="text-center" width="10%">Top</th>
+                                    <th>Tên cơ sở</th>
+                                    <th class="text-end">Tổng doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($revenueByLocation as $index => $item)
+                                <tr>
+                                    <td class="text-center fw-bold text-info">#{{ $index + 1 }}</td>
+                                    <td class="fw-bold">{{ $item->name }}</td>
+                                    <td class="text-end text-success fw-bold">{{ number_format($item->total) }} đ</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="3" class="text-center text-secondary py-4">Chưa có dữ liệu doanh thu</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+</div>{{-- end .container-fluid --}}
+
+{{-- SCRIPT VẼ BIỂU ĐỒ -- đặt CUỐI CÙNG sau khi tất cả canvas đã có trong DOM --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // --- 1. BIỂU ĐỒ CỘT (DOANH THU) ---
@@ -98,21 +152,21 @@
     new Chart(ctxRevenue, {
         type: 'bar',
         data: {
-            labels: {!! json_encode($revenueLabels) !!}, // Ngày tháng từ Controller
+            labels: {!! json_encode($revenueLabels) !!},
             datasets: [{
                 label: 'Doanh thu (VNĐ)',
-                data: {!! json_encode($revenueData) !!}, // Số tiền từ Controller
-                backgroundColor: '#0dcaf0', // Màu xanh Cyan chủ đạo
+                data: {!! json_encode($revenueData) !!},
+                backgroundColor: '#0dcaf0',
                 hoverBackgroundColor: '#0aa2c0',
                 borderRadius: 5,
-                barThickness: 35 // Độ dày cột
+                barThickness: 35
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false }, // Ẩn chú thích ở trên
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -124,7 +178,7 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#333' }, // Màu lưới ngang tối
+                    grid: { color: '#333' },
                     ticks: { color: '#aaa' }
                 },
                 x: {
@@ -142,12 +196,8 @@
         data: {
             labels: ['Đã thanh toán', 'Chờ xử lý', 'Đã hủy'],
             datasets: [{
-                data: {!! json_encode($pieData) !!}, // Dữ liệu từ Controller
-                backgroundColor: [
-                    '#198754', // Xanh lá (Paid)
-                    '#ffc107', // Vàng (Pending)
-                    '#dc3545'  // Đỏ (Cancelled)
-                ],
+                data: {!! json_encode($pieData) !!},
+                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
                 borderWidth: 0,
                 hoverOffset: 10
             }]
@@ -157,15 +207,57 @@
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { 
-                        color: '#fff', 
+                    labels: {
+                        color: '#fff',
                         padding: 20,
                         font: { size: 14 }
                     }
                 }
             },
-            cutout: '75%' // Độ rỗng ở giữa (Tạo kiểu Donut)
+            cutout: '75%'
+        }
+    });
+
+    // --- 3. BIỂU ĐỒ ĐƯỜNG (SỐ LƯỢNG ĐƠN HÀNG) ---
+    const ctxLine = document.getElementById('lineChart').getContext('2d');
+    new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($revenueLabels) !!},
+            datasets: [{
+                label: 'Số lượng đơn hàng',
+                data: {!! json_encode($orderCountData) !!},
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                borderWidth: 3,
+                pointBackgroundColor: '#198754',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#198754',
+                pointRadius: 5,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#333' },
+                    ticks: { color: '#aaa', stepSize: 1 }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#aaa' }
+                }
+            }
         }
     });
 </script>
+
 @endsection

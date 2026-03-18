@@ -60,27 +60,29 @@
                                     </span>
                                 </td>
 
-                                {{-- 4. GIÁ VÉ (ĐÃ SỬA: HIỆN 2 DÒNG) --}}
+                                {{-- 4. GIÁ VÉ (ĐÃ NÂNG CẤP JSON) --}}
                                 <td>
-                                    {{-- Giá ngày thường --}}
-                                    <div class="mb-2">
-                                        <span class="badge bg-secondary border border-secondary text-white" style="width: 80px; font-weight: normal;">Thường</span>
-                                        <span class="fw-bold text-success ms-2">
-                                            {{ number_format($ticket->price) }} đ
-                                        </span>
-                                    </div>
-
-                                    {{-- Giá cuối tuần --}}
-                                    <div>
-                                        <span class="badge bg-warning text-dark border border-warning" style="width: 80px; font-weight: normal;">Cuối tuần</span>
-                                        <span class="fw-bold text-warning ms-2">
-                                            @if($ticket->price_weekend && $ticket->price_weekend > 0)
-                                                {{ number_format($ticket->price_weekend) }} đ
-                                            @else
-                                                <span class="text-muted fst-italic" style="font-size: 0.9em;">(Như thường)</span>
-                                            @endif
-                                        </span>
-                                    </div>
+                                    @if($ticket->ticket_types && count($ticket->ticket_types) > 0)
+                                        {{-- Nếu đã có mảng JSON thì lặp ra --}}
+                                        <div class="d-flex flex-column gap-1" style="max-width: 250px;">
+                                            @foreach($ticket->ticket_types as $type)
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge bg-secondary text-white fw-normal border border-secondary" style="min-width: 100px; text-align: left;">
+                                                        {{ $type['name'] }}
+                                                    </span>
+                                                    <span class="fw-bold text-success ms-2" style="font-size: 0.95rem;">
+                                                        {{ number_format($type['price']) }} đ
+                                                    </span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        {{-- Fallback: Dành cho các vé cũ chưa được cập nhật JSON --}}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-secondary text-white fw-normal border border-secondary" style="min-width: 100px; text-align: left;">Vé cơ bản</span>
+                                            <span class="fw-bold text-success ms-2" style="font-size: 0.95rem;">{{ number_format($ticket->price) }} đ</span>
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- 5. Trạng thái --}}
