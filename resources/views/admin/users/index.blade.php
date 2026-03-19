@@ -3,16 +3,16 @@
 @section('admin_content')
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-info fw-bold text-uppercase border-start border-info border-4 ps-3">Quản lý người dùng</h2>
-    <a href="{{ route('admin.users.create') }}" class="btn btn-info fw-bold">
+    <h2 class="text-primary fw-bold text-uppercase border-start border-primary border-4 ps-3">Quản lý người dùng</h2>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary fw-bold shadow-sm">
         <i class="bi bi-plus-lg"></i> THÊM TÀI KHOẢN
     </a>
 </div>
-    <div class="profile-content shadow-lg">
+    <div class="profile-content shadow-sm bg-white p-4 rounded-4 border border-light">
         <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle border-secondary">
+            <table class="table table-hover align-middle border-light">
                 <thead>
-                    <tr class="text-secondary border-bottom border-secondary">
+                    <tr class="text-muted border-bottom border-light">
                         <th>ID</th>
                         <th>Họ tên</th>
                         <th>Email</th>
@@ -24,12 +24,12 @@
                 <tbody>
                     @foreach($users as $user)
                     <tr>
-                        <td class="text-secondary">#{{ $user->id }}</td>
+                        <td class="text-muted">#{{ $user->id }}</td>
                         <td class="fw-bold">{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>
                             @if($user->role == 'admin')
-                                <span class="badge bg-info text-dark">Admin</span>
+                                <span class="badge bg-primary text-white">Admin</span>
                             @else
                                 <span class="badge bg-secondary">Thành viên</span>
                             @endif
@@ -40,7 +40,7 @@
                                 <i class="bi bi-slash-circle"></i>
                             </button>
 
-                            <button type="button" class="btn btn-outline-info btn-sm me-1" data-bs-toggle="modal" data-bs-target="#roleModal{{ $user->id }}">
+                            <button type="button" class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#roleModal{{ $user->id }}">
                                <i class="bi bi-shield-lock"></i> Phân quyền
                             </button>
 
@@ -64,23 +64,23 @@
 @foreach($users as $user)
 <div class="modal fade" id="roleModal{{ $user->id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-info">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title text-info"><i class="bi bi-person-gear me-2"></i>Phân quyền tài khoản</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content bg-white border-light shadow-sm">
+            <div class="modal-header border-bottom border-light">
+                <h5 class="modal-title text-primary fw-bold"><i class="bi bi-person-gear me-2"></i>Phân quyền tài khoản</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('admin.users.updateRole', $user->id) }}" method="POST">
                 @csrf
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="text-white-50">Tài khoản:</label>
-                        <div class="fw-bold text-white fs-5">{{ $user->email }}</div>
+                        <label class="text-muted">Tài khoản:</label>
+                        <div class="fw-bold text-dark fs-5">{{ $user->email }}</div>
                     </div>
 
                     {{-- Chọn Vai trò --}}
                     <div class="mb-3">
-                        <label class="form-label text-warning fw-bold">Vai trò hệ thống</label>
-                        <select name="role" class="form-select bg-black text-white border-secondary role-select" data-userid="{{ $user->id }}" required>
+                        <label class="form-label text-primary fw-bold">Vai trò hệ thống</label>
+                        <select name="role" class="form-select bg-light text-dark border-light role-select" data-userid="{{ $user->id }}" required>
                             <option value="customer" {{ $user->role == 'customer' ? 'selected' : '' }}>Khách hàng (Thành viên)</option>
                             <option value="branch_admin" {{ $user->role == 'branch_admin' ? 'selected' : '' }}>Quản lý Cơ sở (Admin chi nhánh)</option>
                             <option value="super_admin" {{ $user->role == 'super_admin' ? 'selected' : '' }}>Sếp tổng (Super Admin)</option>
@@ -89,8 +89,8 @@
 
                     {{-- Chọn Cơ sở (Mặc định ẩn, chỉ hiện khi chọn Quản lý Cơ sở) --}}
                     <div class="mb-3 location-group" id="locationGroup{{ $user->id }}" style="display: {{ $user->role == 'branch_admin' ? 'block' : 'none' }};">
-                        <label class="form-label text-info fw-bold">Trực thuộc Cơ sở</label>
-                        <select name="location_id" class="form-select bg-black text-white border-secondary">
+                        <label class="form-label text-primary fw-bold">Trực thuộc Cơ sở</label>
+                        <select name="location_id" class="form-select bg-light text-dark border-light">
                             <option value="">-- Chọn cơ sở quản lý --</option>
                             @foreach($locations as $loc)
                                 <option value="{{ $loc->id }}" {{ $user->location_id == $loc->id ? 'selected' : '' }}>
@@ -100,9 +100,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-top border-secondary">
+                <div class="modal-footer border-top border-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-info fw-bold">Lưu thay đổi</button>
+                    <button type="submit" class="btn btn-primary fw-bold shadow-sm">Lưu thay đổi</button>
                 </div>
             </form>
         </div>

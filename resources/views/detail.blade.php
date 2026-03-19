@@ -9,7 +9,7 @@
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 </head>
 
-<body class="bg-dark text-white ticket-detail-page">
+<body class="bg-light text-dark ticket-detail-page">
 
     @include('partials.navbar')
 
@@ -32,19 +32,19 @@
             <div class="col-lg-7 mb-4">
                 <div class="custom-scroll-container">
 
-                   {{-- 1. VIDEO TRAILER --}}
+                    {{-- 1. VIDEO TRAILER --}}
                     @if($ticket->trailer_url)
                         @php
                             $embedUrl = str_replace('watch?v=', 'embed/', $ticket->trailer_url);
                         @endphp
-                        <div class="ratio ratio-16x9 mb-4 shadow-lg rounded-4 overflow-hidden border border-secondary border-opacity-25">
+                        <div class="ratio ratio-16x9 mb-4 shadow-sm rounded-4 overflow-hidden border border-light">
                             <iframe src="{{ $embedUrl }}" title="YouTube video" allowfullscreen></iframe>
                         </div>
                     @endif
 
                     {{-- 2. TRƯỢT ẢNH CAROUSEL --}}
                     @if($ticket->gallery && count($ticket->gallery) > 0)
-                        <div id="gameGallery" class="carousel slide mb-4 shadow-lg rounded-4 overflow-hidden border border-secondary border-opacity-25" data-bs-ride="carousel">
+                        <div id="gameGallery" class="carousel slide mb-4 shadow-sm rounded-4 overflow-hidden border border-light" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 {{-- Lấy ảnh bìa làm ảnh đầu tiên --}}
                                 <div class="carousel-item active">
@@ -73,16 +73,16 @@
                     @endif
 
                     <div class="content-box">
-                        <h5 class="section-title text-info"><i class="bi bi-file-text-fill me-2"></i> Mô tả trò chơi
+                        <h5 class="section-title text-primary"><i class="bi bi-file-text-fill me-2"></i> Mô tả trò chơi
                         </h5>
-                        <p class="text-light opacity-75" style="text-align: justify; line-height: 1.7;">
+                        <p class="text-muted" style="text-align: justify; line-height: 1.7;">
                             {{ $ticket->description }}
                         </p>
 
                         <div class="mt-5">
-                            <h5 class="section-title text-warning"><i class="bi bi-controller me-2"></i> Luật chơi</h5>
-                            <div class="bg-black bg-opacity-25 p-3 rounded border border-secondary border-opacity-25">
-                                <div class="text-light opacity-75">
+                            <h5 class="section-title text-primary"><i class="bi bi-controller me-2"></i> Luật chơi</h5>
+                            <div class="bg-white p-3 rounded border border-light shadow-sm">
+                                <div class="text-dark">
                                     <ul class="mb-0 ps-3 mt-2">
                                         <li>Người chơi cần đeo kính VR và cầm chắc 2 tay cầm điều khiển.</li>
                                         <li>Không di chuyển ra khỏi "Vòng tròn an toàn" được vẽ trên sàn.</li>
@@ -97,7 +97,7 @@
                             <h5 class="section-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>
                                 Lưu ý quan trọng</h5>
                             <div
-                                class="bg-black bg-opacity-25 p-3 rounded border border-danger border-opacity-25 text-light opacity-75">
+                                class="bg-danger bg-opacity-10 p-3 rounded border border-danger border-opacity-25 text-dark">
                                 <ul class="mb-0 ps-3">
                                     <li class="mb-2">Vui lòng có mặt trước <strong>15 phút</strong> để nhân viên hướng
                                         dẫn thiết bị.</li>
@@ -117,15 +117,15 @@
                 <div class="h-100 d-flex flex-column justify-content-start">
 
                     <div class="text-center mb-4">
-                        <h1 class="fw-bold text-white mb-2" style="font-size: 2.5rem;">{{ $ticket->name }}</h1>
+                        <h1 class="fw-bold text-dark mb-2" style="font-size: 2.5rem;">{{ $ticket->name }}</h1>
 
-                        <div class="d-flex align-items-center justify-content-center gap-3 text-secondary">
+                        <div class="d-flex align-items-center justify-content-center gap-3 text-muted">
                             <span class="d-flex align-items-center gap-1">
                                 <i class="bi bi-geo-alt-fill text-danger"></i> {{ $ticket->location->name }}
                             </span>
                             <span class="opacity-25">|</span>
                             <span
-                                class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2 rounded-pill">
+                                class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill">
                                 {{ $ticket->category->name }}
                             </span>
                         </div>
@@ -134,54 +134,54 @@
                     <div class="row g-2 mb-4">
                         <div class="col-4">
                             <div
-                                class="p-3 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10 text-center h-100">
-                                <h5 class="fw-bold mb-1 text-white">{{ $ticket->duration }}p</h5>
-                                <small class="text-secondary"
+                                class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100">
+                                <h5 class="fw-bold mb-1 text-dark">{{ $ticket->duration }}p</h5>
+                                <small class="text-muted"
                                     style="font-size: 0.75rem; text-transform: uppercase;">Thời lượng</small>
                             </div>
                         </div>
                         <div class="col-4">
                             <div
-                                class="p-3 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10 text-center h-100">
-                                <h5 class="fw-bold mb-1 text-warning">{{ $ticket->avg_rating }} <i
+                                class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100">
+                                <h5 class="fw-bold mb-1 text-primary">{{ $ticket->avg_rating }} <i
                                         class="bi bi-star-fill fs-6"></i></h5>
-                                <small class="text-secondary"
+                                <small class="text-muted"
                                     style="font-size: 0.75rem; text-transform: uppercase;">Đánh giá</small>
                             </div>
                         </div>
                         <div class="col-4">
                             <div
-                                class="p-3 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10 text-center h-100">
-                                <h5 class="fw-bold mb-1 text-white">{{ number_format($ticket->play_count) }}</h5>
-                                <small class="text-secondary"
+                                class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100">
+                                <h5 class="fw-bold mb-1 text-dark">{{ number_format($ticket->play_count) }}</h5>
+                                <small class="text-muted"
                                     style="font-size: 0.75rem; text-transform: uppercase;">Lượt chơi</small>
                             </div>
                         </div>
                     </div>
 
                     <div
-                        class="card bg-black bg-opacity-50 border border-secondary border-opacity-25 shadow-lg rounded-4 overflow-hidden">
+                        class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background-color: var(--bg-card);">
                         <div class="card-body p-4">
                             <h5
-                                class="text-center text-uppercase fw-bold text-white mb-4 ls-1 border-bottom border-secondary border-opacity-25 pb-3">
-                                <i class="bi bi-ticket-perforated me-2 text-info"></i> Chọn loại vé
+                                class="text-center text-uppercase fw-bold text-primary mb-4 ls-1 border-bottom border-light pb-3">
+                                <i class="bi bi-ticket-perforated me-2"></i> Chọn loại vé
                             </h5>
 
                             {{-- HIỂN THỊ DANH SÁCH LOẠI VÉ TỪ DATABASE --}}
                             @if($ticket->ticket_types && count($ticket->ticket_types) > 0)
                                 @foreach($ticket->ticket_types as $index => $type)
-                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 bg-white bg-opacity-5 border border-secondary border-opacity-25 hover-scale" style="cursor: pointer;" onclick="document.getElementById('type_{{ $index }}').checked = true;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 bg-white shadow-sm border border-light hover-scale" style="cursor: pointer;" onclick="document.getElementById('type_{{ $index }}').checked = true;">
                                         <div class="form-check m-0">
-                                            <input class="form-check-input border-info" type="radio" name="selected_ticket_type" id="type_{{ $index }}" value="{{ $type['name'] }}" {{ $index == 0 ? 'checked' : '' }}>
-                                            <label class="form-check-label text-light ms-2 fw-bold" for="type_{{ $index }}">
+                                            <input class="form-check-input border-primary" type="radio" name="selected_ticket_type" id="type_{{ $index }}" value="{{ $type['name'] }}" {{ $index == 0 ? 'checked' : '' }}>
+                                            <label class="form-check-label text-dark ms-2 fw-bold" for="type_{{ $index }}">
                                                 {{ $type['name'] }}
                                             </label>
                                         </div>
-                                        <span class="fw-bold fs-5 text-warning">{{ number_format($type['price']) }}đ</span>
+                                        <span class="fw-bold fs-5 text-primary">{{ number_format($type['price']) }}đ</span>
                                     </div>
                                 @endforeach
                             @else
-                                <div class="text-secondary text-center fst-italic mb-3">Vé này đang cập nhật bảng giá.</div>
+                                <div class="text-muted text-center fst-italic mb-3">Vé này đang cập nhật bảng giá.</div>
                             @endif
 
                             {{-- Logic Button --}}
@@ -194,13 +194,13 @@
                             @else
                                <form action="{{ route('booking.form', $ticket->id) }}" method="GET">
     
-                                  <button type="submit" class="btn btn-info w-100 btn-lg fw-bold text-uppercase py-3 shadow-lg text-dark rounded-pill hover-scale">
+                                  <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold text-uppercase py-3 shadow-sm rounded-pill hover-scale">
                                        ĐẶT VÉ NGAY <i class="bi bi-arrow-right-circle-fill ms-2"></i>
                                   </button>
                                </form>
                             @endif
 
-                            <div class="mt-3 text-center small text-secondary fst-italic">
+                            <div class="mt-3 text-center small text-muted fst-italic">
                                 <i class="bi bi-shield-check me-1 text-success"></i> Cam kết hoàn tiền 100% nếu lỗi
                                 thiết bị
                             </div>

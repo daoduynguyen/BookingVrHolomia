@@ -10,64 +10,57 @@
     <style>
         /* CSS nội bộ để tinh chỉnh giao diện Profile */
         .profile-card {
-            background-color: rgba(33, 37, 41, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
         }
 
         .nav-pills .nav-link {
-            color: #ccc;
-            border-radius: 8px;
+            color: var(--text-muted);
+            border-radius: 12px;
             padding: 12px 20px;
             margin-bottom: 5px;
             transition: all 0.3s;
+            border: 1px solid transparent;
         }
 
         .nav-pills .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: #fff;
+            background-color: #f1f5f9;
+            color: var(--primary);
             padding-left: 25px;
-            /* Hiệu ứng trượt nhẹ */
+            border-color: #e2e8f0;
         }
 
         .nav-pills .nav-link.active {
-            background-color: #0dcaf0;
-            /* Màu Info */
-            color: #000;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff !important;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(13, 202, 240, 0.3);
-        }
-
-        .form-control,
-        .form-select {
-            background-color: #1a1d20;
-            border: 1px solid #343a40;
-            color: #fff;
-            padding: 12px;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            background-color: #000;
-            border-color: #0dcaf0;
-            color: #fff;
-            box-shadow: none;
+            box-shadow: var(--shadow-sm);
+            border: none;
         }
 
         /* Hiệu ứng cho Empty State */
         .empty-state-icon {
             width: 120px;
             height: 120px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #f1f5f9;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
         }
+
+        /* Boost Bootstrap Modal Z-Index to stay on top of SweetAlert2 */
+        .modal {
+            z-index: 9999 !important;
+        }
+        .modal-backdrop {
+            z-index: 9998 !important;
+        }
     </style>
 </head>
 
-<body class="bg-dark text-white">
+<body>
 
     @include('partials.navbar')
 
@@ -77,17 +70,17 @@
 
             {{-- CỘT TRÁI: SIDEBAR (col-lg-4) --}}
             <div class="col-lg-4">
-                <div class="card profile-card rounded-4 p-4 h-100 shadow-lg">
+                <div class="card profile-card rounded-4 p-4 h-100 shadow-sm border-0">
                     {{-- Avatar & Info --}}
-                    <div class="text-center mb-4 pb-4 border-bottom border-secondary border-opacity-25">
+                    <div class="text-center mb-4 pb-4 border-bottom border-light">
                         <div class="position-relative d-inline-block">
                             <!-- Clickable Avatar -->
                             <label for="avatarInput" style="cursor: pointer;">
-                                <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0dcaf0&color=000&size=128' }}"
-                                    class="rounded-circle mb-3 border border-4 border-dark shadow" width="100" height="100"
+                                <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=2563eb&color=fff&size=128' }}"
+                                    class="rounded-circle mb-3 border border-3 border-white shadow-sm" width="100" height="100"
                                     style="object-fit: cover; transition: opacity 0.3s;"
                                     title="Bấm để đổi ảnh đại diện">
-                                <div class="position-absolute translate-middle px-2 py-1 bg-dark bg-opacity-75 rounded-pill shadow-sm" style="bottom: -10px; left: 50%; font-size: 0.75rem; color: #0dcaf0; white-space: nowrap; pointer-events: none;">
+                                <div class="position-absolute translate-middle px-2 py-1 bg-white rounded-pill shadow-sm border" style="bottom: -10px; left: 50%; font-size: 0.75rem; color: var(--primary); white-space: nowrap; pointer-events: none;">
                                     <i class="bi bi-camera me-1"></i>Đổi ảnh
                                 </div>
                             </label>
@@ -98,41 +91,41 @@
                                 <input type="file" id="avatarInput" name="avatar" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
                             </form>
 
-                            <span class="position-absolute bottom-0 end-0 bg-success border border-dark rounded-circle p-2"
+                            <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle p-2"
                                 title="Online"></span>
                         </div>
-                        <h5 class="fw-bold mb-1 mt-3 text-white">{{ $user->name }}</h5>
-                        <p class="text-secondary small mb-0">{{ $user->email }}</p>
+                        <h5 class="fw-bold mb-1 mt-3">{{ $user->name }}</h5>
+                        <p class="text-muted small mb-0">{{ $user->email }}</p>
                     </div>
 
                     {{-- Menu --}}
                     <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                        <button class="nav-link active d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-profile-tab"
+                        <button class="nav-link active d-flex align-items-center gap-3 mb-2" id="v-pills-profile-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab">
                             <i class="bi bi-person-gear fs-5"></i> Hồ sơ cá nhân
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-voucher-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 mb-2" id="v-pills-voucher-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-voucher" type="button" role="tab">
                             <i class="bi bi-ticket-perforated fs-5"></i> Kho Voucher
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-orders-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 mb-2" id="v-pills-orders-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-orders" type="button" role="tab">
                             <i class="bi bi-box-seam fs-5"></i> Đơn hàng của tôi
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary mb-2" id="v-pills-wishlist-tab"
+                        <button class="nav-link d-flex align-items-center gap-3 mb-2" id="v-pills-wishlist-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-wishlist" type="button" role="tab">
                             <i class="bi bi-heart fs-5"></i> Sản phẩm yêu thích
                         </button>
 
-                        <button class="nav-link d-flex align-items-center gap-3 border border-secondary" id="v-pills-password-tab"
+                        <button class="nav-link d-flex align-items-center gap-3" id="v-pills-password-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-password" type="button" role="tab">
                             <i class="bi bi-shield-lock fs-5"></i> Đổi mật khẩu
                         </button>
 
-                        <hr class="border-secondary border-opacity-25 my-3">
+                        <hr class="border-light my-3">
 
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
@@ -147,19 +140,18 @@
 
             {{-- CỘT PHẢI: NỘI DUNG (col-lg-8) --}}
             <div class="col-lg-8">
-                <div class="card profile-card rounded-4 p-4 p-md-5 shadow-lg h-100">
+                <div class="card profile-card rounded-4 p-4 p-md-5 shadow-sm border-0 h-100">
                     <div class="tab-content" id="v-pills-tabContent">
 
                         {{-- Thông báo lỗi/thành công --}}
                         @if(session('success'))
-                            <div
-                                class="alert alert-success bg-success bg-opacity-25 text-white border-0 mb-4 rounded-3 d-flex align-items-center">
+                            <div class="alert alert-success border-0 shadow-sm mb-4 rounded-3 d-flex align-items-center">
                                 <i class="bi bi-check-circle-fill me-2 fs-5"></i> {{ session('success') }}
                             </div>
                         @endif
 
                         @if($errors->any())
-                            <div class="alert alert-danger bg-danger bg-opacity-25 text-white border-0 mb-4 rounded-3">
+                            <div class="alert alert-danger shadow-sm border-0 mb-4 rounded-3">
                                 <ul class="mb-0 ps-3">
                                     @foreach($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -170,21 +162,20 @@
 
                         {{-- 1. TAB HỒ SƠ --}}
                         <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel">
-                            <h4
-                                class="text-info fw-bold text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                            <h4 class="text-primary fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
                                 <i class="bi bi-person-lines-fill me-2"></i> Hồ sơ của tôi
                             </h4>
 
                             <div class="row mb-4">
                                 <div class="col-md-6 mb-3 mb-md-0">
                                     <div
-                                        class="bg-secondary bg-opacity-10 border border-info border-opacity-25 rounded-3 p-3 h-100 d-flex align-items-center">
-                                        <div class="bg-info bg-opacity-25 p-3 rounded-circle me-3">
+                                        class="bg-light border border-info border-opacity-25 rounded-3 p-3 h-100 d-flex align-items-center">
+                                        <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
                                             <i class="bi bi-wallet2 text-info fs-3"></i>
                                         </div>
                                         <div>
                                         <div class="d-flex align-items-center mb-1">
-                                            <p class="text-white-40 mb-0 small text-uppercase fw-bold me-2">Tổng số dư</p>
+                                            <p class="text-muted mb-0 small text-uppercase fw-bold me-2">Tổng số dư</p>
                                             {{-- Biểu tượng con mắt (Mặc định nhắm) --}}
                                             <i class="bi bi-eye-slash text-secondary fs-5" id="toggleBalanceIcon" style="cursor: pointer; transition: 0.3s;" title="Hiện/Ẩn số dư"></i>
                                         </div>
@@ -197,36 +188,36 @@
                                 </div>
                                <div class="col-md-6">
                                     {{-- Khởi tạo logic màu sắc theo Hạng --}}
-                                    @php
+                                   @php
 $tier = Auth::user()->tier ?? 'Thành viên';
 
-// Bảng màu cho từng hạng
+// Bảng màu cho từng hạng (Điều chỉnh cho giao diện sáng)
 $tierStyles = [
-    'Thành viên' => ['color' => '#ffffff', 'bg' => 'rgba(255, 255, 255, 0.15)'], // Trắng
-    'Bạc' => ['color' => '#c0c0c0', 'bg' => 'rgba(192, 192, 192, 0.15)'], // Bạc
+    'Thành viên' => ['color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.15)'], // Xám
+    'Bạc' => ['color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.15)'], // Bạc
     'Vàng' => ['color' => '#ffc107', 'bg' => 'rgba(255, 193, 7, 0.15)'],   // Vàng
     'Kim Cương' => ['color' => '#0dcaf0', 'bg' => 'rgba(13, 202, 240, 0.15)'],  // Xanh dương (Cyan)
-    'VIP' => ['color' => '#b321ff', 'bg' => 'rgba(179, 33, 255, 0.15)']   // Tím VIP
+    'VIP' => ['color' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.15)']   // Tím VIP
 ];
 
 // Nếu lỗi không lấy được hạng thì lấy màu mặc định
 $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                     @endphp
 
-                                    <div class="bg-secondary bg-opacity-10 border rounded-3 p-3 h-100 d-flex align-items-center" 
+                                    <div class="bg-light border rounded-3 p-3 h-100 d-flex align-items-center" 
                                          style="border-color: {{ $style['color'] }}50 !important; box-shadow: 0 0 15px {{ $style['bg'] }};">
                                          
                                         {{-- Icon Ngôi sao đổi màu --}}
                                         <div class="p-3 rounded-circle me-3" style="background-color: {{ $style['bg'] }};">
-                                            <i class="bi bi-star-fill fs-3" style="color: {{ $style['color'] }}; text-shadow: 0 0 10px {{ $style['color'] }};"></i>
+                                            <i class="bi bi-star-fill fs-3" style="color: {{ $style['color'] }}; text-shadow: 0 0 10px {{ $style['color'] }}50;"></i>
                                         </div>
                                         
                                         {{-- Tên hạng đổi màu --}}
                                         <div>
-                                            <p class="text-white-40 mb-0 small text-uppercase fw-bold">Hạng thành viên</p>
+                                            <p class="text-muted mb-0 small text-uppercase fw-bold">Hạng thành viên</p>
                                             <h4 class="fw-bold mb-0 text-uppercase" style="color: {{ $style['color'] }}; letter-spacing: 1px;">
                                                 {{ $tier }}
-                                                <span class="fs-6 text-white-50 fw-normal text-capitalize" style="letter-spacing: 0;">
+                                                <span class="fs-6 text-muted fw-normal text-capitalize" style="letter-spacing: 0;">
                                                     ({{ Auth::user()->points ?? 0 }} điểm)
                                                 </span>
                                             </h4>
@@ -239,20 +230,17 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                 @csrf
                                 <div class="row g-4">
                                     <div class="col-md-6">
-                                        <label class="form-label text-secondary small text-uppercase fw-bold">Họ và
-                                            tên</label>
+                                        <label class="form-label">Họ và tên</label>
                                         <input type="text" name="name" class="form-control"
                                             value="{{ old('name', $user->name) }}">
                                     </div>
                                     <div class="col-md-6">
-                                        <label
-                                            class="form-label text-secondary small text-uppercase fw-bold">Email</label>
+                                        <label class="form-label">Email</label>
                                         <input type="text" class="form-control text-muted fst-italic"
-                                            value="{{ $user->email }}" disabled style="cursor: not-allowed;">
+                                            value="{{ $user->email }}" disabled style="cursor: not-allowed; background-color: #e2e8f0 !important;">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-secondary small text-uppercase fw-bold">Số điện
-                                            thoại</label>
+                                        <label class="form-label">Số điện thoại</label>
                                         <input type="text" name="phone" class="form-control"
                                             value="{{ old('phone', $user->phone) }}" placeholder="Chưa cập nhật">
                                     </div>
@@ -293,7 +281,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                         {{-- TAB KHO VOUCHER (Thay thế cho Địa chỉ) --}}
                         <div class="tab-pane fade" id="v-pills-voucher" role="tabpanel">
                             <h4
-                                class="text-info fw-bold text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                                class="text-primary fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
                                 <i class="bi bi-ticket-perforated-fill me-2"></i> Kho Voucher của tôi
                             </h4>
 
@@ -323,14 +311,14 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                                     </h5>
                                                 </div>
 
-                                                <p class="text-while mb-2" style="line-height: 1.4;">
+                                                <p class="text-dark mb-2" style="line-height: 1.4;">
                                                     @if($coupon->type == 'percent')
                                                         Giảm <b>{{ $coupon->value }}%</b> tối đa cho đơn hàng.
                                                     @else
                                                         Giảm trực tiếp <b>{{ number_format($coupon->value) }}đ</b> vào đơn hàng.
                                                     @endif
                                                     <br>
-                                                    <span class="text-secondary small fst-italic">Áp dụng cho tất cả trò
+                                                    <span class="text-muted small fst-italic">Áp dụng cho tất cả trò
                                                         chơi.</span>
                                                 </p>
 
@@ -342,14 +330,13 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                                 </div>
                                             </div>
 
-                                            {{-- Nút hành động --}}
                                             <div class="ms-4">
                                                 <button class="btn btn-primary btn-get-code rounded-pill shadow-sm"
                                                     onclick="copyCode('{{ $coupon->code }}')">
                                                     Lấy Mã
                                                 </button>
                                                 <div class="text-center mt-2">
-                                                    <small class="text-while d-block">Số lượng có hạn</small>
+                                                    <small class="text-muted d-block">Số lượng có hạn</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -358,7 +345,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
 
                                 {{-- Trạng thái trống --}}
                                 @if($coupons->count() == 0)
-                                    <div class="text-center text-secondary py-5 my-5 bg-dark bg-opacity-50 rounded-4">
+                                    <div class="text-center text-muted py-5 my-5 bg-light rounded-4 border">
                                         <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" width="120"
                                             alt="Empty" class="mb-4 opacity-50">
                                         <h4>Chưa có mã giảm giá nào</h4>
@@ -368,13 +355,13 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                             </div>
 
                             {{-- Nhập mã voucher thủ công --}}
-                            <div class="mt-5 p-4 rounded-3 bg-black border border-secondary border-opacity-50">
-                                <h6 class="text-white fw-bold mb-3"><i class="bi bi-keyboard me-2"></i>Nhập mã quà tặng
+                            <div class="mt-5 p-4 rounded-3 bg-light border border-secondary border-opacity-10">
+                                <h6 class="text-dark fw-bold mb-3"><i class="bi bi-keyboard me-2"></i>Nhập mã quà tặng
                                 </h6>
                                 <form class="d-flex gap-2">
-                                    <input type="text" class="form-control bg-dark border-secondary text-white"
+                                    <input type="text" class="form-control bg-white text-dark"
                                         placeholder="Nhập mã voucher tại đây...">
-                                    <button class="btn btn-info fw-bold px-4">LƯU</button>
+                                    <button class="btn btn-primary fw-bold px-4">LƯU</button>
                                 </form>
                             </div>
                         </div>
@@ -398,7 +385,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                         {{-- 3. TAB ĐƠN HÀNG (ĐÃ SỬA GIAO DIỆN) --}}
                         <div class="tab-pane fade" id="v-pills-orders" role="tabpanel">
                             <h4
-                                class="text-info fw-bold text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                                class="text-primary fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
                                 <i class="bi bi-clock-history me-2"></i> Lịch sử đơn hàng
                             </h4>
 
@@ -406,23 +393,23 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                 {{-- Giao diện trống đẹp --}}
                                 <div class="text-center py-5">
                                     <div class="empty-state-icon">
-                                        <i class="bi bi-cart-x display-4 text-secondary opacity-50"></i>
+                                        <i class="bi bi-cart-x display-4 text-muted opacity-50"></i>
                                     </div>
-                                    <h4 class="text-white fw-bold mb-2">Bạn chưa có đơn hàng nào</h4>
-                                    <p class="text-secondary mb-4" style="max-width: 400px; margin: 0 auto;">
+                                    <h4 class="text-dark fw-bold mb-2">Bạn chưa có đơn hàng nào</h4>
+                                    <p class="text-muted mb-4" style="max-width: 400px; margin: 0 auto;">
                                         Hãy đặt vé ngay hôm nay để trải nghiệm các trò chơi VR đỉnh cao tại Holomia!
                                     </p>
                                     <a href="{{ route('ticket.shop') }}"
-                                        class="btn btn-info rounded-pill px-5 py-3 fw-bold shadow hover-scale">
+                                        class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow hover-scale">
                                         <i class="bi bi-ticket-perforated me-2"></i> MUA VÉ NGAY
                                     </a>
                                 </div>
                             @else
                                 {{-- Bảng đơn hàng --}}
                                 <div class="table-responsive">
-                                    <table class="table table-dark table-hover align-middle mb-0">
+                                    <table class="table table-hover align-middle mb-0">
                                         <thead>
-                                            <tr class="text-secondary small text-uppercase border-bottom border-secondary">
+                                            <tr class="text-muted small text-uppercase border-bottom">
                                                 <th>Mã đơn</th>
                                                 <th>Ngày đặt</th>
                                                 <th>Tổng tiền</th>
@@ -433,16 +420,16 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                         <tbody>
                                             @foreach($user->orders as $order)
                                                 <tr>
-                                                    <td class="text-info fw-bold">#{{ $order->id }}</td>
+                                                    <td class="text-primary fw-bold">#{{ $order->id }}</td>
                                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                                     <td class="fw-bold">{{ number_format($order->total_amount) }}đ</td>
                                                     <td>
                                                         @if($order->status == 'pending')
-                                                            <span class="badge bg-warning text-dark border border-warning bg-opacity-75">Chờ xử lý</span>
+                                                            <span class="badge bg-warning text-dark bg-opacity-75">Chờ xử lý</span>
                                                         @elseif($order->status == 'paid')
-                                                            <span class="badge bg-success border border-success bg-opacity-75">Đã thanh toán</span>
+                                                            <span class="badge bg-success bg-opacity-75">Đã thanh toán</span>
                                                         @elseif($order->status == 'cancelled')
-                                                            <span class="badge bg-danger border border-danger bg-opacity-75">Đã hủy</span>
+                                                            <span class="badge bg-danger bg-opacity-75">Đã hủy</span>
 
                                                             {{-- Cập nhật thêm Hoàn vé --}}
                                                         @elseif($order->status == 'refunded')
@@ -470,7 +457,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                         {{-- 4. TAB YÊU THÍCH --}}
                         <div class="tab-pane fade" id="v-pills-wishlist" role="tabpanel">
                             <h4
-                                class="text-danger fw-bold text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                                class="text-danger fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
                                 <i class="bi bi-heart-fill me-2"></i> Sản phẩm yêu thích
                             </h4>
 
@@ -478,12 +465,12 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                 {{-- Giao diện trống --}}
                                 <div class="text-center py-5">
                                     <div class="empty-state-icon">
-                                        <i class="bi bi-heart-break display-4 text-secondary opacity-50"></i>
+                                        <i class="bi bi-heart-break display-4 text-muted opacity-50"></i>
                                     </div>
-                                    <h4 class="mt-3 text-secondary">Danh sách yêu thích trống</h4>
-                                    <p class="text-white-50">Lưu lại những trò chơi bạn quan tâm để xem sau nhé.</p>
+                                    <h4 class="mt-3 text-muted">Danh sách yêu thích trống</h4>
+                                    <p class="text-muted">Lưu lại những trò chơi bạn quan tâm để xem sau nhé.</p>
                                     <a href="{{ route('ticket.shop') }}"
-                                        class="btn btn-outline-info rounded-pill px-4 mt-2">
+                                        class="btn btn-outline-primary rounded-pill px-4 mt-2">
                                         Khám phá ngay
                                     </a>
                                 </div>
@@ -493,7 +480,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                     @foreach($user->favorites as $item)
                                         <div class="col wishlist-item-{{ $item->id }}">
                                             <div
-                                                class="card h-100 bg-black border border-secondary border-opacity-50 shadow-sm overflow-hidden">
+                                                class="card h-100 bg-white border border-light shadow-sm overflow-hidden mb-0">
                                                 <div class="row g-0 h-100">
                                                     {{-- Ảnh --}}
                                                     <div class="col-4 position-relative">
@@ -505,10 +492,10 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                                     {{-- Nội dung --}}
                                                     <div class="col-8">
                                                         <div class="card-body d-flex flex-column h-100 p-3">
-                                                            <h6 class="card-title text-info fw-bold text-truncate">
+                                                            <h6 class="card-title text-primary fw-bold text-truncate">
                                                                 {{ $item->name }}
                                                             </h6>
-                                                            <p class="card-text text-white fw-bold mb-1">
+                                                            <p class="card-text fw-bold mb-1 text-dark fs-5">
                                                                 {{ number_format($item->price) }}đ
                                                             </p>
 
@@ -523,7 +510,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                                                 @else
                                                                     {{-- Trỏ vào trang Nhập thông tin --}}
                                                                     <a href="{{ route('booking.form', $item->id) }}"
-                                                                        class="btn btn-sm btn-info flex-grow-1 fw-bold text-dark">
+                                                                        class="btn btn-sm btn-primary flex-grow-1 fw-bold">
                                                                         <i class="bi bi-ticket-perforated"></i> Đặt vé
                                                                     </a>
                                                                 @endif
@@ -548,7 +535,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                         {{-- 5. TAB MẬT KHẨU --}}
                         <div class="tab-pane fade" id="v-pills-password" role="tabpanel">
                             <h4
-                                class="text-danger fw-bold text-uppercase mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                                class="text-danger fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
                                 <i class="bi bi-shield-lock-fill me-2"></i> Đổi mật khẩu
                             </h4>
 
@@ -556,19 +543,19 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                 style="max-width: 500px;">
                                 @csrf
                                 <div class="mb-4">
-                                    <label class="form-label text-secondary small text-uppercase fw-bold">Mật khẩu hiện
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Mật khẩu hiện
                                         tại</label>
                                     <input type="password" name="current_password" class="form-control" required
                                         placeholder="••••••">
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label text-secondary small text-uppercase fw-bold">Mật khẩu
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Mật khẩu
                                         mới</label>
                                     <input type="password" name="new_password" class="form-control" required
                                         placeholder="••••••">
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label text-secondary small text-uppercase fw-bold">Nhập lại mật
+                                    <label class="form-label text-muted small text-uppercase fw-bold">Nhập lại mật
                                         khẩu mới</label>
                                     <input type="password" name="new_password_confirmation" class="form-control"
                                         required placeholder="••••••">
@@ -630,48 +617,48 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                             </div>
                                         </div>
 
-                                        <h5 class="text-white fw-bold text-uppercase mb-1">Thanh toán thành công</h5>
-                                        <p class="text-secondary" style="font-size: 0.9rem;">Đơn hàng đã được ghi nhận.</p>
+                                        <h5 class="text-dark fw-bold text-uppercase mb-1">Thanh toán thành công</h5>
+                                        <p class="text-muted" style="font-size: 0.9rem;">Đơn hàng đã được ghi nhận.</p>
 
-                                        <div class="bg-secondary bg-opacity-10 rounded-3 p-3 mb-3 border border-secondary border-opacity-25 mx-auto text-start" style="font-size: 0.9rem;">
+                                        <div class="bg-light rounded-3 p-3 mb-3 border border-light mx-auto text-start" style="font-size: 0.9rem;">
 
                                             {{-- DÒNG MỚI CHÈN THÊM: HIỂN THỊ CƠ SỞ --}}
-                                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary border-opacity-25 pb-2">
-                                               <span class="text-white-50">Cơ sở:</span>
-                                               <span class="text-warning fw-bold text-end">{{ $locationName }}</span>
+                                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-light pb-2">
+                                               <span class="text-muted">Cơ sở:</span>
+                                               <span class="text-primary fw-bold text-end">{{ $locationName }}</span>
                                             </div>
 
-                                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary border-opacity-25 pb-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-light pb-2">
 
-                                                <span class="text-white-50">Tổng tiền:</span>
-                                                <span class="text-info fw-bold fs-5">
+                                                <span class="text-muted">Tổng tiền:</span>
+                                                <span class="text-primary fw-bold fs-5">
                                                     {{ number_format(session('total_amount')) }}đ
                                                 </span>
                                             </div>
 
                                             <div class="d-flex justify-content-between mb-1">
-                                                <span class="text-white-50">Mã đơn:</span>
-                                                <strong class="text-white">#{{ session('order_id') }}</strong>
+                                                <span class="text-muted">Mã đơn:</span>
+                                                <strong class="text-dark">#{{ session('order_id') }}</strong>
                                             </div>
 
                                             <div class="d-flex justify-content-between">
-                                                <span class="text-white-50">Phương thức:</span>
-                                                <span class="fw-bold text-white">
+                                                <span class="text-muted">Phương thức:</span>
+                                                <span class="fw-bold text-dark">
                                                     {{ $pMethod == 'wallet' ? 'Ví Holomia' : ($pMethod == 'cod' ? 'Tiền mặt' : 'Chuyển khoản') }}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <p class="small text-white fst-italic mb-0" style="font-size: 0.8rem;">
+                                        <p class="small text-muted fst-italic mb-0" style="font-size: 0.8rem;">
                                             <i class="bi bi-envelope-check me-1"></i> Vé đã được gửi tới hệ thống.
                                         </p>
                                     </div>
                                 `,
-                                background: '#1a1d20',
-                                color: '#fff',
+                                background: '#fff',
+                                color: '#1f2937',
                                 showConfirmButton: true,
                                 confirmButtonText: 'Đóng',
-                                confirmButtonColor: '#0dcaf0',
+                                confirmButtonColor: '#0d6efd',
                                 width: '360px',
                                 padding: '1.5em',
                                 allowOutsideClick: false,
@@ -697,8 +684,8 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
 
                 Swal.fire({
                     title: 'Đang tải hóa đơn...',
-                    background: '#1a1d20',
-                    color: '#fff',
+                    background: '#fff',
+                    color: '#1f2937',
                     didOpen: () => {
                         Swal.showLoading();
                     }
@@ -710,8 +697,8 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                     success: function (response) {
                         Swal.fire({
                             html: response.html,
-                            background: '#1a1d20',
-                            color: '#fff',
+                            background: '#fff',
+                            color: '#1f2937',
                             showConfirmButton: true,
                             confirmButtonText: 'Đóng lại',
                             confirmButtonColor: '#6c757d',
@@ -791,8 +778,8 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                             showConfirmButton: false,
                             timer: 3000,
                             timerProgressBar: true,
-                            background: '#212529',
-                            color: '#fff'
+                            background: '#fff',
+                            color: '#1f2937'
                         });
                         Toast.fire({
                             icon: 'success',
@@ -839,8 +826,8 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Có, hoàn vé!',
             cancelButtonText: 'Không, thoát',
-            background: '#1a1d20',
-            color: '#fff'
+            background: '#fff',
+            color: '#1f2937'
         }).then((result) => {
             if (result.isConfirmed) {
                 // Chuyển hướng tới route xử lý
@@ -852,10 +839,10 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
     // Hiển thị thông báo khi Controller trả về Success/Error
     document.addEventListener('DOMContentLoaded', function () {
         @if(session('success'))
-            Swal.fire({ icon: 'success', title: 'Thành công!', text: "{{ session('success') }}", background: '#1a1d20', color: '#fff' });
+            Swal.fire({ icon: 'success', title: 'Thành công!', text: "{{ session('success') }}", background: '#fff', color: '#1f2937' });
         @endif
         @if(session('error'))
-            Swal.fire({ icon: 'error', title: 'Lỗi!', text: "{{ session('error') }}", background: '#1a1d20', color: '#fff' });
+            Swal.fire({ icon: 'error', title: 'Lỗi!', text: "{{ session('error') }}", background: '#fff', color: '#1f2937' });
         @endif
     });
 </script>
@@ -863,10 +850,10 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
 {{-- MODAL ĐÁNH GIÁ (REVIEW) --}}
 <div class="modal fade text-dark" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark text-white border-secondary">
-      <div class="modal-header border-secondary border-opacity-25">
-        <h5 class="modal-title fw-bold text-info" id="reviewModalLabel"><i class="bi bi-star me-2"></i>Đánh giá trò chơi</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content bg-white text-dark border-light shadow-sm">
+      <div class="modal-header border-light">
+        <h5 class="modal-title fw-bold text-primary" id="reviewModalLabel"><i class="bi bi-star me-2"></i>Đánh giá trò chơi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="reviewForm">
@@ -875,7 +862,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
           <input type="hidden" id="reviewOrderItemId" name="order_item_id">
           
           <div class="mb-3 text-center">
-            <h6 class="text-warning mb-3" id="reviewTicketName">Tên trò chơi</h6>
+            <h6 class="text-primary fw-bold mb-3" id="reviewTicketName">Tên trò chơi</h6>
             
             {{-- Chọn sao --}}
             <div class="rating-stars fs-2" style="cursor: pointer; display: inline-flex; flex-direction: row-reverse;">
@@ -990,8 +977,8 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                         icon: 'success',
                         title: 'Thành công',
                         text: response.message,
-                        background: '#1a1d20',
-                        color: '#fff',
+                        background: '#fff',
+                        color: '#1f2937',
                         timer: 2500,
                         showConfirmButton: false
                     });
@@ -1006,8 +993,8 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                     icon: 'error',
                     title: 'Lỗi',
                     text: errorMsg,
-                    background: '#1a1d20',
-                    color: '#fff'
+                    background: '#fff',
+                    color: '#1f2937'
                 });
             },
             complete: function() {

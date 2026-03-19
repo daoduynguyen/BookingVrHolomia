@@ -1,48 +1,51 @@
 @extends('layouts.admin')
 {{-- Admin quản lý đơn hàng --}}
+@php
+/** @var \Illuminate\Pagination\LengthAwarePaginator|\App\Models\Order[] $bookings */
+@endphp
 @section('admin_content')
     <div class="container-fluid">
         {{-- Tiêu đề --}}
         <div class="d-flex align-items-center mb-4">
-            <div class="bg-info me-3" style="width: 50px; height: 3px;"></div>
-            <h2 class="text-info fw-bold text-uppercase mb-0 letter-spacing-2">Quản lý Đơn hàng</h2>
+            <div class="bg-primary me-3" style="width: 50px; height: 3px;"></div>
+            <h2 class="text-primary fw-bold text-uppercase mb-0 letter-spacing-2">Quản lý Đơn hàng</h2>
         </div>
 
         {{-- THANH MENU LỌC ĐƠN HÀNG NGANG SIÊU XỊN --}}
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-4 bg-dark p-3 rounded border border-secondary border-opacity-50 shadow-sm">
-            <div class="text-info fw-bold text-uppercase ls-1 me-3">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-4 bg-white p-3 rounded border border-light border-opacity-50 shadow-sm">
+            <div class="text-primary fw-bold text-uppercase ls-1 me-3">
                 <i class="bi bi-funnel-fill fs-5 me-1"></i> Bộ lọc:
             </div>
             
             @php $currentStatus = request('status'); @endphp
 
             <a href="{{ route('admin.bookings.index') }}" 
-               class="btn btn-sm px-3 rounded-pill {{ empty($currentStatus) ? 'btn-info text-dark fw-bold shadow' : 'btn-outline-secondary text-white' }}">
+               class="btn btn-sm px-3 rounded-pill {{ empty($currentStatus) ? 'btn-primary text-dark fw-bold shadow' : 'btn-outline-secondary text-dark' }}">
                <i class="bi bi-collection"></i> Tất cả
             </a>
 
             <a href="{{ route('admin.bookings.index', ['status' => 'paid']) }}" 
-               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'paid' ? 'btn-success fw-bold shadow' : 'btn-outline-secondary text-white' }}">
+               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'paid' ? 'btn-success fw-bold shadow' : 'btn-outline-secondary text-dark' }}">
                ✅ Đã duyệt
             </a>
 
             <a href="{{ route('admin.bookings.index', ['status' => 'pending']) }}" 
-               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'pending' ? 'btn-warning text-dark fw-bold shadow' : 'btn-outline-secondary text-white' }}">
+               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'pending' ? 'btn-warning text-dark fw-bold shadow' : 'btn-outline-secondary text-dark' }}">
                ⏳ Chờ xử lý
             </a>
 
             <a href="{{ route('admin.bookings.index', ['status' => 'cancelled']) }}" 
-               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'cancelled' ? 'btn-danger fw-bold shadow' : 'btn-outline-secondary text-white' }}">
+               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'cancelled' ? 'btn-danger fw-bold shadow' : 'btn-outline-secondary text-dark' }}">
                ❌ Đã hủy
             </a>
 
             <a href="{{ route('admin.bookings.index', ['status' => 'refunded']) }}" 
-               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'refunded' ? 'btn-light text-dark fw-bold shadow' : 'btn-outline-secondary text-white' }}">
+               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'refunded' ? 'btn-light text-dark fw-bold shadow' : 'btn-outline-secondary text-dark' }}">
                ↩️ Trả hàng
             </a>
 
             <a href="{{ route('admin.bookings.index', ['status' => 'expired']) }}" 
-               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'expired' ? 'btn-light text-dark fw-bold shadow' : 'btn-outline-secondary text-white' }}">
+               class="btn btn-sm px-3 rounded-pill {{ $currentStatus == 'expired' ? 'btn-light text-dark fw-bold shadow' : 'btn-outline-secondary text-dark' }}">
                ⏱️ Hết hạn
             </a>
         </div>
@@ -54,13 +57,13 @@
             </div>
         @endif
 
-        <div class="profile-content shadow bg-dark text-light border border-secondary rounded">
+        <div class="profile-content shadow bg-white text-dark border border-light rounded">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     {{-- Bảng --}}
-                    <table class="table table-dark table-hover align-middle mb-0">
-                        <thead class="bg-dark text-white">
-                            <tr class="text-secondary border-bottom border-secondary text-uppercase small">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-dark">
+                            <tr class="text-secondary border-bottom border-light text-uppercase small">
                                 <th width="6%" class="text-center">Mã</th>
                                 <th width="22%" class="text-center">Khách hàng</th>
                                 <th width="27%">Chi tiết đơn</th>
@@ -72,13 +75,13 @@
                         </thead>
                         <tbody>
                             @forelse($bookings as $booking)
-                                <tr class="border-bottom border-secondary">
-                                    <td class="fw-bold text-info ps-4">#{{ $booking->id }}</td>
+                                <tr class="border-bottom border-light">
+                                    <td class="fw-bold text-primary ps-4">#{{ $booking->id }}</td>
                                     <td>
-                                        <div class="fw-bold text-white">
+                                        <div class="fw-bold text-dark">
                                             {{ $booking->user->name ?? $booking->customer_name ?? 'Khách vãng lai' }}
                                         </div>
-                                        <div class="small text-white-50">
+                                        <div class="small text-muted">
                                             <i class="bi bi-envelope me-1"></i>
                                             {{ $booking->user->email ?? $booking->customer_email ?? '---' }}
                                         </div>
@@ -88,16 +91,16 @@
                                             @foreach($booking->details as $detail)
                                                 <div class="mb-1 small d-flex align-items-center">
                                                     <i class="bi bi-ticket-perforated-fill text-warning me-2"></i>
-                                                    <span class="text-light me-2">{{ $detail->ticket->name ?? 'Vé không tồn tại' }}</span>
+                                                    <span class="text-dark me-2">{{ $detail->ticket->name ?? 'Vé không tồn tại' }}</span>
                                                     <span class="badge bg-secondary border border-light">x{{ $detail->quantity }}</span>
                                                 </div>
                                             @endforeach
                                         @else
-                                            <span class="text-white-50 fst-italic">Không có chi tiết</span>
+                                            <span class="text-muted fst-italic">Không có chi tiết</span>
                                         @endif
                                     </td>
                                     <td class="fw-bold text-success fs-6 text-center">{{ number_format($booking->total_amount) }} đ</td>
-                                    <td class="small text-white-50 text-center">
+                                    <td class="small text-muted text-center">
                                         <div>{{ $booking->created_at->format('d/m/Y') }}</div>
                                         <div>{{ $booking->created_at->format('H:i') }}</div>
                                     </td>
@@ -135,7 +138,7 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="text-center py-5">
-                                        <div class="text-white-50">
+                                        <div class="text-muted">
                                             <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
                                             <p>Chưa có đơn hàng nào trong hệ thống.</p>
                                         </div>

@@ -13,76 +13,76 @@
             display: flex; align-items: center; justify-content: center;
         }
         .glass-card {
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 15px;
             padding: 40px;
             width: 100%; max-width: 450px;
-            color: white;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            color: #1f2937;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
         .form-control {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
         }
         .form-control:focus {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            box-shadow: none; border-color: #0dcaf0;
+            background: white;
+            color: #1f2937;
+            box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25); border-color: #0dcaf0;
         }
     </style>
 </head>
 <body>
     <div class="glass-card">
         <div class="text-center mb-4">
-            <h2 class="fw-bold text-info text-uppercase">Đăng nhập</h2>
-            <p class="text-secondary small">Chào mừng trở lại Holomia VR</p>
+            <h2 class="fw-bold text-primary text-uppercase">Đăng nhập</h2>
+            <p class="text-muted small">Chào mừng trở lại Holomia VR</p>
         </div>
 
         <form action="{{ route('login') }}" method="POST">
             @csrf
             
             @if($errors->any())
-                <div class="alert alert-danger py-2 small bg-danger bg-opacity-25 text-light border-danger border-opacity-50">
+                <div class="alert alert-danger py-2 small bg-danger bg-opacity-10 text-danger border-danger border-opacity-25">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i> Email hoặc mật khẩu chưa đúng.
                 </div>
             @endif
 
             <div class="mb-3">
-                <label class="form-label">Email</label>
+                <label class="form-label fw-bold">Email</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-envelope-fill"></i></span>
+                    <span class="input-group-text bg-white border-light text-muted"><i class="bi bi-envelope-fill"></i></span>
                     <input type="email" name="email" class="form-control" placeholder="email@example.com" required value="{{ old('email') }}">
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Mật khẩu</label>
+                <label class="form-label fw-bold">Mật khẩu</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-lock-fill"></i></span>
+                    <span class="input-group-text bg-white border-light text-muted"><i class="bi bi-lock-fill"></i></span>
                     <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
                 </div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="form-check">
-                    <input class="form-check-input bg-dark border-secondary" type="checkbox" name="remember" id="remember">
-                    <label class="form-check-label text-secondary small" for="remember">Ghi nhớ tôi</label>
+                    <input class="form-check-input bg-white border-light" type="checkbox" name="remember" id="remember">
+                    <label class="form-check-label text-muted small" for="remember">Ghi nhớ tôi</label>
                 </div>
-                <a href="#" class="text-info small text-decoration-none">Quên mật khẩu?</a>
+                <a href="#" class="text-primary small text-decoration-none">Quên mật khẩu?</a>
             </div>
 
-            <button type="submit" class="btn btn-info w-100 fw-bold text-uppercase py-2 mb-3">Đăng nhập</button>
+            <button type="submit" class="btn btn-primary w-100 fw-bold text-uppercase py-2 mb-3 shadow-sm">Đăng nhập</button>
             
             <div class="text-center">
-                <span class="text-secondary">Chưa có tài khoản?</span>
-                <a href="{{ route('register') }}" class="text-info text-decoration-none fw-bold ms-1">Đăng ký ngay</a>
+                <span class="text-muted">Chưa có tài khoản?</span>
+                <a href="{{ route('register') }}" class="text-primary text-decoration-none fw-bold ms-1">Đăng ký ngay</a>
             </div>
 
             <div class="text-center mt-3">
-                <a href="{{ route('home') }}" class="text-secondary small text-decoration-none"><i class="bi bi-arrow-left"></i> Về trang chủ</a>
+                <a href="{{ route('home') }}" class="text-muted small text-decoration-none"><i class="bi bi-arrow-left"></i> Về trang chủ</a>
             </div>
         </form>
     </div>

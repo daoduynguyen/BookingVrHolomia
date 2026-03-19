@@ -26,7 +26,7 @@ class TicketController extends Controller
         return view('home', compact('tickets'));
     }
 
-    // ---------------------------------------------------------
+  // ---------------------------------------------------------
     // 2. TRANG CỬA HÀNG: Hiển thị TẤT CẢ (Có phân trang)
     // ---------------------------------------------------------
     public function shop(Request $request)
@@ -36,12 +36,18 @@ class TicketController extends Controller
 
         $locationName = "Tất cả vé";
 
+        // Lọc theo Cơ sở (Location)
         if ($request->has('location_id') && $request->location_id != null) {
             $query->where('location_id', $request->location_id);
             $loc = Location::find($request->location_id);
             if ($loc) {
                 $locationName = "Vé tại " . $loc->name;
             }
+        }
+
+        //  Lọc thêm theo Thể loại (Category) 
+        if ($request->has('category_id') && $request->category_id != null) {
+            $query->where('category_id', $request->category_id);
         }
 
         $tickets = $query->orderBy('play_count', 'desc')->paginate(9); 

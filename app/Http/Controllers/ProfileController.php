@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Order;
 use App\Models\Coupon;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -150,7 +151,7 @@ class ProfileController extends Controller
 
         } catch (\Exception $e) {
             $errorMsg = 'Lỗi: ' . $e->getMessage() . '<br>At: ' . $e->getFile() . ':' . $e->getLine();
-            \Log::error($errorMsg);
+            Log::error($errorMsg);
             return response()->json(['html' => '<div class="text-danger p-3 bg-white">' . $errorMsg . '</div>']);
         }
     }

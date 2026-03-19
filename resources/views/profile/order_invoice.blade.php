@@ -1,10 +1,10 @@
 
-<div class="text-white" style="font-family: 'Consolas', 'Monaco', 'Segoe UI', sans-serif;">
+<div class="text-dark" style="font-family: 'Consolas', 'Monaco', 'Segoe UI', sans-serif;">
     
     {{-- 1. HEADER --}}
-    <div class="text-center mb-3 pb-2 border-bottom border-secondary border-opacity-25" style="border-style: dashed !important;">
-        <h5 class="fw-bold text-uppercase text-info mb-1 ls-1">HOLOMIA VR</h5>
-        <div class="d-flex justify-content-center gap-3 text-white small">
+    <div class="text-center mb-3 pb-2 border-bottom border-light border-opacity-25" style="border-style: dashed !important;">
+        <h5 class="fw-bold text-uppercase text-primary mb-1 ls-1">HOLOMIA VR</h5>
+        <div class="d-flex justify-content-center gap-3 text-dark small">
             <span>#{{ $order->id }}</span>
             <span>
                 <i class="bi bi-clock"></i> 
@@ -18,19 +18,19 @@
     {{-- 2. THÔNG TIN KHÁCH --}}
     <div class="mb-3 px-1 small">
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-white">Khách hàng:</span>
-            <span class="fw-bold text-white">{{ $order->customer_name }}</span>
+            <span class="text-dark">Khách hàng:</span>
+            <span class="fw-bold text-dark">{{ $order->customer_name }}</span>
         </div>
 
         {{-- Dòng hiển thị Cơ sở mới thêm --}}
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-white-50">Cơ sở:</span>
-            <strong class="text-warning text-end">{{ $order->location->name ?? 'Đang cập nhật' }}</strong>
+            <span class="text-dark-50">Cơ sở:</span>
+            <strong class="text-primary text-end">{{ $order->location->name ?? 'Đang cập nhật' }}</strong>
         </div>
         
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-white">Thanh toán:</span>
-            <span class="text-info text-uppercase fw-bold">
+            <span class="text-dark">Thanh toán:</span>
+            <span class="text-primary text-uppercase fw-bold">
                 @if($order->payment_method == 'wallet')
                     Ví Holomia
                 @elseif($order->payment_method == 'cod')
@@ -44,24 +44,24 @@
 
     {{-- 3. BẢNG VÉ --}}
     <div class="mb-3 receipt-scroll" style="max-height: 180px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;">
-        <table class="table table-sm table-borderless mb-0" style="--bs-table-bg: transparent; --bs-table-accent-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-hover-bg: transparent; color: #fff;">
-            <thead class="text-white border-bottom border-secondary border-opacity-25" style="border-style: dashed !important; font-size: 0.85rem; position: sticky; top: 0; background-color: #1a1d20; z-index: 1;">
+        <table class="table table-sm table-borderless mb-0" style="--bs-table-bg: transparent; --bs-table-accent-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-hover-bg: transparent; color: #212529;">
+            <thead class="text-dark border-bottom border-light border-opacity-25" style="border-style: dashed !important; font-size: 0.85rem; position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
                 <tr>
-                    <th class="ps-0 text-start text-white">Loại vé</th>
-                    <th class="text-center text-white" style="width: 30px;">SL</th>
-                    <th class="pe-0 text-end text-white">Tiền</th>
+                    <th class="ps-0 text-start text-dark">Loại vé</th>
+                    <th class="text-center text-dark" style="width: 30px;">SL</th>
+                    <th class="pe-0 text-end text-dark">Tiền</th>
                 </tr>
             </thead>
-            <tbody style="border-bottom: 1px dashed rgba(255,255,255,0.2);">
+            <tbody style="border-bottom: 1px dashed rgba(0,0,0,0.1);">
                 @foreach($order->orderItems as $item)
                 <tr>
                     <td class="ps-0 py-2">
-                        <div class="text-truncate fw-bold text-white" style="max-width: 170px;" title="{{ $item->ticket_name }}">
+                        <div class="text-truncate fw-bold text-dark" style="max-width: 170px;" title="{{ $item->ticket_name }}">
                             {{ $item->ticket_name }}
                         </div>
                     </td>
-                    <td class="text-center py-2 text-white">x{{ $item->quantity }}</td>
-                    <td class="pe-0 py-2 text-end text-white">
+                    <td class="text-center py-2 text-dark">x{{ $item->quantity }}</td>
+                    <td class="pe-0 py-2 text-end text-dark">
                         <div class="d-flex flex-column align-items-end">
                             <span>{{ number_format($item->price * $item->quantity) }}</span>
                             
@@ -70,11 +70,11 @@
                                 @if($item->review)
                                     <div class="mt-1" style="font-size: 0.75rem;">
                                         @for($i = 1; $i <= 5; $i++)
-                                            <i class="bi bi-star-fill text-warning {{ $i > $item->review->rating ? 'opacity-25' : '' }}"></i>
+                                            <i class="bi bi-star-fill text-primary {{ $i > $item->review->rating ? 'opacity-25' : '' }}"></i>
                                         @endfor
                                     </div>
                                 @else
-                                    <button id="review-btn-{{ $item->id }}" class="btn btn-outline-info btn-sm mt-1 px-3 py-1 text-info fw-bold" style="font-size: 0.75rem; border: 1px solid #0dcaf0 !important; border-radius: 20px;" onclick="openReviewModal({{ $item->ticket_id }}, {{ $item->id }}, '{{ addslashes($item->ticket_name) }}')">
+                                    <button id="review-btn-{{ $item->id }}" class="btn btn-outline-info btn-sm mt-1 px-3 py-1 text-primary fw-bold" style="font-size: 0.75rem; border: 1px solid #0dcaf0 !important; border-radius: 20px;" onclick="openReviewModal({{ $item->ticket_id }}, {{ $item->id }}, '{{ addslashes($item->ticket_name) }}')">
                                         Đánh giá
                                     </button>
                                 @endif
@@ -98,8 +98,8 @@
         @endphp
 
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-white small">Tạm tính:</span>
-            <span class="small text-white">{{ number_format($originalTotal) }}đ</span>
+            <span class="text-dark small">Tạm tính:</span>
+            <span class="small text-dark">{{ number_format($originalTotal) }}đ</span>
         </div>
 
         @if($discount > 0)
@@ -107,35 +107,35 @@
                 <span class="small"><i class="bi bi-ticket-perforated-fill me-1"></i>Voucher {{ $code ? '('.$code.')' : '' }}:</span>
                 <span class="small">-{{ number_format($discount) }}đ</span>
             </div>
-            <div class="border-top border-secondary border-opacity-25 my-2" style="border-style: dashed !important;"></div>
+            <div class="border-top border-light border-opacity-25 my-2" style="border-style: dashed !important;"></div>
         @endif
 
         <div class="d-flex justify-content-between align-items-center mt-1">
-            <span class="text-white fw-bold text-uppercase small">TỔNG CỘNG:</span>
-            <span class="fs-4 fw-bold text-info">{{ number_format($finalTotal) }}đ</span>
+            <span class="text-dark fw-bold text-uppercase small">TỔNG CỘNG:</span>
+            <span class="fs-4 fw-bold text-primary">{{ number_format($finalTotal) }}đ</span>
         </div>
     </div>
 
     {{-- 5. FOOTER & MÃ QR --}}
-    <div class="text-center mt-3 pt-2" style="border-top: 1px dashed rgba(255,255,255,0.1);">
+    <div class="text-center mt-3 pt-2" style="border-top: 1px dashed rgba(0,0,0,0.1);">
         <div style="cursor: pointer;" onclick="const icon = this.querySelector('.qr-icon'); const real = this.querySelector('.qr-real'); if(icon) icon.style.display='none'; if(real) real.style.display='block';">
             <div class="qr-icon">
-                <i class="bi bi-qr-code-scan text-white" style="font-size: 2rem;"></i>
-                <p class="mb-0 small fst-italic mt-1 text-info" style="font-size: 0.75rem;">Nhấn vào đây để lấy mã QR Check-in</p>
+                <i class="bi bi-qr-code-scan text-dark" style="font-size: 2rem;"></i>
+                <p class="mb-0 small fst-italic mt-1 text-primary" style="font-size: 0.75rem;">Nhấn vào đây để lấy mã QR Check-in</p>
             </div>
             <div class="qr-real" style="display: none;">
                 @php $qrData = route('ticket.scan', $order->id); @endphp
                 <div class="bg-white d-inline-block p-1 rounded mb-1">
                     {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->margin(1)->generate($qrData) !!}
                 </div>
-                <p class="mb-0 small fw-bold mt-1 text-white">Đưa mã này cho nhân viên</p>
+                <p class="mb-0 small fw-bold mt-1 text-dark">Đưa mã này cho nhân viên</p>
             </div>
         </div>
     </div>
 
     {{-- 🔥 BƯỚC 3: NÚT HOÀN TRẢ VÉ CHÈN TẠI ĐÂY 🔥 --}}
     @if($order->status == 'paid' || $order->status == 'pending')
-        <div class="mt-3 text-center border-top border-secondary border-opacity-10 pt-3">
+        <div class="mt-3 text-center border-top border-light border-opacity-10 pt-3">
             <button class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-bold" onclick="confirmRefund({{ $order->id }})">
                 <i class="bi bi-arrow-return-left me-1"></i> HOÀN TRẢ VÉ
             </button>

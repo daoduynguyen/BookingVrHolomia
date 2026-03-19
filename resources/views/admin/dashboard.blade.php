@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@php
+/** @var \Illuminate\Support\Collection $revenueByLocation */
+@endphp
+
 @section('admin_content')
 <div class="container-fluid">
     {{-- Tiêu đề --}}
@@ -12,10 +16,10 @@
     <div class="row mb-5">
         {{-- Card 1: Doanh thu --}}
         <div class="col-md-3">
-            <div class="card bg-dark border-secondary shadow h-100 py-3">
+            <div class="card bg-white border-light shadow-sm h-100 py-3">
                 <div class="card-body text-center">
-                    <h6 class="text-white-50 text-uppercase mb-3 fw-bold">Doanh thu vé</h6>
-                    <h3 class="text-info fw-bold mb-2">{{ number_format($totalRevenue) }} đ</h3>
+                    <h6 class="text-muted text-uppercase mb-3 fw-bold">Doanh thu vé</h6>
+                    <h3 class="text-primary fw-bold mb-2">{{ number_format($totalRevenue) }} đ</h3>
                     <div class="small text-success"><i class="bi bi-graph-up-arrow"></i> Đã thanh toán</div>
                 </div>
             </div>
@@ -23,11 +27,11 @@
 
         {{-- Card 2: Đơn cần duyệt --}}
         <div class="col-md-3">
-            <div class="card bg-dark border-secondary shadow h-100 py-3">
+            <div class="card bg-white border-light shadow-sm h-100 py-3">
                 <div class="card-body text-center">
-                    <h6 class="text-white-50 text-uppercase mb-3 fw-bold">Đơn hàng mới</h6>
-                    <h3 class="text-warning fw-bold mb-2">{{ $pendingOrders }}</h3>
-                    <a href="{{ route('admin.bookings.index') }}" class="small text-warning text-decoration-none hover-underline">
+                    <h6 class="text-muted text-uppercase mb-3 fw-bold">Đơn hàng mới</h6>
+                    <h3 class="text-danger fw-bold mb-2">{{ $pendingOrders }}</h3>
+                    <a href="{{ route('admin.bookings.index') }}" class="small text-danger text-decoration-none hover-underline">
                         <i class="bi bi-hourglass-split"></i> Chờ xử lý ngay
                     </a>
                 </div>
@@ -36,22 +40,22 @@
 
         {{-- Card 3: Tổng vé --}}
         <div class="col-md-3">
-            <div class="card bg-dark border-secondary shadow h-100 py-3">
+            <div class="card bg-white border-light shadow-sm h-100 py-3">
                 <div class="card-body text-center">
-                    <h6 class="text-white-50 text-uppercase mb-3 fw-bold">Kho vé VR</h6>
-                    <h3 class="text-white fw-bold mb-2">{{ $totalTickets }}</h3>
-                    <div class="small text-white-50">Trò chơi hoạt động</div>
+                    <h6 class="text-muted text-uppercase mb-3 fw-bold">Kho vé VR</h6>
+                    <h3 class="text-dark fw-bold mb-2">{{ $totalTickets }}</h3>
+                    <div class="small text-muted">Trò chơi hoạt động</div>
                 </div>
             </div>
         </div>
 
         {{-- Card 4: Khách hàng --}}
         <div class="col-md-3">
-            <div class="card bg-dark border-secondary shadow h-100 py-3">
+            <div class="card bg-white border-light shadow-sm h-100 py-3">
                 <div class="card-body text-center">
-                    <h6 class="text-white-50 text-uppercase mb-3 fw-bold">Khách hàng</h6>
-                    <h3 class="text-white fw-bold mb-2">{{ $totalUsers }}</h3>
-                    <div class="small text-white-50">Tài khoản thành viên</div>
+                    <h6 class="text-muted text-uppercase mb-3 fw-bold">Khách hàng</h6>
+                    <h3 class="text-dark fw-bold mb-2">{{ $totalUsers }}</h3>
+                    <div class="small text-muted">Tài khoản thành viên</div>
                 </div>
             </div>
         </div>
@@ -61,9 +65,9 @@
     <div class="row">
         {{-- Biểu đồ cột: Doanh thu 7 ngày --}}
         <div class="col-md-8 mb-4">
-            <div class="card bg-dark border-secondary shadow h-100">
+            <div class="card bg-white border-light shadow-sm h-100">
                 <div class="card-header bg-transparent border-0 mt-3 ms-3">
-                    <h5 class="text-white fw-bold"><i class="bi bi-bar-chart-line me-2"></i>Doanh thu 7 ngày qua</h5>
+                    <h5 class="text-dark fw-bold"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Doanh thu 7 ngày qua</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="revenueChart" style="max-height: 350px;"></canvas>
@@ -73,9 +77,9 @@
 
         {{-- Biểu đồ tròn: Tỷ lệ đơn hàng --}}
         <div class="col-md-4 mb-4">
-            <div class="card bg-dark border-secondary shadow h-100">
+            <div class="card bg-white border-light shadow-sm h-100">
                 <div class="card-header bg-transparent border-0 mt-3 text-center">
-                    <h5 class="text-white fw-bold">Tỷ lệ trạng thái đơn</h5>
+                    <h5 class="text-dark fw-bold">Tỷ lệ trạng thái đơn</h5>
                 </div>
                 <div class="card-body d-flex justify-content-center align-items-center">
                     <div style="width: 280px;">
@@ -83,7 +87,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 text-center pb-4">
-                    <small class="text-white-50">Thống kê theo trạng thái xử lý</small>
+                    <small class="text-muted">Thống kê theo trạng thái xử lý</small>
                 </div>
             </div>
         </div>
@@ -92,9 +96,9 @@
     {{-- 3. BIỂU ĐỒ ĐƯỜNG: XU HƯỚNG ĐƠN HÀNG -- canvas phải nằm TRƯỚC script --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-dark border-secondary shadow h-100">
+            <div class="card bg-white border-light shadow-sm h-100">
                 <div class="card-header bg-transparent border-0 mt-3 ms-3">
-                    <h5 class="text-white fw-bold"><i class="bi bi-graph-up text-success me-2"></i>Xu hướng lượng đơn hàng 7 ngày qua</h5>
+                    <h5 class="text-dark fw-bold"><i class="bi bi-graph-up text-success me-2"></i>Xu hướng lượng đơn hàng 7 ngày qua</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="lineChart" style="max-height: 300px;"></canvas>
@@ -107,15 +111,15 @@
     @if(Auth::check() && Auth::user()->role === 'super_admin')
     <div class="row mt-4 mb-5">
         <div class="col-12">
-            <div class="card bg-dark border-secondary shadow">
-                <div class="card-header bg-transparent border-bottom border-secondary mt-2 ms-2">
-                    <h5 class="text-warning fw-bold"><i class="bi bi-trophy-fill me-2"></i>Bảng xếp hạng doanh thu theo chi nhánh</h5>
+            <div class="card bg-white border-light shadow-sm">
+                <div class="card-header bg-transparent border-bottom border-light mt-2 ms-2">
+                    <h5 class="text-primary fw-bold"><i class="bi bi-trophy-fill me-2 text-warning"></i>Bảng xếp hạng doanh thu theo chi nhánh</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover align-middle border-secondary mb-0">
+                        <table class="table table-hover align-middle mb-0">
                             <thead>
-                                <tr class="text-secondary">
+                                <tr class="text-muted">
                                     <th class="text-center" width="10%">Top</th>
                                     <th>Tên cơ sở</th>
                                     <th class="text-end">Tổng doanh thu</th>
@@ -124,13 +128,13 @@
                             <tbody>
                                 @forelse($revenueByLocation as $index => $item)
                                 <tr>
-                                    <td class="text-center fw-bold text-info">#{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $item->name }}</td>
+                                    <td class="text-center fw-bold text-primary">#{{ $index + 1 }}</td>
+                                    <td class="fw-bold text-dark">{{ $item->name }}</td>
                                     <td class="text-end text-success fw-bold">{{ number_format($item->total) }} đ</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-secondary py-4">Chưa có dữ liệu doanh thu</td>
+                                    <td colspan="3" class="text-center text-muted py-4">Chưa có dữ liệu doanh thu</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -178,12 +182,12 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#333' },
-                    ticks: { color: '#aaa' }
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#4b5563' }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#aaa' }
+                    ticks: { color: '#4b5563' }
                 }
             }
         }
@@ -208,7 +212,7 @@
                 legend: {
                     position: 'bottom',
                     labels: {
-                        color: '#fff',
+                        color: '#4b5563',
                         padding: 20,
                         font: { size: 14 }
                     }
@@ -248,12 +252,12 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#333' },
-                    ticks: { color: '#aaa', stepSize: 1 }
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#4b5563', stepSize: 1 }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#aaa' }
+                    ticks: { color: '#4b5563' }
                 }
             }
         }

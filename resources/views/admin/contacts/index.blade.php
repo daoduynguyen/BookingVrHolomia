@@ -4,8 +4,8 @@
 <div class="container-fluid">
     {{-- 1. Tiêu đề chuẩn Dark Mode --}}
     <div class="d-flex align-items-center mb-4">
-        <div class="bg-info me-3" style="width: 50px; height: 3px;"></div>
-        <h2 class="text-info fw-bold text-uppercase mb-0 letter-spacing-2">Quản lý Liên hệ</h2>
+        <div class="bg-primary me-3" style="width: 50px; height: 3px;"></div>
+        <h2 class="text-primary fw-bold text-uppercase mb-0 letter-spacing-2">Quản lý Liên hệ</h2>
     </div>
 
     {{-- Thông báo thành công --}}
@@ -17,12 +17,12 @@
     @endif
 
     {{-- 2. Khung chứa bảng (Nền tối) --}}
-    <div class="profile-content shadow bg-dark text-light">
+    <div class="profile-content shadow bg-white text-dark">
         <div class="card-body p-0">
             <div class="table-responsive">
                 {{-- 3. Bảng (Table Dark) --}}
-                <table class="table table-dark table-hover align-middle mb-0 border-secondary">
-                    <thead class="bg-secondary text-secondary">
+                <table class="table table-hover align-middle mb-0 border-light">
+                    <thead class="bg-light text-dark">
                         <tr>
                             <th width="5%">STT</th>
                             <th width="20%">Khách hàng</th>
@@ -36,10 +36,10 @@
                         @forelse($contacts as $key => $contact)
                         <tr>
                             {{-- STT --}}
-                            <td class="text-center text-white">{{ $key + 1 }}</td>
+                            <td class="text-center text-dark">{{ $key + 1 }}</td>
                             
                             {{-- Tên khách --}}
-                            <td class="fw-bold text-info">
+                            <td class="fw-bold text-primary">
                                 {{ $contact->name ?? 'Khách vãng lai' }}
                             </td>
 
@@ -47,19 +47,19 @@
                             <td>
                                 <div><i class="bi bi-envelope me-2"></i>{{ $contact->email }}</div>
                                 @if($contact->phone)
-                                    <div class="small text-white mt-1"><i class="bi bi-telephone me-2"></i>{{ $contact->phone }}</div>
+                                    <div class="small text-dark mt-1"><i class="bi bi-telephone me-2"></i>{{ $contact->phone }}</div>
                                 @endif
                             </td>
 
                             {{-- Nội dung --}}
                             <td>
-                                <div class="text-white-50 fst-italic">
+                                <div class="text-muted fst-italic">
                                     "{{ Str::limit($contact->message, 80) }}"
                                 </div>
                             </td>
 
                             {{-- Ngày gửi --}}
-                            <td class="small text-white">
+                            <td class="small text-dark">
                                 {{ $contact->created_at->format('d/m/Y') }}<br>
                                 {{ $contact->created_at->format('H:i') }}
                             </td>
@@ -67,7 +67,7 @@
                             {{-- Thao tác --}}
                             <td class="text-end">
                                 {{-- 1. NÚT PHẢN HỒI --}}
-                                <button type="button" class="btn btn-sm btn-outline-info me-1 btn-reply" 
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-reply" 
                                         data-id="{{ $contact->id }}" 
                                         data-email="{{ $contact->email }}"
                                         data-name="{{ $contact->name }}"
@@ -88,7 +88,7 @@
                         @empty
                         {{-- Trạng thái trống --}}
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-white">
+                            <td colspan="6" class="text-center py-5 text-dark">
                                 <i class="bi bi-inbox fs-1 d-block mb-3"></i>
                                 Hiện chưa có tin nhắn liên hệ nào.
                             </td>
@@ -105,31 +105,31 @@
 {{-- Phần này ẩn đi, chỉ hiện khi bấm nút --}}
 <div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+        <div class="modal-content bg-white text-dark border-light shadow-lg">
             <form id="replyForm" method="POST" action="">
                 @csrf
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-info fw-bold">
+                <div class="modal-header border-light">
+                    <h5 class="modal-title text-primary fw-bold">
                         <i class="bi bi-send-fill me-2"></i>Gửi phản hồi
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     {{-- Thông tin người nhận --}}
                     <div class="mb-3">
                         <label class="form-label text-secondary small text-uppercase fw-bold">Người nhận</label>
-                        <input type="text" class="form-control bg-secondary bg-opacity-10 text-white border-0" id="replyToInfo" readonly>
+                        <input type="text" class="form-control bg-secondary bg-opacity-10 text-dark border-0" id="replyToInfo" readonly>
                     </div>
 
                     {{-- Nhập nội dung --}}
                     <div class="mb-3">
                         <label class="form-label text-secondary small text-uppercase fw-bold">Nội dung trả lời <span class="text-danger">*</span></label>
-                        <textarea name="reply_content" class="form-control bg-black text-white border-secondary" rows="6" required placeholder="Nhập nội dung phản hồi của bạn tại đây..."></textarea>
+                        <textarea name="reply_content" class="form-control bg-light text-dark border-light" rows="6" required placeholder="Nhập nội dung phản hồi của bạn tại đây..."></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-info fw-bold text-dark px-4">
+                    <button type="submit" class="btn btn-primary fw-bold text-dark px-4">
                         <i class="bi bi-cursor-fill me-1"></i> Gửi Email
                     </button>
                 </div>

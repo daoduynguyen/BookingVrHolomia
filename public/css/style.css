@@ -1,153 +1,185 @@
 /* ==========================================================================
-   1. ĐỊNH DẠNG CHUNG (CORE - DARK MODE)
+   1. ĐỊNH DẠNG CHUNG (CORE - MODERN LIGHT THEME)
    ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #0dcaf0;       /* Xanh Cyan */
-    --primary-hover: #0baccc;
-    --bg-dark: #000000;       /* Nền đen tuyền */
-    --bg-card: #1a1d21;       /* Nền card xám đen */
-    --text-main: #ffffff;     /* Chữ trắng */
-    --text-muted: #b0b0b0;    /* Chữ xám */
-    --border-color: #2d3238;  /* Viền xám tối */
+    --primary: #2563eb;       /* Modern Royal Blue */
+    --primary-hover: #1d4ed8;
+    --secondary: #0ea5e9;     /* Light Sky Blue for accents */
+    --bg-main: #ffffff;       /* Pure white background as requested */
+    --bg-card: #f3f4f6;       /* Light gray for cards to stand out */
+    --text-main: #1f2937;     /* Dark gray/black text */
+    --text-muted: #4b5563;    /* Darker gray text for better visibility */
+    --border-color: #e5e7eb;  /* Very light border */
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
     font-family: 'Outfit', sans-serif; 
     line-height: 1.6;
     min-height: 100vh;
 }
+
+/* Force light theme text where Bootstrap bg-dark/text-white is hardcoded */
+.text-white { color: var(--text-main) !important; }
+.bg-dark { background-color: var(--bg-main) !important; }
+.bg-black { background-color: #111827 !important; color: #fff !important; }
+.bg-black .text-white { color: #fff !important; }
+.bg-black .text-info { color: var(--secondary) !important; }
+.bg-black .text-muted { color: #9ca3af !important; }
+
+/* Thay thế text-info bằng màu primary mới */
+.text-info { color: var(--primary) !important; }
 
 /* Fix bố cục chung */
 .section-padding { padding-top: 60px; padding-bottom: 60px; }
 .container-custom { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 
 /* ==========================================================================
-   2. NAVBAR (MENU ĐỒNG BỘ - 4 NÚT GIỐNG NHAU)
+   2. NAVBAR (MENU HIỆN ĐẠI)
    ========================================================================== */
 .navbar {
     z-index: 9999 !important;
-    background-color: rgba(0, 0, 0, 0.95) !important; /* Đen mờ nhẹ */
-    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.98) !important; 
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color) !important;
 }
 
 .navbar-brand {
     font-weight: 800;
-    font-size: 1.5rem;
-    color: var(--text-main) !important;
+    font-size: 1.6rem;
+    color: var(--primary) !important;
     text-transform: uppercase;
+    letter-spacing: -0.5px;
 }
 
-/* Style đồng bộ cho 4 mục menu */
 .navbar-nav .nav-link {
     font-size: 0.95rem !important;
-    font-weight: 700 !important;
+    font-weight: 700 !important; /* Tăng độ đậm */
     text-transform: uppercase !important;
-    color: var(--text-muted) !important;
-    padding: 10px 18px !important;
-    margin: 0 2px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    border: 1px solid transparent; /* Giữ chỗ cho viền */
+    color: #1f2937 !important; /* Đen/Xám cực đậm cho dễ đọc */
+    padding: 8px 16px !important;
+    margin: 0 4px;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    border: none !important;
 }
 
-/* Hiệu ứng Hover & Active (Xanh Cyan) */
 .navbar-nav .nav-link:hover, 
 .navbar-nav .nav-link.active {
     color: var(--primary) !important;
-    background-color: rgba(13, 202, 240, 0.1);
-    border-color: rgba(13, 202, 240, 0.2);
-    transform: translateY(-2px);
+    background-color: rgba(37, 99, 235, 0.08);
+    transform: translateY(-1px);
 }
 
-/* Reset nút CTA (nếu có lỡ dùng) về dạng thường */
-.nav-btn-cta {
-    background: transparent !important;
-    color: var(--text-muted) !important;
-    box-shadow: none !important;
-}
+/* Navbar utilities icon */
+.cart-icon-hover { color: var(--text-main) !important; transition: all 0.2s ease; }
+.cart-icon-hover:hover { color: var(--primary) !important; transform: scale(1.1); }
 
 /* ==========================================================================
-   3. HỒ SƠ & CARD (GIAO DIỆN KHỐI TỐI)
+   3. HỒ SƠ & CARD (GIAO DIỆN KHỐI TÁCH BIỆT NỀN)
    ========================================================================== */
 .profile-content, 
 .card, 
 .checkout-left .card {
-    background-color: var(--bg-card) !important; 
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    padding: 30px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    background-color: var(--bg-card) !important; /* Xám nhạt phân biệt với nền trắng */
+    border: 1px solid #e5e7eb !important; /* Viền xám mảnh */
+    border-radius: 16px !important;
+    padding: 25px !important;
+    box-shadow: var(--shadow-sm) !important;
     margin-bottom: 25px;
     color: var(--text-main);
+    transition: all 0.3s ease;
 }
 
-/* Tiêu đề trong Card */
+.card:hover {
+    box-shadow: var(--shadow-md) !important;
+    border-color: #d1d5db !important; /* Viền đậm hơn chút khi hover */
+}
+
 .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
     color: var(--text-main) !important;
     font-weight: 700;
 }
-.text-info { color: var(--primary) !important; text-shadow: 0 0 10px rgba(13, 202, 240, 0.3); }
 
 /* ==========================================================================
-   4. FORM ELEMENTS (INPUT TỐI)
+   4. FORM ELEMENTS (TỐI ƯU SÁNG, BO GÓC)
    ========================================================================== */
 .form-label {
-    color: var(--text-main) !important; 
+    color: #374151 !important; /* Xám đậm hơn cho dễ nhìn */
     font-weight: 700 !important;
-    margin-bottom: 10px !important;
+    margin-bottom: 8px !important;
     font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .form-control, .form-select {
-    background-color: #111315 !important;
-    border: 1px solid #3f444a !important;
-    color: #ffffff !important;
-    padding: 12px 18px !important;
-    border-radius: 8px !important;
-    transition: all 0.3s ease;
+    background-color: #f1f5f9 !important; /* Xám xanh nhạt nền input */
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important; /* Text cực đậm */
+    padding: 14px 20px !important;
+    border-radius: 12px !important;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
 }
 
-.form-control:focus {
+.form-control:focus, .form-select:focus {
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(13, 202, 240, 0.2) !important;
-    background-color: #111315 !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+    background-color: #ffffff !important;
 }
 
-.form-control::placeholder { color: #6c757d !important; opacity: 1; }
+.form-control::placeholder { color: #94a3b8 !important; }
+
+/* Dropdown styling */
+.dropdown-menu {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    padding: 10px 0;
+}
+.dropdown-item {
+    padding: 10px 20px;
+    font-weight: 500;
+    color: #4b5563 !important;
+}
+.dropdown-item:hover {
+    background-color: #f1f5f9;
+    color: var(--primary) !important;
+}
 
 /* ==========================================================================
-   5. VÉ & VOUCHER (STYLE DARK)
+   5. VÉ & VOUCHER (STYLE NỔI BẬT TỪ NỀN SÁNG)
    ========================================================================== */
 .voucher-ticket {
     display: flex; 
     height: 140px; 
     margin-bottom: 24px;
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    transition: transform 0.3s ease;
+    background-color: var(--bg-card); /* Nền vé hơi xám xíu so với nền chính */
+    border: 1px solid #e5e7eb; /* Viền vé sắc nét */
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 .voucher-ticket:hover { 
     transform: translateY(-5px); 
-    border-color: var(--primary);
-    box-shadow: 0 0 15px rgba(13, 202, 240, 0.15);
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-md);
 }
 
 /* Cột trái (Màu xanh) */
 .voucher-left {
-    flex: 0 0 150px;
-    background: linear-gradient(135deg, #0dcaf0, #0d6efd);
-    color: #000; /* Chữ đen trên nền xanh cho dễ đọc */
+    flex: 0 0 160px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #fff; 
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    border-right: 2px dashed #000;
+    border-right: 2px dashed rgba(255, 255, 255, 0.5); /* Đường gân xé vé */
 }
 
 /* Cột phải (Thông tin) */
@@ -201,22 +233,31 @@ body.admin-body { background-color: #121212; }
 }
 
 /* ==========================================================================
-   7. PHÂN TRANG (PAGINATION) - FIX CHO DARK MODE
+   7. PHÂN TRANG (PAGINATION) - FIX CHO LIGHT MODE
    ========================================================================== */
 .page-link {
-    background-color: #1a1d21 !important;
-    border-color: #333 !important;
-    color: #fff !important;
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-main) !important;
+    border-radius: 8px;
+    margin: 0 4px;
+    transition: all 0.2s ease;
+}
+.page-link:hover {
+    background-color: #f3f4f6 !important;
+    color: var(--primary) !important;
 }
 .page-item.active .page-link {
     background-color: var(--primary) !important;
     border-color: var(--primary) !important;
-    color: #000 !important; /* Chữ đen trên nền xanh */
-    font-weight: bold;
+    color: #fff !important; 
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
 }
 .page-item.disabled .page-link {
-    background-color: #000 !important;
-    color: #555 !important;
+    background-color: #f9fafb !important;
+    color: #d1d5db !important;
+    border-color: var(--border-color) !important;
 }
 
 /* ==========================================================================
@@ -245,17 +286,20 @@ body.admin-body { background-color: #121212; }
 
 /* Nút bấm (Buttons) */
 .btn-info, .btn-primary {
-    background-color: var(--primary) !important;
+    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
     border: none !important;
-    color: #000 !important;
+    color: #fff !important;
     font-weight: 800 !important;
-    padding: 10px 24px;
-    border-radius: 8px;
+    padding: 12px 28px;
+    border-radius: 50px !important;
     text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    letter-spacing: 0.5px;
 }
 .btn-info:hover, .btn-primary:hover {
-    background-color: var(--primary-hover) !important;
-    box-shadow: 0 0 15px rgba(13, 202, 240, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3) !important;
 }
 
 /* Override bắt buộc để xóa nền trắng của Bootstrap */
@@ -266,15 +310,16 @@ body.admin-body { background-color: #121212; }
 .text-dark { color: var(--text-main) !important; }
 
 /* ==========================================================================
-   STYLE CHO VÉ BẢO TRÌ (GIAO DIỆN DARK MODE)
+   STYLE CHO VÉ BẢO TRÌ (GIAO DIỆN LIGHT MODE)
    ========================================================================== */
 
-/* 1. Tổng thể Card: Tối thui và viền nét đứt */
+/* 1. Tổng thể Card: Sáng xám và viền đứt */
 .card-maintenance {
-    background-color: #080808 !important; /* Nền gần như đen tuyệt đối */
-    border: 2px dashed #333 !important;   /* Viền nét đứt cảnh báo */
-    position: relative; /* Để căn chỉnh cái tem bảo trì */
+    background-color: #f3f4f6 !important; 
+    border: 2px dashed #d1d5db !important;   
+    position: relative; 
     overflow: hidden;
+    opacity: 0.8;
 }
 
 /* 2. Ảnh game: Chuyển trắng đen & Mờ đi */

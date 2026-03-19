@@ -10,58 +10,58 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 
-<body class="bg-dark text-white">
+<body class="bg-light text-dark">
     @include('partials.navbar')
 
     <div class="container py-5">
         <div class="d-flex align-items-center mb-5">
-            <div class="bg-info me-3" style="width: 50px; height: 3px;"></div>
-            <h2 class="text-info fw-bold text-uppercase mb-0" style="letter-spacing: 3px;">Liên hệ với Holomia</h2>
+            <div class="bg-primary me-3" style="width: 50px; height: 3px;"></div>
+            <h2 class="text-primary fw-bold text-uppercase mb-0" style="letter-spacing: 3px;">Liên hệ với Holomia</h2>
         </div>
 
         <div class="row g-4">
             <div class="col-lg-5">
-                <div class="profile-content h-100 shadow-lg">
-                    <h4 class="text-white fw-bold mb-4 border-bottom border-secondary pb-3">Thông tin trụ sở</h4>
+                <div class="profile-content h-100 shadow-sm bg-white border border-light p-4 rounded-4">
+                    <h4 class="text-dark fw-bold mb-4 border-bottom border-light pb-3">Thông tin trụ sở</h4>
 
                     <div class="d-flex align-items-start mb-4">
-                        <i class="bi bi-geo-alt-fill text-info fs-3 me-3"></i>
+                        <i class="bi bi-geo-alt-fill text-primary fs-3 me-3"></i>
                         <div>
-                            <h6 class="text-info text-uppercase fw-bold mb-1">Địa chỉ chính</h6>
-                            <p class="text-white opacity-75 mb-0">Tầng 6, Viwaseen Tower, 48 Tố Hữu, P. Đại Mỗ, Hà Nội,
+                            <h6 class="text-primary text-uppercase fw-bold mb-1">Địa chỉ chính</h6>
+                            <p class="text-muted mb-0">Tầng 6, Viwaseen Tower, 48 Tố Hữu, P. Đại Mỗ, Hà Nội,
                                 Việt Nam</p>
                         </div>
                     </div>
 
                     <div class="d-flex align-items-start mb-4">
-                        <i class="bi bi-telephone-fill text-info fs-3 me-3"></i>
+                        <i class="bi bi-telephone-fill text-primary fs-3 me-3"></i>
                         <div>
-                            <h6 class="text-info text-uppercase fw-bold mb-1">Hotline hỗ trợ</h6>
-                            <p class="text-white opacity-75 mb-0">024.6666.8888</p>
+                            <h6 class="text-primary text-uppercase fw-bold mb-1">Hotline hỗ trợ</h6>
+                            <p class="text-muted mb-0">024.6666.8888</p>
                         </div>
                     </div>
 
                     <div class="d-flex align-items-start mb-4">
-                        <i class="bi bi-envelope-at-fill text-info fs-3 me-3"></i>
+                        <i class="bi bi-envelope-at-fill text-primary fs-3 me-3"></i>
                         <div>
-                            <h6 class="text-info text-uppercase fw-bold mb-1">Email liên hệ</h6>
-                            <p class="text-white opacity-75 mb-0">info@holomia.com</p>
+                            <h6 class="text-primary text-uppercase fw-bold mb-1">Email liên hệ</h6>
+                            <p class="text-muted mb-0">info@holomia.com</p>
                         </div>
                     </div>
 
                     <div class="d-flex align-items-start mb-4">
-                        <i class="bi bi-clock-fill text-info fs-3 me-3"></i>
+                        <i class="bi bi-clock-fill text-primary fs-3 me-3"></i>
                         <div>
-                            <h6 class="text-info text-uppercase fw-bold mb-1">Giờ mở cửa</h6>
-                            <p class="text-white opacity-75 mb-0">08:00 - 17:30 (Từ thứ 2 - Thứ 6)</p>
+                            <h6 class="text-primary text-uppercase fw-bold mb-1">Giờ mở cửa</h6>
+                            <p class="text-muted mb-0">08:00 - 17:30 (Từ thứ 2 - Thứ 6)</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-7">
-                <div class="profile-content shadow-lg">
-                    <h4 class="text-white fw-bold mb-4 border-bottom border-secondary pb-3">Gửi tin nhắn cho chúng tôi
+                <div class="profile-content shadow-sm bg-white border border-light p-4 rounded-4">
+                    <h4 class="text-dark fw-bold mb-4 border-bottom border-light pb-3">Gửi tin nhắn cho chúng tôi
                     </h4>
 
                     <form action="{{ route('contact') }}" method="POST">
@@ -94,7 +94,7 @@
                                 placeholder="Bạn cần chúng tôi giúp gì?" required></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-info w-100 fw-bold py-3 text-uppercase shadow">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-3 text-uppercase shadow-sm">
                             <i class="bi bi-send-fill me-2"></i> Gửi tin nhắn ngay
                         </button>
 
@@ -147,21 +147,21 @@
         <span class="badge rounded-pill bg-info text-dark" style="position: absolute; top: 0; right: 0;">Online</span>
     </div>
 
-    <div id="ai-chat-box" class="bg-dark shadow-lg rounded"
+    <div id="ai-chat-box" class="bg-white shadow-lg rounded"
         style="display: none; position: fixed; bottom: 110px; right: 30px; width: 350px; height: 450px; z-index: 10000; border: 1px solid #0dcaf0; overflow: hidden;">
-        <div class="bg-info p-3 d-flex justify-content-between align-items-center">
+        <div class="bg-primary p-3 d-flex justify-content-between align-items-center">
             <strong class="text-white">Trợ lý Holomia AI</strong>
             <span id="close-chat" style="cursor: pointer; color: white; font-weight: bold;">X</span>
         </div>
         <div id="chat-content" class="p-3"
-            style="height: 330px; overflow-y: auto; font-size: 14px; background: #212529;">
-            <div class="text-info mb-2">AI: Chào bạn! Bạn cần hỏi gì về vé VR không?</div>
+            style="height: 330px; overflow-y: auto; font-size: 14px; background: #f8f9fa;">
+            <div class="text-primary mb-2">AI: Chào bạn! Bạn cần hỏi gì về vé VR không?</div>
         </div>
-        <div class="p-2 border-top border-secondary bg-dark">
+        <div class="p-2 border-top border-light bg-light">
             <div class="input-group">
-                <input type="text" id="user-input" class="form-control bg-secondary text-white border-0"
+                <input type="text" id="user-input" class="form-control bg-white text-dark border-1"
                     placeholder="Hỏi AI...">
-                <button class="btn btn-info" id="send-btn"><i class="bi bi-send-fill"></i></button>
+                <button class="btn btn-primary" id="send-btn"><i class="bi bi-send-fill"></i></button>
             </div>
         </div>
     </div>

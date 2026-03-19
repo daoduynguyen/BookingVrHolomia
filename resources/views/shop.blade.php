@@ -33,25 +33,37 @@
     </style>
 </head>
 
-<body class="bg-dark text-white">
+<body class="bg-light text-dark">
 
     @include('partials.navbar')
 
-    <div class="container py-5">
-
-        <div class="text-center mb-5">
-            <h2 class="text-info fw-bold text-uppercase display-6">
-                <i class="bi bi-shop"></i> KHO VÉ TOÀN TẬP
-            </h2>
-            <p class="text-secondary">Hiện có tổng cộng {{ $tickets->total() }} trò chơi trong hệ thống</p>
-            <div style="width: 60px; height: 3px; background-color: #0dcaf0; margin: 10px auto;"></div>
+    {{-- Mini Hero Banner --}}
+    <div class="container-fluid p-0 mb-5">
+        <div class="position-relative d-flex align-items-center justify-content-center" 
+             style="height: 300px; margin-bottom: 60px;
+                    background: url('https://images.unsplash.com/photo-1593508512255-86ab42a8e620?q=80&w=2000&auto=format&fit=crop') center/bottom no-repeat fixed; background-size: cover;">
+            
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
+            
+            <div class="container position-relative text-center text-white" style="z-index: 1;">
+                <h1 class="display-4 fw-bold text-uppercase mb-2 text-shadow" style="letter-spacing: 2px;">
+                    <i class="bi bi-shop text-info"></i> KHO VÉ TOÀN TẬP
+                </h1>
+                <p class="lead text-light opacity-75">Hiện có tổng cộng {{ $tickets->total() }} trò chơi trong hệ thống</p>
+            </div>
         </div>
+    </div>
+    
+    <!-- THANH TÌM KIẾM NỔI -->
+    @include('partials.search_bar')
+
+    <div class="container pb-5">
 
         <div class="row g-4">
             @foreach($tickets as $ticket)
                 <div class="col-md-4">
                     <div
-                        class="card h-100 card-game text-white overflow-hidden rounded-3 {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
+                        class="card h-100 card-game overflow-hidden rounded-4 border-0 {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
 
                         @if($ticket->status == 'maintenance')
                             <div class="badge-maintenance">BẢO TRÌ</div>
@@ -62,44 +74,44 @@
                                 style="height: 200px; object-fit: cover;">
 
                             {{-- Badge danh mục --}}
-                            <span class="position-absolute top-0 start-0 m-2 badge bg-primary opacity-75">
+                            <span class="position-absolute top-0 start-0 m-3 badge bg-primary bg-opacity-90 px-3 py-2 rounded-pill shadow-sm">
                                 {{ $ticket->category->name }}
                             </span>
 
                             {{-- NÚT THẢ TIM  --}}
                             <button
-                                class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 shadow-sm btn-wishlist btn-toggle-wishlist-global"
+                                class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3 shadow-sm btn-wishlist btn-toggle-wishlist-global"
                                 data-id="{{ $ticket->id }}" title="Thêm vào yêu thích">
                                 @if(Auth::check() && Auth::user()->favorites->contains($ticket->id))
-                                    <i class="bi bi-heart-fill text-danger"></i>
+                                    <i class="bi bi-heart-fill text-danger fs-5"></i>
                                 @else
-                                    <i class="bi bi-heart text-danger"></i>
+                                    <i class="bi bi-heart text-danger fs-5"></i>
                                 @endif
                             </button>
                         </div>
 
-                        <div class="card-body d-flex flex-column p-3 bg-dark">
-                            <h5 class="card-title fw-bold text-truncate">{{ $ticket->name }}</h5>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h5 class="card-title fw-bold text-truncate mb-3 align-items-center" style="font-size: 1.25rem;">{{ $ticket->name }}</h5>
 
-                            <div class="d-flex justify-content-between small text-secondary mb-3">
-                                <span><i class="bi bi-geo-alt"></i> {{ $ticket->location->name }}</span>
-                                <span><i class="bi bi-star-fill text-warning"></i> {{ $ticket->avg_rating }}</span>
+                            <div class="d-flex justify-content-between small text-muted mb-4 fw-medium">
+                                <span><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $ticket->location->name }}</span>
+                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill"><i class="bi bi-star-fill"></i> {{ $ticket->avg_rating }}</span>
                             </div>
 
                             <div
-                                class="mt-auto d-flex justify-content-between align-items-center bg-secondary bg-opacity-10 p-2 rounded">
+                                class="mt-auto d-flex justify-content-between align-items-center bg-light p-3 rounded-4 shadow-sm border border-light">
                                 <div>
-                                    <span class="d-block small text-secondary" style="font-size: 0.7rem;">Ngày thường</span>
-                                    <span class="fw-bold text-info">{{ number_format($ticket->price) }}đ</span>
+                                    <span class="d-block small text-muted fw-bold mb-1" style="font-size: 0.75rem;">GIÁ TỪ</span>
+                                    <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                                 </div>
 
                                 @if($ticket->status == 'maintenance')
-                                    <button class="btn btn-secondary btn-sm fw-bold shadow-sm" disabled>Tạm đóng</button>
+                                    <button class="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm" disabled>Tạm đóng</button>
                                 @else
                                     {{-- TRỎ ĐẾN ROUTE booking.form --}}
                                     <a href="{{ route('booking.form', $ticket->id) }}"
-                                        class="btn btn-info btn-sm fw-bold shadow-sm text-dark">
-                                        <i class="bi bi-ticket-perforated"></i> Đặt vé ngay
+                                        class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center">
+                                        <i class="bi bi-ticket-perforated me-2"></i> ĐẶT VÉ
                                     </a>
                                 @endif
                             </div>

@@ -4,7 +4,7 @@
     <style>
         /* Style đặc trị cho các ô Khung giờ để hiển thị dạng lưới đẹp mắt */
         .slot-box {
-            border: 1px solid #444;
+            border: 1px solid #858383;
             border-radius: 12px;
             padding: 15px;
             text-align: center;
@@ -15,14 +15,14 @@
         }
         .slot-box:hover { 
             transform: translateY(-5px); 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
+            box-shadow: 0 10px 20px rgba(61, 59, 59, 0.5); 
             border-color: #0dcaf0;
         }
 
-        /* Màu sắc theo Tone Admin Dark của Holomia */
-        .slot-empty { background-color: #1a1d20; color: #ffffff; border-color: #333; }
-        .slot-booking { background-color: #3d3511; color: #ffc107; border-color: #ffc107; }
-        .slot-full { background-color: #411418; color: #dc3545; border-color: #dc3545; }
+        /* Màu sắc đã được đổi sang Tone Xám Sáng / Hiện đại */
+        .slot-empty { background-color: #f3f4f6; color: #374151; border-color: #d1d5db; } /* Màu Xám dịu mắt cho ô trống */
+        .slot-booking { background-color: #fffbeb; color: #b45309; border-color: #fde68a; } /* Vàng pastel cho ô đang nhận */
+        .slot-full { background-color: #fef2f2; color: #b91c1c; border-color: #fecaca; } /* Đỏ pastel cho ô đã đầy */
 
         .time-label { font-size: 1.3rem; font-weight: bold; display: block; margin-bottom: 5px; }
         .capacity-label { font-size: 0.85rem; opacity: 0.8; }
@@ -40,13 +40,13 @@
     <div class="container-fluid">
         {{-- THÔNG BÁO THÀNH CÔNG/LỖI --}}
         @if(session('success'))
-            <div class="alert alert-success bg-success text-white border-0">{{ session('success') }}</div>
+            <div class="alert alert-success bg-success text-dark border-0">{{ session('success') }}</div>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger bg-danger text-white border-0">{{ session('error') }}</div>
+            <div class="alert alert-danger bg-danger text-dark border-0">{{ session('error') }}</div>
         @endif
         @if($errors->any())
-            <div class="alert alert-danger bg-danger text-white border-0">
+            <div class="alert alert-danger bg-danger text-dark border-0">
                 <ul class="mb-0">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -60,17 +60,17 @@
             
             {{-- Bên Trái: Tiêu đề --}}
             <div class="d-flex align-items-center flex-shrink-0">
-                <div class="bg-info me-3" style="width: 50px; height: 3px;"></div>
-                <h2 class="text-info fw-bold text-uppercase mb-0 letter-spacing-2 text-nowrap">Quản lý lịch đặt vé</h2>
+                <div class="bg-primary me-3" style="width: 50px; height: 3px;"></div>
+                <h2 class="text-primary fw-bold text-uppercase mb-0 letter-spacing-2 text-nowrap">Quản lý lịch đặt vé</h2>
             </div>
 
             {{-- Bên Phải: Bộ lọc và Nút Tạo --}}
             <div class="d-flex align-items-center gap-3 flex-wrap flex-md-nowrap">
                 
                 {{-- Form chọn ngày xem lịch --}}
-                <form action="{{ route('admin.slots.index') }}" method="GET" class="d-flex align-items-center gap-2 m-0 border-end border-secondary pe-3">
-                    <label class="text-white-50 fw-bold text-nowrap mb-0">Xem ngày:</label>
-                    <input type="date" name="date" class="form-control bg-dark text-white border-secondary" 
+                <form action="{{ route('admin.slots.index') }}" method="GET" class="d-flex align-items-center gap-2 m-0 border-end border-light pe-3">
+                    <label class="text-muted fw-bold text-nowrap mb-0">Xem ngày:</label>
+                    <input type="date" name="date" class="form-control bg-white text-dark border-light" 
                            value="{{ $selectedDate }}" onchange="this.form.submit()" style="width: auto;">
                 </form>
 
@@ -89,11 +89,11 @@
         {{-- 2. CHÚ THÍCH TRẠNG THÁI --}}
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card bg-dark border-secondary shadow-sm">
+                <div class="card bg-white border-light shadow-sm">
                     <div class="card-body d-flex justify-content-center gap-4 py-2">
-                        <small class="text-white"><i class="bi bi-circle-fill me-1"></i> Trống (Sẵn sàng)</small>
-                        <small class="text-warning"><i class="bi bi-circle-fill text-warning me-1"></i> Đang nhận (Còn chỗ)</small>
-                        <small class="text-danger"><i class="bi bi-circle-fill text-danger me-1"></i> Đã đầy (Hết chỗ)</small>
+                        <small class="text-dark"><i class="bi bi-circle-fill me-1" style="color: #374151 !important;"></i> Trống (Sẵn sàng)</small>
+                        <small class="text-warning"><i class="bi bi-circle-fill text-warning me-1" style="color: #b45309 !important;"></i> Đang nhận (Còn chỗ)</small>
+                        <small class="text-danger"><i class="bi bi-circle-fill text-danger me-1" style="color: #b91c1c !important;"></i> Đã đầy (Hết chỗ)</small>
                     </div>
                 </div>
             </div>
@@ -101,9 +101,9 @@
 
         {{-- 3. DANH SÁCH LỊCH THEO TỪNG TRÒ CHƠI --}}
         @foreach($tickets as $ticket)
-            <div class="card bg-dark border-secondary shadow mb-5">
-                <div class="card-header bg-transparent border-secondary py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="text-info fw-bold mb-0">
+            <div class="card bg-white border-light shadow mb-5">
+                <div class="card-header bg-transparent border-light py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="text-primary fw-bold mb-0">
                         <i class="bi bi-controller me-2"></i> {{ $ticket->name }}
                     </h5>
                     
@@ -113,7 +113,6 @@
                             <i class="bi bi-plus-lg"></i> Thêm ca lẻ
                         </button>
                         
-                        {{-- NÚT TẠO LỊCH TỰ ĐỘNG CHO TỪNG GAME --}}
                         {{-- NÚT TẠO LỊCH TỰ ĐỘNG CHO TỪNG GAME --}}
                         <form action="{{ route('admin.slots.generate') }}" method="POST" class="m-0">
                             @csrf
@@ -167,7 +166,7 @@
              onclick="event.stopPropagation();"> {{-- THÊM DÒNG NÀY ĐỂ CHẶN CLICK NHẦM --}}
             
             {{-- Nút Sửa --}}
-            <button type="button" class="btn btn-sm text-info p-1" data-bs-toggle="modal" data-bs-target="#editSlotModal-{{ $slot->id }}">
+            <button type="button" class="btn btn-sm text-primary p-1" data-bs-toggle="modal" data-bs-target="#editSlotModal-{{ $slot->id }}">
                 <i class="bi bi-pencil-square fs-6"></i>
             </button>
             
@@ -191,35 +190,35 @@
                             {{-- 🌟 MODAL SỬA CA CHƠI NÀY --}}
                             <div class="modal fade" id="editSlotModal-{{ $slot->id }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content bg-dark border-secondary">
-                                        <div class="modal-header border-secondary">
-                                            <h5 class="modal-title text-info"><i class="bi bi-pencil-square"></i> Sửa ca chơi</h5>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <div class="modal-content bg-white border-light">
+                                        <div class="modal-header border-light">
+                                            <h5 class="modal-title text-primary"><i class="bi bi-pencil-square"></i> Sửa ca chơi</h5>
+                                            <button type="button" class="btn-close btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <form action="{{ route('admin.slots.update', $slot->id) }}" method="POST">
                                             @csrf
                                             @method('PUT')
-                                            <div class="modal-body text-white">
+                                            <div class="modal-body text-dark">
                                                 <div class="row g-3">
                                                     <div class="col-md-6">
                                                         <label class="form-label text-secondary small">Giờ bắt đầu</label>
                                                         {{-- Thay input time bằng input text dùng Flatpickr --}}
-                                                        <input type="text" name="start_time" class="form-control bg-black text-white border-secondary time-picker" required value="{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}">
+                                                        <input type="text" name="start_time" class="form-control bg-light text-dark border-light time-picker" required value="{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}">
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label text-secondary small">Giờ kết thúc</label>
-                                                        <input type="text" name="end_time" class="form-control bg-black text-white border-secondary time-picker" required value="{{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}">
+                                                        <input type="text" name="end_time" class="form-control bg-light text-dark border-light time-picker" required value="{{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}">
                                                     </div>
                                                     <div class="col-12">
                                                         <label class="form-label text-secondary small">Sức chứa tối đa</label>
-                                                        <input type="number" name="capacity" class="form-control bg-black text-white border-secondary" required min="{{ $slot->booked_count > 0 ? $slot->booked_count : 1 }}" value="{{ $slot->capacity }}">
+                                                        <input type="number" name="capacity" class="form-control bg-light text-dark border-light" required min="{{ $slot->booked_count > 0 ? $slot->booked_count : 1 }}" value="{{ $slot->capacity }}">
                                                         @if($slot->booked_count > 0)
                                                             <small class="text-warning">Đã có {{ $slot->booked_count }} người đặt. Sức chứa không được nhỏ hơn số này.</small>
                                                         @endif
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer border-secondary">
+                                            <div class="modal-footer border-light">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                                                 <button type="submit" class="btn btn-info fw-bold">Lưu thay đổi</button>
                                             </div>
@@ -232,8 +231,8 @@
                     @else
                         {{-- TRƯỜNG HỢP CHƯA CÓ DỮ LIỆU --}}
                         <div class="text-center py-5">
-                            <i class="bi bi-calendar-x text-white-50 display-4 opacity-25"></i>
-                            <p class="text-white-50 mt-3">Chưa có khung giờ nào cho ngày {{ \Carbon\Carbon::parse($selectedDate)->format('d/m/Y') }}</p>
+                            <i class="bi bi-calendar-x text-muted display-4 opacity-25"></i>
+                            <p class="text-muted mt-3">Chưa có khung giờ nào cho ngày {{ \Carbon\Carbon::parse($selectedDate)->format('d/m/Y') }}</p>
                             <form action="{{ route('admin.slots.generate') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
@@ -250,33 +249,33 @@
             {{-- 🌟 MODAL THÊM CA LẺ CHO TRÒ CHƠI NÀY --}}
             <div class="modal fade" id="addSlotModal-{{ $ticket->id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content bg-dark border-secondary">
-                        <div class="modal-header border-secondary">
+                    <div class="modal-content bg-white border-light">
+                        <div class="modal-header border-light">
                             <h5 class="modal-title text-success"><i class="bi bi-plus-circle"></i> Thêm ca lẻ - {{ $ticket->name }}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form action="{{ route('admin.slots.store-single') }}" method="POST">
                             @csrf
                             <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
                             <input type="hidden" name="date" value="{{ $selectedDate }}">
-                            <div class="modal-body text-white">
+                            <div class="modal-body text-dark">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label text-secondary small">Giờ bắt đầu</label>
                                         {{-- Thay input time bằng input text dùng Flatpickr --}}
-                                        <input type="text" name="start_time" class="form-control bg-black text-white border-secondary time-picker" required>
+                                        <input type="text" name="start_time" class="form-control bg-light text-dark border-light time-picker" required>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label text-secondary small">Giờ kết thúc</label>
-                                        <input type="text" name="end_time" class="form-control bg-black text-white border-secondary time-picker" required>
+                                        <input type="text" name="end_time" class="form-control bg-light text-dark border-light time-picker" required>
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label text-secondary small">Sức chứa tối đa</label>
-                                        <input type="number" name="capacity" class="form-control bg-black text-white border-secondary" required min="1" value="15">
+                                        <input type="number" name="capacity" class="form-control bg-light text-dark border-light" required min="1" value="15">
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer border-secondary">
+                            <div class="modal-footer border-light">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                                 <button type="submit" class="btn btn-success fw-bold">Tạo ca</button>
                             </div>
@@ -289,17 +288,17 @@
             {{-- 🌟 MODAL TẠO LỊCH HÀNG LOẠT (NHIỀU NGÀY) --}}
     <div class="modal fade" id="bulkGenerateModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark border-secondary shadow-lg">
-                <div class="modal-header border-secondary">
+            <div class="modal-content bg-white border-light shadow-lg">
+                <div class="modal-header border-light">
                     <h5 class="modal-title text-warning fw-bold">
                         <i class="bi bi-calendar-range me-2"></i> Tạo lịch hàng loạt
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{{ route('admin.slots.generate') }}" method="POST">
                     @csrf
-                    <div class="modal-body text-white">
-                        <div class="alert alert-info bg-info bg-opacity-10 border-info border-opacity-25 text-info small mb-4">
+                    <div class="modal-body text-dark">
+                        <div class="alert alert-info bg-primary bg-opacity-10 border-primary border-opacity-25 text-primary small mb-4">
                             <i class="bi bi-info-circle-fill me-2"></i>
                             Hệ thống sẽ tự động tạo 14 ca chơi (08:00 - 21:00) cho <b>TẤT CẢ TRÒ CHƠI</b> trong khoảng thời gian bạn chọn. Ca nào đã có sẽ tự động bỏ qua để tránh trùng lặp.
                         </div>
@@ -307,15 +306,15 @@
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Từ ngày</label>
-                                <input type="date" name="start_date" class="form-control bg-black text-white border-secondary" required value="{{ $selectedDate }}">
+                                <input type="date" name="start_date" class="form-control bg-light text-dark border-light" required value="{{ $selectedDate }}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Đến ngày</label>
-                                <input type="date" name="end_date" class="form-control bg-black text-white border-secondary" required value="{{ \Carbon\Carbon::parse($selectedDate)->addDays(2)->format('Y-m-d') }}">
+                                <input type="date" name="end_date" class="form-control bg-light text-dark border-light" required value="{{ \Carbon\Carbon::parse($selectedDate)->addDays(2)->format('Y-m-d') }}">
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-secondary">
+                    <div class="modal-footer border-light">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
                         <button type="submit" class="btn btn-warning fw-bold text-dark px-4">
                             <i class="bi bi-lightning-charge-fill me-1"></i> BẮT ĐẦU TẠO
@@ -352,20 +351,20 @@
 
     <div class="modal fade" id="customerListModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content bg-dark border-secondary shadow-lg">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-info">
+            <div class="modal-content bg-white border-light shadow-lg">
+                <div class="modal-header border-light">
+                    <h5 class="modal-title text-primary">
                         <i class="bi bi-people-fill me-2"></i> Danh sách khách hàng ca <span id="modal-slot-time"></span>
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="d-flex justify-content-between mb-3 text-white-50 small">
-                        <span>Ngày: <b id="modal-slot-date" class="text-white"></b></span>
-                        <span>Sức chứa: <b id="modal-slot-usage" class="text-white"></b></span>
+                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                        <span>Ngày: <b id="modal-slot-date" class="text-dark"></b></span>
+                        <span>Sức chứa: <b id="modal-slot-usage" class="text-dark"></b></span>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover border-secondary">
+                        <table class="table table-hover border-light">
                             <thead>
                                 <tr>
                                     <th>Khách hàng</th>
@@ -398,7 +397,7 @@
     var customerModal = bootstrap.Modal.getOrCreateInstance(modalElement);
     
     // 2. Hiện loading trong khi chờ AJAX
-    $('#customer-table-body').html('<tr><td colspan="5" class="text-center text-info py-4"><div class="spinner-border spinner-border-sm me-2"></div> Đang tải dữ liệu...</td></tr>');
+    $('#customer-table-body').html('<tr><td colspan="5" class="text-center text-primary py-4"><div class="spinner-border spinner-border-sm me-2"></div> Đang tải dữ liệu...</td></tr>');
     customerModal.show();
 
     // 3. Gọi AJAX lấy dữ liệu từ Controller
@@ -413,24 +412,24 @@
 
             var html = '';
             if (!response.customers || response.customers.length === 0) {
-                html = '<tr><td colspan="5" class="text-center text-white-50 py-4">Chưa có khách nào đặt ca này.</td></tr>';
+                html = '<tr><td colspan="5" class="text-center text-muted py-4">Chưa có khách nào đặt ca này.</td></tr>';
             } else {
                 response.customers.forEach(function(cust) {
                     // Tự động đổi màu badge theo trạng thái đơn hàng
                     let statusClass = 'bg-warning text-dark';
                     if(cust.status === 'completed' || cust.status === 'paid' || cust.status === 'success') {
-                        statusClass = 'bg-success text-white';
+                        statusClass = 'bg-success text-dark';
                     }
                     
                     html += `
                         <tr>
                             <td>
-                                <div class="fw-bold text-white">${cust.name}</div>
-                                <small class="text-info">Đơn: #${cust.order_id}</small>
+                                <div class="fw-bold text-dark">${cust.name}</div>
+                                <small class="text-primary">Đơn: #${cust.order_id}</small>
                             </td>
                             <td>${cust.phone}</td>
                             <td class="text-center">${cust.qty}</td>
-                            <td class="text-uppercase small text-white-50">${cust.payment || 'N/A'}</td>
+                            <td class="text-uppercase small text-muted">${cust.payment || 'N/A'}</td>
                             <td><span class="badge ${statusClass}">${cust.status}</span></td>
                         </tr>`;
                 });

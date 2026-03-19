@@ -15,7 +15,7 @@
     <style>
         /* 1. Reset Body để ẩn thanh cuộn thừa của toàn trang */
         body {
-            background-color: #121212;
+            background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             /* CẤM TOÀN TRANG CUỘN */
@@ -33,12 +33,12 @@
         /* 3. Khung Sidebar (Bên trái) */
         .sidebar-container {
             width: 280px;
-            background: #0f0f0f;
-            border-right: 1px solid #2d2d2d;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
             flex-shrink: 0;
             /* Ngăn không cho menu bị bóp méo khi màn hình nhỏ */
             z-index: 100;
@@ -48,7 +48,7 @@
         .sidebar-brand {
             padding: 2.5rem 1.5rem;
             text-align: center;
-            border-bottom: 1px solid #2d2d2d;
+            border-bottom: 1px solid #e5e7eb;
             margin-bottom: 1.5rem;
         }
 
@@ -57,11 +57,11 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             margin: 0;
-            color: #ffffff;
+            color: #1f2937;
         }
 
         .sidebar-brand .highlight {
-            color: #0dcaf0;
+            color: #2563eb;
             font-weight: 800;
         }
 
@@ -78,26 +78,26 @@
         }
 
         .sidebar-menu-wrapper::-webkit-scrollbar-thumb {
-            background: #333;
+            background: #d1d5db;
             border-radius: 4px;
         }
 
         .sidebar-menu-wrapper::-webkit-scrollbar-thumb:hover {
-            background: #0dcaf0;
+            background: #2563eb;
         }
 
-        /* 6. Menu Item */
-        .nav-link {
-            color: #a0a0a0 !important;
-            padding: 12px 24px;
-            margin-bottom: 4px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            border-left: 3px solid transparent;
-        }
+       /* 6. Menu Item */
+.nav-link {
+    color: #000000 !important; /* Đã đổi sang màu đen tuyền */
+    padding: 12px 24px;
+    margin-bottom: 4px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid transparent;
+}
 
         .nav-link i {
             width: 30px;
@@ -108,31 +108,31 @@
         }
 
         .nav-link:hover {
-            color: #ffffff !important;
-            background-color: rgba(255, 255, 255, 0.05);
+            color: #1f2937 !important;
+            background-color: rgba(37, 99, 235, 0.05);
             padding-left: 28px;
         }
 
         .nav-link:hover i {
-            color: #0dcaf0;
+            color: #2563eb;
         }
 
         .nav-link.active {
-            color: #0dcaf0 !important;
-            background: linear-gradient(90deg, rgba(13, 202, 240, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
-            border-left: 3px solid #0dcaf0;
+            color: #2563eb !important;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+            border-left: 3px solid #2563eb;
         }
 
         .nav-link.active i {
-            color: #0dcaf0;
+            color: #2563eb;
             transform: scale(1.1);
         }
 
         /* 7. Nút đăng xuất */
         .logout-container {
             padding: 1.5rem;
-            border-top: 1px solid #2d2d2d;
-            background: #0f0f0f;
+            border-top: 1px solid #e5e7eb;
+            background: #ffffff;
             /* Đảm bảo màu nền dính liền */
         }
 
@@ -159,7 +159,7 @@
             height: 100vh;
             overflow-y: auto;
             /* THANH CUỘN CHÍNH NẰM Ở ĐÂY */
-            background-color: #121212;
+            background-color: #f3f4f6;
             padding: 2rem;
             /* Giảm padding xuống một chút cho đỡ trống */
         }
@@ -170,17 +170,24 @@
         }
 
         .main-content::-webkit-scrollbar-thumb {
-            background: #444;
+            background: #d1d5db;
             border-radius: 10px;
         }
 
         .main-content::-webkit-scrollbar-thumb:hover {
-            background: #0dcaf0;
+            background: #2563eb;
+        }
+
+        .sidebar-container .nav-link:not(.active),
+        .sidebar-container .nav-link:not(.active) span,
+        .sidebar-container .nav-link:not(.active) i {
+            color: #000000 !important;
+            font-weight: 600; 
         }
     </style>
 </head>
 
-<body class="text-white">
+<body class="text-dark bg-light">
 
     <div class="admin-wrapper">
 

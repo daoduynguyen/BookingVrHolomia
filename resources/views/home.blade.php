@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 </head>
-<body class="bg-dark text-white">
+<body class="bg-light text-dark">
     
     @include('partials.navbar')
 
     <div class="container-fluid p-0 mb-5">
         <div class="position-relative d-flex align-items-center justify-content-center" 
-             style="height: 600px; 
+             style="height: 600px; margin-bottom: 60px;
                     background: url('https://images.unsplash.com/photo-1614726365723-49cfae9686ae?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat fixed;">
             
             <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
@@ -40,6 +40,9 @@
         </div>
     </div>
     
+    <!-- THANH TÌM KIẾM NỔI -->
+    @include('partials.search_bar')
+
     <div id="featured-games"></div>
     
     <div class="container pb-5" id="list-games">
@@ -66,7 +69,7 @@
             @else
                 @foreach($tickets as $ticket)
                     <div class="col-md-4">
-                        <div class="card h-100 card-game text-white overflow-hidden rounded-3 border-0 shadow-sm {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
+                        <div class="card h-100 card-game overflow-hidden rounded-4 border-0 {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
                             
                             @if($ticket->status == 'maintenance')
                                 <div class="badge-maintenance">BẢO TRÌ</div>
@@ -78,36 +81,36 @@
                                      alt="{{ $ticket->name }}" 
                                      style="height: 240px; object-fit: cover;">
                                 
-                                <div class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark shadow">
-                                    <i class="bi bi-star-fill"></i> {{ $ticket->avg_rating }}
+                                <div class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
+                                    <i class="bi bi-star-fill text-dark"></i> {{ $ticket->avg_rating }}
                                 </div>
                             </div>
                             
-                            <div class="card-body d-flex flex-column p-3 bg-dark">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-info text-dark bg-opacity-75">{{ $ticket->category->name }}</span>
-                                    <small class="text-secondary" style="font-size: 0.75rem;">
-                                        <i class="bi bi-person-check-fill"></i> {{ number_format($ticket->play_count) }} lượt
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
+                                    <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+                                        <i class="bi bi-person-check-fill text-secondary"></i> {{ number_format($ticket->play_count) }} lượt
                                     </small>
                                 </div>
                                 
-                                <h5 class="card-title fw-bold mb-1 text-truncate" title="{{ $ticket->name }}">
+                                <h5 class="card-title fw-bold mb-2 text-truncate" title="{{ $ticket->name }}" style="font-size: 1.2rem;">
                                     {{ $ticket->name }}
                                 </h5>
                                 
-                                <p class="small text-secondary mb-3">
-                                    <i class="bi bi-geo-alt-fill text-danger"></i> {{ $ticket->location->name }}
+                                <p class="small text-muted mb-4 fw-medium">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $ticket->location->name }}
                                 </p>
                                 
-                                <div class="mt-auto border-top border-secondary pt-2 mb-3">
+                                <div class="mt-auto pt-3 border-top border-light mb-4">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="small text-secondary">Giá vé từ:</span>
-                                        <span class="fw-bold text-info">{{ number_format($ticket->price) }}đ</span>
+                                        <span class="small text-muted fw-medium">Giá vé từ:</span>
+                                        <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                                     </div>
                                 </div>
 
-                                <a href="{{ route('ticket.show', $ticket->id) }}" class="btn btn-outline-light w-100 fw-bold py-2 text-uppercase btn-sm">
-                                    {{ $ticket->status == 'maintenance' ? 'Xem thông tin' : 'Xem chi tiết' }}
+                                <a href="{{ route('ticket.show', $ticket->id) }}" class="btn btn-primary w-100 fw-bold py-2 text-uppercase shadow-sm">
+                                    {{ $ticket->status == 'maintenance' ? 'Xem thông tin' : 'ĐẶT VÉ NGAY' }}
                                 </a>
                             </div>
                         </div>

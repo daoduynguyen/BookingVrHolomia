@@ -4,11 +4,11 @@
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div class="d-flex align-items-center">
-                <div class="bg-info me-3" style="width: 50px; height: 3px;"></div>
-                <h2 class="text-info fw-bold text-uppercase mb-0 letter-spacing-2">Quản lý kho vé VR</h2>
+                <div class="bg-primary me-3" style="width: 50px; height: 3px;"></div>
+                <h2 class="text-primary fw-bold text-uppercase mb-0 letter-spacing-2">Quản lý kho vé VR</h2>
             </div>
             {{-- Link thêm mới --}}
-            <a href="{{ route('admin.tickets.create') }}" class="btn btn-info fw-bold text-dark px-4 shadow">
+            <a href="{{ route('admin.tickets.create') }}" class="btn btn-primary fw-bold text-white px-4 shadow">
                 <i class="bi bi-plus-lg me-2"></i>THÊM VÉ MỚI
             </a>
         </div>
@@ -21,11 +21,11 @@
             </div>
         @endif
 
-        <div class="profile-content shadow">
+        <div class="profile-content shadow-sm p-4 bg-white rounded-4 border border-light">
             <div class="table-responsive">
-                <table class="table table-dark table-hover align-middle border-secondary">
+                <table class="table table-hover align-middle border-light">
                     <thead>
-                        <tr class="text-secondary border-bottom border-secondary">
+                        <tr class="text-muted border-bottom border-light">
                             <th width="10%">Ảnh</th>
                             <th width="25%">Tên trò chơi</th>
                             <th width="15%">Thể loại</th>
@@ -46,16 +46,16 @@
                                 
                                 {{-- 2. Tên --}}
                                 <td>
-                                    <h6 class="fw-bold mb-0 ">{{ $ticket->name }}</h6>
+                                    <h6 class="fw-bold mb-0 text-dark">{{ $ticket->name }}</h6>
                                     {{-- Hiển thị thêm tên cơ sở cho dễ quản lý --}}
                                     @if($ticket->location)
-                                        <small class="text-while-50"><i class="bi bi-geo-alt-fill me-1 text-white-50"></i>{{ $ticket->location->name }}</small>
+                                        <small class="text-muted"><i class="bi bi-geo-alt-fill me-1 text-muted"></i>{{ $ticket->location->name }}</small>
                                     @endif
                                 </td>
 
                                 {{-- 3. Thể loại --}}
                                 <td>
-                                    <span class="badge bg-info text-dark">
+                                    <span class="badge bg-primary text-white">
                                         {{ $ticket->category->name ?? 'Chưa phân loại' }}
                                     </span>
                                 </td>
@@ -67,7 +67,7 @@
                                         <div class="d-flex flex-column gap-1" style="max-width: 250px;">
                                             @foreach($ticket->ticket_types as $type)
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="badge bg-secondary text-white fw-normal border border-secondary" style="min-width: 100px; text-align: left;">
+                                                    <span class="badge bg-light text-dark fw-normal border border-light" style="min-width: 100px; text-align: left;">
                                                         {{ $type['name'] }}
                                                     </span>
                                                     <span class="fw-bold text-success ms-2" style="font-size: 0.95rem;">
@@ -79,7 +79,7 @@
                                     @else
                                         {{-- Fallback: Dành cho các vé cũ chưa được cập nhật JSON --}}
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <span class="badge bg-secondary text-white fw-normal border border-secondary" style="min-width: 100px; text-align: left;">Vé cơ bản</span>
+                                            <span class="badge bg-light text-dark fw-normal border border-light" style="min-width: 100px; text-align: left;">Vé cơ bản</span>
                                             <span class="fw-bold text-success ms-2" style="font-size: 0.95rem;">{{ number_format($ticket->price) }} đ</span>
                                         </div>
                                     @endif
@@ -96,7 +96,7 @@
                                 
                                 {{-- 6. Thao tác --}}
                                 <td class="text-end">
-                                    <a href="{{ route('admin.tickets.edit', $ticket->id) }}" class="btn btn-sm btn-outline-warning me-2" title="Sửa vé">
+                                    <a href="{{ route('admin.tickets.edit', $ticket->id) }}" class="btn btn-sm btn-outline-primary me-2" title="Sửa vé">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 

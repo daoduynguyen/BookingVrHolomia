@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -207,6 +208,7 @@ class CheckoutController extends Controller
             // Thông tin khách (Lấy từ item đầu tiên trong giỏ)
             $firstItem = reset($cart);
             $info      = $firstItem['customer_info'] ?? [];
+            /** @var \App\Models\User|null $user */
             $user      = Auth::user();
 
             $slotId = $firstItem['slot_id'] ?? null;
@@ -221,20 +223,20 @@ class CheckoutController extends Controller
             }
 
             $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? null;
-        $locationId = null;
-        if (!empty($cart)) {
-            $firstItem = reset($cart); // Lấy món đầu tiên trong giỏ
-            
-            // Quét tìm ID vé (có thể là 'id', 'ticket_id', hoặc chính là cái key của mảng $cart)
-            $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? key($cart);
-            
-            if ($ticketId) {
-                $ticketForLocation = \App\Models\Ticket::find($ticketId);
-                if ($ticketForLocation) {
-                    $locationId = $ticketForLocation->location_id;
+            $locationId = null;
+            if (!empty($cart)) {
+                $firstItem = reset($cart); // Lấy món đầu tiên trong giỏ
+                
+                // Quét tìm ID vé (có thể là 'id', 'ticket_id', hoặc chính là cái key của mảng $cart)
+                $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? key($cart);
+                
+                if ($ticketId) {
+                    $ticketForLocation = \App\Models\Ticket::find($ticketId);
+                    if ($ticketForLocation) {
+                        $locationId = $ticketForLocation->location_id;
+                    }
                 }
             }
-        }
 
             // 2. TẠO ĐƠN HÀNG MỚI VÀO DATABASE
             $order = Order::create([
@@ -296,7 +298,7 @@ class CheckoutController extends Controller
                     // Gọi class BookingConfirmedMail thay vì E_TicketMail
                     Mail::to($user->email)->send(new BookingConfirmedMail($order));
                 } catch (\Exception $mailErr) {
-                    \Log::warning('Lỗi gửi mail: ' . $mailErr->getMessage());
+                    Log::warning('Lỗi gửi mail: ' . $mailErr->getMessage());
                 }
             }
 
@@ -369,7 +371,9 @@ class CheckoutController extends Controller
 
 public function refundOrder($id)
 {
+    /** @var \App\Models\Order $order */
     $order = Order::with('slot')->findOrFail($id);
+    /** @var \App\Models\User $user */
     $user = auth()->user();
     
     // 1. Kiểm tra thời gian
@@ -395,7 +399,7 @@ public function refundOrder($id)
     }
 
     // 2. Thực hiện hoàn tiền và Nhả slot
-    \DB::transaction(function () use ($order, $user) {
+    DB::transaction(function () use ($order, $user) {
         // Chỉ cộng tiền vào ví nếu thanh toán không phải bằng tiền mặt
         if ($order->payment_method !== 'cod') {
             $user->increment('balance', $order->total_amount);
@@ -409,7 +413,7 @@ public function refundOrder($id)
         $user->save();
 
         // Xét rớt hạng (nếu điểm bị tuột khỏi mốc)
-        app(\App\Http\Controllers\CheckoutController::class)->updateUserTier($user);
+        $this->updateUserTier($user);
         // Đổi trạng thái đơn hàng
         $order->status = 'refunded'; 
         $order->save();

@@ -4,12 +4,12 @@
 <div class="container-fluid">
     <div class="d-flex align-items-center mb-5">
         <div class="bg-warning me-3" style="width: 50px; height: 3px;"></div>
-        <h2 class="text-warning fw-bold text-uppercase mb-0 letter-spacing-2">
+        <h2 class="text-primary fw-bold text-uppercase mb-0 letter-spacing-2">
             Cập nhật vé: {{ $ticket->name }}
         </h2>
     </div>
 
-    <div class="profile-content shadow-lg p-4 bg-dark rounded">
+    <div class="profile-content shadow-lg p-4 bg-white rounded">
        <form action="{{ route('admin.tickets.update', $ticket->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -27,14 +27,14 @@
             <div class="row">
                 {{-- 1. Tên trò chơi --}}
                 <div class="col-md-6 mb-4">
-                    <label class="form-label text-white">Tên trò chơi VR</label>
+                    <label class="form-label text-dark">Tên trò chơi VR</label>
                     <input type="text" name="name" class="form-control" 
                            value="{{ old('name', $ticket->name) }}" required>
                 </div>
 
                 {{-- 2. Thể loại --}}
                 <div class="col-md-3 mb-4">
-                    <label class="form-label text-white">Thể loại</label>
+                    <label class="form-label text-dark">Thể loại</label>
                     <select name="category_id" class="form-select" required>
                         <option value="">-- Chọn --</option>
                         @foreach($categories as $cat)
@@ -47,12 +47,12 @@
 
                 {{-- 3. CƠ SỞ (SỬA LẠI: Dùng Input + Datalist để sửa tên hoặc tạo mới) --}}
                 <div class="col-md-3 mb-4">
-                    <label class="form-label text-white">Cơ sở / Địa điểm</label>
+                    <label class="form-label text-dark">Cơ sở / Địa điểm</label>
                     
                     {{-- Input: Hiển thị tên cơ sở hiện tại vào value --}}
                     <input type="text" 
                            name="location_name" 
-                           class="form-control bg-dark text-white border-secondary" 
+                           class="form-control bg-white text-dark border-light" 
                            list="locationOptions" 
                            value="{{ old('location_name', $ticket->location->name ?? '') }}"
                            placeholder="Nhập tên cơ sở..." 
@@ -71,26 +71,26 @@
             </div>
 
             {{-- 4. Link ảnh & Media --}}
-            <div class="row mb-4 border border-secondary rounded p-3 bg-black bg-opacity-25">
+            <div class="row mb-4 border border-light rounded p-3 bg-light">
                 <div class="col-md-8">
                     <div class="mb-3">
-                        <label class="form-label text-white">Ảnh bìa chính (URL)</label>
-                        <textarea name="image_url" class="form-control bg-dark text-white border-secondary" rows="2" required>{{ old('image_url', $ticket->image_url) }}</textarea>
+                        <label class="form-label text-dark">Ảnh bìa chính (URL)</label>
+                        <textarea name="image_url" class="form-control bg-white text-dark border-light" rows="2" required>{{ old('image_url', $ticket->image_url) }}</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-white">Video Trailer (Link Youtube)</label>
-                        <input type="text" name="trailer_url" class="form-control bg-dark text-white border-secondary" value="{{ old('trailer_url', $ticket->trailer_url) }}" placeholder="https://www.youtube.com/watch?v=...">
+                        <label class="form-label text-dark">Video Trailer (Link Youtube)</label>
+                        <input type="text" name="trailer_url" class="form-control bg-white text-dark border-light" value="{{ old('trailer_url', $ticket->trailer_url) }}" placeholder="https://www.youtube.com/watch?v=...">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-white">Upload Thêm Ảnh Phụ</label>
-                        <input type="file" name="gallery[]" class="form-control bg-dark text-white border-secondary" multiple accept="image/*">
+                        <label class="form-label text-dark">Upload Thêm Ảnh Phụ</label>
+                        <input type="file" name="gallery[]" class="form-control bg-white text-dark border-light" multiple accept="image/*">
                     </div>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label text-white mb-2 text-center w-100">Ảnh Bìa Hiện Tại</label>
+                    <label class="form-label text-dark mb-2 text-center w-100">Ảnh Bìa Hiện Tại</label>
                     <div class="text-center mb-3">
-                        <img src="{{ $ticket->image_url }}" class="img-fluid rounded border border-secondary" style="max-height: 120px;" onerror="this.src='https://via.placeholder.com/150'">
+                        <img src="{{ $ticket->image_url }}" class="img-fluid rounded border border-light" style="max-height: 120px;" onerror="this.src='https://via.placeholder.com/150'">
                     </div>
                     
                     {{-- CSS Hiệu ứng di chuột hiện nút X --}}
@@ -108,12 +108,12 @@
                     </style>
 
                     @if($ticket->gallery)
-                        <label class="form-label text-white mb-2 text-center w-100" style="font-size: 0.85rem;">Gallery Ảnh Phụ</label>
+                        <label class="form-label text-dark mb-2 text-center w-100" style="font-size: 0.85rem;">Gallery Ảnh Phụ</label>
                         <div class="d-flex flex-wrap gap-2 justify-content-center" id="gallery-container">
                             @foreach($ticket->gallery as $index => $img)
                                 {{-- Khối bọc từng ảnh --}}
                                 <div class="gallery-item" id="img-box-{{ $index }}">
-                                    <img src="{{ asset('storage/' . $img) }}" style="height: 50px; width: 50px; object-fit: cover;" class="rounded border border-secondary">
+                                    <img src="{{ asset('storage/' . $img) }}" style="height: 50px; width: 50px; object-fit: cover;" class="rounded border border-light">
                                     {{-- Nút Xóa --}}
                                     <button type="button" class="btn-remove-img" onclick="removeImage('{{ $ticket->id }}', '{{ $img }}', 'img-box-{{ $index }}')" title="Xóa ảnh này">
                                         <i class="bi bi-x-lg"></i>
@@ -127,8 +127,8 @@
             <div class="row">
 
                 {{-- 5. PHÂN LOẠI VÉ (MỚI) --}}
-            <div class="mb-4 p-4 border border-info rounded bg-black bg-opacity-25">
-                <label class="form-label text-info fw-bold mb-3">
+            <div class="mb-4 p-4 border border-primary rounded bg-light">
+                <label class="form-label text-primary fw-bold mb-3">
                     <i class="bi bi-tags"></i> Phân loại vé & Bảng giá
                 </label>
                 
@@ -142,14 +142,14 @@
 
                 {{-- 6. Thời lượng --}}
                 <div class="col-md-3 mb-4">
-                    <label class="form-label text-white">Thời lượng (Phút)</label>
+                    <label class="form-label text-dark">Thời lượng (Phút)</label>
                     <input type="number" name="duration" class="form-control" 
                            value="{{ old('duration', $ticket->duration) }}">
                 </div>
 
                 {{-- 7. Trạng thái --}}
                 <div class="col-md-3 mb-4">
-                    <label class="form-label text-white">Trạng thái</label>
+                    <label class="form-label text-dark">Trạng thái</label>
                     <select name="status" class="form-select">
                         <option value="active" {{ $ticket->status == 'active' ? 'selected' : '' }}>Hoạt động</option>
                         <option value="maintenance" {{ $ticket->status == 'maintenance' ? 'selected' : '' }}>Bảo trì</option>
@@ -159,7 +159,7 @@
             
             {{-- 8. Mô tả --}}
             <div class="mb-4">
-                <label class="form-label text-white">Mô tả trò chơi</label>
+                <label class="form-label text-dark">Mô tả trò chơi</label>
                 <textarea name="description" class="form-control" rows="3">{{ old('description', $ticket->description) }}</textarea>
             </div>
 
@@ -209,10 +209,10 @@
         row.className = 'row mb-2 type-row align-items-center';
         row.innerHTML = `
             <div class="col-md-5">
-                <input type="text" name="type_name[]" class="form-control bg-dark text-white border-secondary" placeholder="Tên loại (VD: Trẻ em, Combo 2 người)" value="${name}" required>
+                <input type="text" name="type_name[]" class="form-control bg-white text-dark border-light" placeholder="Tên loại (VD: Trẻ em, Combo 2 người)" value="${name}" required>
             </div>
             <div class="col-md-5">
-                <input type="number" name="type_price[]" class="form-control text-warning bg-dark border-secondary fw-bold" placeholder="Giá vé (VD: 150000)" value="${price}" required>
+                <input type="number" name="type_price[]" class="form-control text-primary bg-white border-light fw-bold" placeholder="Giá vé (VD: 150000)" value="${price}" required>
             </div>
             <div class="col-md-2">
                 <button type="button" class="btn btn-sm btn-danger w-100 shadow-sm" onclick="this.closest('.type-row').remove()">

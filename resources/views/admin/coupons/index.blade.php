@@ -1,7 +1,7 @@
 @extends('layouts.admin') 
 {{-- Admin Quản lý vocher --}}
 @section('admin_content')
-<div class="container-fluid text-white"> {{-- Thêm text-white để chữ luôn sáng --}}
+<div class="container-fluid text-dark">
     
     {{-- Tiêu đề và nút thêm --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -19,7 +19,7 @@
     @endif
 
     {{-- Bảng danh sách (Giao diện tối) --}}
-    <div class="card shadow mb-4 bg-dark border-secondary">
+    <div class="card shadow mb-4 bg-white border-light">
         <div class="card-header py-3 bg-secondary bg-opacity-25 border-secondary">
             <h6 class="m-0 font-weight-bold text-primary">Danh sách mã giảm giá</h6>
         </div>

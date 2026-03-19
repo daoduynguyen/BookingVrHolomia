@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
-<body class="bg-dark text-white">
+<body class="bg-light text-dark">
     @include('partials.navbar')
 
     <div class="container py-5">
@@ -37,15 +37,15 @@
             <div class="row g-4">
                 {{-- CỘT TRÁI: ĐIỀN THÔNG TIN --}}
                 <div class="col-lg-7">
-                    <div class="card bg-secondary text-white border-0 rounded-4 p-4 mb-4 shadow">
-                        <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Thông tin cá nhân</h5>
+                    <div class="card border-0 rounded-4 p-4 mb-4 shadow">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Thông tin cá nhân</h5>
                         <div class="mb-3">
-                            <label class="form-label">Họ và tên</label>
+                            <label class="form-label text-dark fw-bold">Họ và tên</label>
                             <input type="text" name="customer_name" class="form-control"
                                 value="{{ Auth::check() ? Auth::user()->name : '' }}" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Số điện thoại</label>
+                            <label class="form-label text-dark fw-bold">Số điện thoại</label>
                             <input type="text" name="customer_phone" class="form-control"
                                 value="{{ Auth::check() ? Auth::user()->phone : '' }}" required>
                         </div>
@@ -53,10 +53,10 @@
                         {{-- CHỌN NGÀY VÀ GIỜ --}}
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold text-info"><i class="bi bi-calendar-check me-1"></i>
+                                <label class="form-label fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i>
                                     Ngày chơi</label>
                                 <input type="date" name="booking_date" id="booking_date" class="form-control" required>
-                                <div id="date-message" class="mt-2 small text-secondary">Vui lòng chọn ngày...</div>
+                                <div id="date-message" class="mt-2 small text-muted">Vui lòng chọn ngày...</div>
                             </div>
 
                             {{-- BỔ SUNG KHUNG GIỜ Ở ĐÂY --}}
@@ -64,7 +64,7 @@
                                 <label class="form-label fw-bold text-warning"><i class="bi bi-clock-history me-1"></i>
                                     Khung giờ</label>
                                 <select name="slot_id" id="slot_id"
-                                    class="form-select bg-dark text-white border-secondary" required>
+                                    class="form-select bg-white text-dark border-light shadow-sm" required>
                                     <option value="">-- Hãy chọn ngày trước --</option>
                                 </select>
                             </div>
@@ -73,19 +73,19 @@
                         {{-- CHỌN SỐ LƯỢNG / DUYỆT CÁC LOẠI VÉ MỚI --}}
                         @if($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0)
                             <div class="mb-4">
-                                <label class="form-label fw-bold text-info"><i class="bi bi-ticket-detailed me-1"></i> Chọn số lượng vé</label>
+                                <label class="form-label fw-bold text-primary"><i class="bi bi-ticket-detailed me-1"></i> Chọn số lượng vé</label>
                                 @php
                                     $selectedType = request()->query('selected_ticket_type');
                                 @endphp
                                 @foreach($ticket->ticket_types as $index => $type)
-                                    <div class="d-flex justify-content-between align-items-center p-3 border border-secondary rounded mb-2 bg-dark bg-opacity-25 hover-scale">
+                                    <div class="d-flex justify-content-between align-items-center p-3 border border-light rounded mb-2 bg-white shadow-sm hover-scale">
                                         <div>
-                                            <div class="fw-bold">{{ $type['name'] }}</div>
-                                            <div class="text-warning small">{{ number_format($type['price']) }}đ/vé</div>
+                                            <div class="fw-bold text-dark">{{ $type['name'] }}</div>
+                                            <div class="text-primary fw-bold small">{{ number_format($type['price']) }}đ/vé</div>
                                         </div>
                                         <div style="width: 120px;">
                                             <input type="number" name="ticket_types[{{ $type['name'] }}]" value="{{ ($selectedType === $type['name'] || (!$selectedType && $index === 0)) ? 1 : 0 }}" min="0" max="50"
-                                                class="form-control bg-dark text-white border-secondary ticket-qty-input" data-price="{{ $type['price'] }}" data-name="{{ $type['name'] }}">
+                                                class="form-control bg-light text-dark border-light ticket-qty-input" data-price="{{ $type['price'] }}" data-name="{{ $type['name'] }}">
                                         </div>
                                     </div>
                                 @endforeach
@@ -94,47 +94,47 @@
                         @else
                             {{-- LOGIC CŨ NẾU VÉ KHÔNG CÓ LOẠI --}}
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-info"><i class="bi bi-people-fill me-1"></i> Số lượng vé</label>
+                                <label class="form-label fw-bold text-primary"><i class="bi bi-people-fill me-1"></i> Số lượng vé</label>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1" max="50"
-                                    class="form-control bg-dark text-white border-secondary ticket-qty-input" data-price="{{ $ticket->price }}" data-name="{{ $ticket->name }}" style="width: 120px;">
+                                    class="form-control bg-light text-dark border-light ticket-qty-input" data-price="{{ $ticket->price }}" data-name="{{ $ticket->name }}" style="width: 120px;">
                             </div>
                         @endif
 
                         <div class="mb-3">
-                            <label class="form-label">Ghi chú đơn hàng (Không bắt buộc)</label>
-                            <textarea name="note" class="form-control" rows="2"></textarea>
+                            <label class="form-label text-dark fw-bold">Ghi chú đơn hàng (Không bắt buộc)</label>
+                            <textarea name="note" class="form-control bg-light" rows="2"></textarea>
                         </div>
                     </div>
 
-                    <div class="card bg-secondary text-white border-0 rounded-4 p-4 shadow">
-                        <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Phương thức thanh toán</h5>
+                    <div class="card border-0 rounded-4 p-4 shadow">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Phương thức thanh toán</h5>
                         
                         {{-- Tiền mặt --}}
-                        <div class="form-check mb-3 p-3 border border-dark rounded bg-dark bg-opacity-25 payment-box" style="transition: 0.3s;">
+                        <div class="form-check mb-3 p-3 border border-light rounded bg-white shadow-sm payment-box" style="transition: 0.3s;">
                             <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
                             <label class="form-check-label d-flex align-items-center gap-2 w-100" for="cod" style="cursor: pointer;">
                                 <i class="bi bi-cash-coin text-success fs-4"></i>
-                                <div><strong>Thanh toán tại quầy</strong></div>
+                                <div class="text-dark"><strong>Thanh toán tại quầy</strong></div>
                             </label>
                         </div>
                         
                         {{-- Chuyển khoản --}}
-                        <div class="form-check mb-3 p-3 border border-dark rounded bg-dark bg-opacity-25 payment-box" style="transition: 0.3s;">
+                        <div class="form-check mb-3 p-3 border border-light rounded bg-white shadow-sm payment-box" style="transition: 0.3s;">
                             <input class="form-check-input" type="radio" name="payment_method" id="banking" value="banking">
                             <label class="form-check-label d-flex align-items-center gap-2 w-100" for="banking" style="cursor: pointer;">
-                                <i class="bi bi-qr-code-scan text-info fs-4"></i>
-                                <div><strong>Chuyển khoản / Mã QR</strong></div>
+                                <i class="bi bi-qr-code-scan text-primary fs-4"></i>
+                                <div class="text-dark"><strong>Chuyển khoản / Mã QR</strong></div>
                             </label>
                         </div>
 
                         {{-- Ví Holomia --}}
-                        <div class="form-check p-3 border border-dark rounded bg-dark bg-opacity-25 payment-box" style="transition: 0.3s;">
+                        <div class="form-check p-3 border border-light rounded bg-white shadow-sm payment-box" style="transition: 0.3s;">
                             <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
                             <label class="form-check-label d-flex align-items-center gap-2 w-100" for="wallet" style="cursor: pointer;">
-                                <i class="bi bi-wallet2 text-info fs-4"></i>
+                                <i class="bi bi-wallet2 text-primary fs-4"></i>
                                 <div>
-                                    <strong class="text-white text-uppercase">Ví Holomia</strong>
-                                    <div class="small text-white-50">Số dư: <span id="user-balance-text" data-balance="{{ Auth::check() ? Auth::user()->balance : 0 }}">{{ number_format(Auth::check() ? Auth::user()->balance : 0) }}đ</span></div>
+                                    <strong class="text-dark text-uppercase">Ví Holomia</strong>
+                                    <div class="small text-muted">Số dư: <span id="user-balance-text" data-balance="{{ Auth::check() ? Auth::user()->balance : 0 }}">{{ number_format(Auth::check() ? Auth::user()->balance : 0) }}đ</span></div>
                                 </div>
                             </label>
                             {{-- Báo lỗi nếu thiếu tiền --}}
@@ -146,23 +146,23 @@
                 </div>
                 {{-- CỘT PHẢI: TÓM TẮT TIỀN GỐC --}}
                 <div class="col-lg-5">
-                    <div class="card bg-black border border-secondary rounded-4 p-4 shadow-lg sticky-top"
-                        style="top: 100px;">
-                        <h5 class="fw-bold mb-4 text-center text-white border-bottom border-secondary pb-3">TÓM TẮT VÉ
+                    <div class="card border-0 rounded-4 p-4 shadow-sm sticky-top"
+                        style="top: 100px; background-color: var(--bg-card);">
+                        <h5 class="fw-bold mb-4 text-center text-primary border-bottom pb-3">TÓM TẮT VÉ
                         </h5>
                         
                         {{-- Hiển thị Cơ sở --}}
-                        <div class="d-flex justify-content-between align-items-center mb-3 bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
-                            <span class="text-white-50"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cơ sở:</span>
-                            <span class="text-warning fw-bold text-end">{{ $ticket->location->name ?? 'Đang cập nhật' }}</span>
+                        <div class="d-flex justify-content-between align-items-center mb-3 bg-white shadow-sm p-2 rounded border border-light">
+                            <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cơ sở:</span>
+                            <span class="text-dark fw-bold text-end">{{ $ticket->location->name ?? 'Đang cập nhật' }}</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-3 mb-4">
                             <img src="{{ Str::startsWith($ticket->image ?? $ticket->image_url, 'http') ? ($ticket->image ?? $ticket->image_url) : asset('storage/' . ($ticket->image ?? $ticket->image_url)) }}"
-                                class="rounded" width="70" height="70" style="object-fit: cover;">
+                                class="rounded shadow-sm" width="70" height="70" style="object-fit: cover;">
                             <div>
-                                <h5 class="mb-1 text-white fw-bold">{{ $ticket->name }}</h5>
-                                <span class="badge bg-secondary" id="display-qty">Số lượng: 0</span>
+                                <h5 class="mb-1 text-dark fw-bold">{{ $ticket->name }}</h5>
+                                <span class="badge bg-primary bg-opacity-10 text-primary" id="display-qty">Số lượng: 0</span>
                             </div>
                         </div>
 
@@ -171,9 +171,9 @@
 
                         {{-- Tạm tính (Tiền gốc * Số lượng) --}}
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-white-50">Tạm tính (<span id="calc-qty">1</span> vé):</span>
+                            <span class="text-muted">Tạm tính (<span id="calc-qty">1</span> vé):</span>
                             {{-- CHÚ Ý: Đã thêm data-unit-price để JS lấy giá trị thực tế tính toán --}}
-                            <span class="fs-5 fw-bold text-light" id="temp-total"
+                            <span class="fs-5 fw-bold text-dark" id="temp-total"
                                 data-unit-price="{{ $totalWeek }}">{{ number_format($totalWeek) }}đ</span>
                         </div>
 
@@ -186,22 +186,22 @@
 
                         {{-- Tổng tiền thanh toán cuối cùng --}}
                         <div
-                            class="d-flex justify-content-between align-items-center border-top border-secondary pt-3 mb-4">
-                            <span class="text-white fw-bold fs-5">TỔNG TIỀN:</span>
-                            <span class="fs-3 fw-bold text-info"
+                            class="d-flex justify-content-between align-items-center border-top border-light pt-3 mb-4">
+                            <span class="text-dark fw-bold fs-5">TỔNG TIỀN:</span>
+                            <span class="fs-3 fw-bold text-primary"
                                 id="final-total">{{ number_format($totalWeek) }}đ</span>
                         </div>
 
                         {{-- KHU VỰC NHẬP MÃ GIẢM GIÁ (Đã thay thế cho thẻ alert cũ) --}}
                         <div class="mb-4">
-                            <div class="input-group">
+                            <div class="input-group shadow-sm rounded-pill overflow-hidden border border-light">
                                 <input type="text" id="coupon_code"
-                                    class="form-control bg-dark text-white border-secondary"
+                                    class="form-control bg-white border-0"
                                     placeholder="Nhập mã giảm giá..." style="box-shadow: none;">
-                                <button class="btn btn-outline-info fw-bold" type="button" id="btn_apply_coupon">ÁP
+                                <button class="btn btn-primary fw-bold px-4" type="button" id="btn_apply_coupon">ÁP
                                     DỤNG</button>
                             </div>
-                            <small id="coupon_message" class="mt-2 d-block"></small>
+                            <small id="coupon_message" class="mt-2 d-block text-center"></small>
                         </div>
 
                         <button type="submit"
@@ -259,9 +259,9 @@
                         totalPrice += subtotal;
 
                         summaryHtml += `
-                            <div class="d-flex justify-content-between align-items-center mb-2 small border-bottom border-dark pb-2">
-                                <span class="text-white-50"><i class="bi bi-check-circle-fill text-info me-1"></i> ${name} x${qty}</span>
-                                <span class="text-warning fw-bold">${formatMoney(subtotal)}</span>
+                            <div class="d-flex justify-content-between align-items-center mb-2 small border-bottom border-light pb-2">
+                                <span class="text-muted"><i class="bi bi-check-circle-fill text-primary me-1"></i> ${name} x${qty}</span>
+                                <span class="text-dark fw-bold">${formatMoney(subtotal)}</span>
                             </div>
                         `;
                     }
@@ -380,14 +380,14 @@
             // HÀM 5: HIỆU ỨNG CHẠY VIỀN XANH CHO PHƯƠNG THỨC THANH TOÁN
             // ==========================================
             function updatePaymentStyle() {
-                // 1. Reset tất cả các ô về viền tối, nền tối
-                $('.payment-box').removeClass('border-info bg-info bg-opacity-10')
-                                 .addClass('border-dark bg-dark bg-opacity-25');
+                // 1. Reset tất cả các ô về sáng trắng (mặc định)
+                $('.payment-box').removeClass('border-primary bg-primary bg-opacity-10')
+                                 .addClass('border-light bg-white');
                 
                 // 2. Tóm cái ô đang được tích chọn (checked), đổi viền và nền sang xanh
                 $('input[name="payment_method"]:checked').closest('.payment-box')
-                                 .removeClass('border-dark bg-dark bg-opacity-25')
-                                 .addClass('border-info bg-info bg-opacity-10');
+                                 .removeClass('border-light bg-white')
+                                 .addClass('border-primary bg-primary bg-opacity-10');
             }
 
             // Gọi hàm khi khách bấm đổi phương thức thanh toán
@@ -452,15 +452,15 @@
         $(document).ready(function() {
             // Hàm xử lý đổi màu
             function updatePaymentStyle() {
-                // 1. Reset tất cả các ô .form-check về màu xám tối
+                // 1. Reset tất cả các ô .form-check về mặc định
                 $('input[name="payment_method"]').closest('.form-check')
-                    .removeClass('border-info bg-info bg-opacity-10')
-                    .addClass('border-dark bg-dark bg-opacity-25');
+                    .removeClass('border-primary bg-primary bg-opacity-10')
+                    .addClass('border-light bg-white');
                     
                 // 2. Tìm ô đang được tích chọn (checked) và cho nó phát sáng màu xanh
                 $('input[name="payment_method"]:checked').closest('.form-check')
-                    .removeClass('border-dark bg-dark bg-opacity-25')
-                    .addClass('border-info bg-info bg-opacity-10');
+                    .removeClass('border-light bg-white')
+                    .addClass('border-primary bg-primary bg-opacity-10');
             }
 
             // Lắng nghe mọi hành động click vào nút thanh toán
