@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => '结账 - Holomia VR',
+    'title' => '结账',
+    'order_summary' => '订单摘要',
+    'payment_method' => '支付方式',
+    'wallet' => 'Holomia钱包',
+    'bank_transfer' => '银行转账',
+    'wallet_balance' => '钱包余额',
+    'insufficient' => '余额不足，请充值。',
+    'topup_wallet' => '充值',
+    'place_order' => '确认预订',
+    'processing' => '处理中...',
+    'order_success' => '预订成功！',
+    'order_failed' => '预订失败，请重试。',
+    'booking_info' => '预订详情',
+    'contact_info' => '联系信息',
+    'full_name' => '姓名',
+    'phone' => '电话号码',
+    'email' => '接收票务邮件',
+    'notes' => '备注',
+    'terms' => '我同意服务条款',
+    'coupon' => '优惠码',
+    'total' => '应付总额',
+];

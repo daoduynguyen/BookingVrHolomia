@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Thêm Voucher')
+
 @section('admin_content')
 <div class="container text-dark">
     <div class="card shadow bg-white border-light">

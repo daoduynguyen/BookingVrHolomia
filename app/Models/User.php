@@ -17,10 +17,12 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
+        'is_banned',
         'address',
         'birthday',
         'avatar',
         'gender',
+        'language',
     ];
 
 

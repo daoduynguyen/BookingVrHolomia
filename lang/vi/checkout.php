@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title'        => 'Thanh toán - Holomia VR',
+    'title'             => 'Thanh toán',
+    'order_summary'     => 'Tóm tắt đơn hàng',
+    'payment_method'    => 'Phương thức thanh toán',
+    'wallet'            => 'Ví Holomia',
+    'bank_transfer'     => 'Chuyển khoản ngân hàng',
+    'wallet_balance'    => 'Số dư ví',
+    'insufficient'      => 'Số dư không đủ. Vui lòng nạp thêm.',
+    'topup_wallet'      => 'Nạp ví',
+    'place_order'       => 'Xác nhận đặt vé',
+    'processing'        => 'Đang xử lý...',
+    'order_success'     => 'Đặt vé thành công!',
+    'order_failed'      => 'Đặt vé thất bại. Vui lòng thử lại.',
+    'booking_info'      => 'Thông tin đặt vé',
+    'contact_info'      => 'Thông tin liên hệ',
+    'full_name'         => 'Họ và tên',
+    'phone'             => 'Số điện thoại',
+    'email'             => 'Email nhận vé',
+    'notes'             => 'Ghi chú',
+    'terms'             => 'Tôi đồng ý với điều khoản sử dụng',
+    'coupon'            => 'Mã giảm giá',
+    'total'             => 'Tổng thanh toán',
+];

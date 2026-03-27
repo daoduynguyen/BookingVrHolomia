@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => '票务商店 - Holomia VR',
+    'shop_title' => '全部门票',
+    'total_games' => '目前共有 :count 款游戏',
+    'search_placeholder' => '搜索游戏...',
+    'filter_location' => '按门店筛选',
+    'all_locations' => '所有门店',
+    'filter_category' => '分类',
+    'all_categories' => '全部',
+    'sort_by' => '排序',
+    'newest' => '最新',
+    'popular' => '最受欢迎',
+    'price_low' => '价格从低到高',
+    'price_high' => '价格从高到低',
+    'no_results' => '未找到符合条件的游戏。',
+    'price_from' => '起价：',
+    'plays' => '次游玩',
+    'book_now' => '立即预订',
+    'view_info' => '查看详情',
+    'maintenance' => '维护中',
+    'wishlist_added' => '已添加到收藏！',
+    'wishlist_removed' => '已从收藏中移除！',
+    'meta_description' => '在Holomia VR探索并预订10多种VR游戏体验。',
+];

@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => 'टिकट स्टोर - Holomia VR',
+    'shop_title' => 'सभी टिकट',
+    'total_games' => 'वर्तमान में :count गेम्स उपलब्ध',
+    'search_placeholder' => 'गेम खोजें...',
+    'filter_location' => 'शाखा के अनुसार फ़िल्टर',
+    'all_locations' => 'सभी शाखाएं',
+    'filter_category' => 'श्रेणी',
+    'all_categories' => 'सभी',
+    'sort_by' => 'क्रम',
+    'newest' => 'नवीनतम',
+    'popular' => 'सबसे लोकप्रिय',
+    'price_low' => 'सबसे कम मूल्य',
+    'price_high' => 'सबसे अधिक मूल्य',
+    'no_results' => 'कोई मेल खाने वाला गेम नहीं मिला।',
+    'price_from' => 'मूल्य:',
+    'plays' => 'बार खेला',
+    'book_now' => 'अभी बुक करें',
+    'view_info' => 'जानकारी देखें',
+    'maintenance' => 'रखरखाव',
+    'wishlist_added' => 'इच्छा सूची में जोड़ा गया!',
+    'wishlist_removed' => 'इच्छा सूची से हटाया गया!',
+    'meta_description' => 'Holomia VR में 10+ VR गेम अनुभव खोजें और बुक करें।',
+];

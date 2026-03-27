@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => 'チェックアウト - Holomia VR',
+    'title' => 'チェックアウト',
+    'order_summary' => '注文概要',
+    'payment_method' => 'お支払い方法',
+    'wallet' => 'Holomiaウォレット',
+    'bank_transfer' => '銀行振込',
+    'wallet_balance' => 'ウォレット残高',
+    'insufficient' => '残高不足です。チャージしてください。',
+    'topup_wallet' => 'チャージ',
+    'place_order' => '予約を確定',
+    'processing' => '処理中...',
+    'order_success' => '予約が確定しました！',
+    'order_failed' => '予約に失敗しました。もう一度お試しください。',
+    'booking_info' => '予約詳細',
+    'contact_info' => '連絡先',
+    'full_name' => '氏名',
+    'phone' => '電話番号',
+    'email' => 'チケット受取メール',
+    'notes' => 'メモ',
+    'terms' => '利用規約に同意します',
+    'coupon' => 'クーポンコード',
+    'total' => 'お支払い合計',
+];

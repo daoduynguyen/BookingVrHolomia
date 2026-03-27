@@ -154,7 +154,7 @@
                         {{-- Hiển thị Cơ sở --}}
                         <div class="d-flex justify-content-between align-items-center mb-3 bg-white shadow-sm p-2 rounded border border-light">
                             <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cơ sở:</span>
-                            <span class="text-dark fw-bold text-end">{{ $ticket->location->name ?? 'Đang cập nhật' }}</span>
+                            <span class="text-dark fw-bold text-end">{{ $ticket->locations->pluck('name')->join(', ') ?: 'Nhiều cơ sở' }}</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-3 mb-4">
@@ -324,6 +324,15 @@
             code: code,
             total_amount: totalAmount
         },
+
+        beforeSend: function() {
+            $('#btn_apply_coupon').prop('disabled', true)
+                .html('<span class="spinner-border spinner-border-sm me-1"></span>Đang kiểm tra...');
+        },
+        complete: function() {
+            $('#btn_apply_coupon').prop('disabled', false).html('ÁP');
+        },
+
         success: function(response) {
             if (response.status === 'success') {
                 $('#hidden_coupon_code').val(code);
@@ -425,13 +434,15 @@
 
                 slotSelect.html('<option value="">Đang tải khung giờ...</option>');
 
+                slotSelect.prop('disabled', true);
                 $.ajax({
                     url: '/api/get-slots',
                     data: { ticket_id: ticket_id, date: date },
                     success: function (slots) {
+                        slotSelect.prop('disabled', false);
                         slotSelect.empty();
                         if (slots.length === 0) {
-                            slotSelect.html('<option value="">Đã hết khung giờ trống ngày này</option>');
+                            slotSelect.html('<option value="">Chưa có lịch giờ này!</option>');
                         } else {
                             $.each(slots, function (i, slot) {
                                 slotSelect.append('<option value="' + slot.id + '">' + slot.label + ' (Còn ' + slot.available + ' chỗ)</option>');
@@ -439,6 +450,7 @@
                         }
                     },
                     error: function () {
+                        slotSelect.prop('disabled', false);
                         slotSelect.html('<option value="">Lỗi tải khung giờ</option>');
                     }
                 });
@@ -477,6 +489,7 @@
             setTimeout(updatePaymentStyle, 100);
         });
     </script>
+    @include('partials.footer')
 </body>
 
 </html>

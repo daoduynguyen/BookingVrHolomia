@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => 'カート - Holomia VR',
+    'title' => 'カート',
+    'product' => '商品',
+    'price' => '価格',
+    'quantity' => '数量',
+    'subtotal' => '小計',
+    'total' => '合計',
+    'discount' => '割引',
+    'final_total' => 'お支払い金額',
+    'checkout' => '購入手続き',
+    'continue_shop' => 'ショッピングを続ける',
+    'empty_cart' => 'カートは空です。',
+    'empty_desc' => 'カートにチケットがありません。',
+    'remove' => '削除',
+    'clear_cart' => 'カートを空にする',
+    'coupon_code' => 'クーポンコード',
+    'apply_coupon' => '適用',
+    'date' => 'プレイ日',
+    'time_slot' => '時間帯',
+    'branch' => '店舗',
+    'players' => 'プレイ人数',
+];

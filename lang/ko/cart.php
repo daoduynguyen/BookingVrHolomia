@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => '장바구니 - Holomia VR',
+    'title' => '내 장바구니',
+    'product' => '상품',
+    'price' => '가격',
+    'quantity' => '수량',
+    'subtotal' => '소계',
+    'total' => '합계',
+    'discount' => '할인',
+    'final_total' => '결제 금액',
+    'checkout' => '결제하기',
+    'continue_shop' => '쇼핑 계속하기',
+    'empty_cart' => '장바구니가 비어 있습니다.',
+    'empty_desc' => '장바구니에 티켓이 없습니다.',
+    'remove' => '삭제',
+    'clear_cart' => '장바구니 비우기',
+    'coupon_code' => '쿠폰 코드',
+    'apply_coupon' => '적용',
+    'date' => '이용 날짜',
+    'time_slot' => '시간대',
+    'branch' => '지점',
+    'players' => '인원수',
+];

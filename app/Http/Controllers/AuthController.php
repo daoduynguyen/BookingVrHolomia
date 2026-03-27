@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -51,16 +56,25 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-   public function login(Request $request)
-{
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-    // Nếu đăng nhập thành công (Đoạn này thường là if (Auth::attempt(...)) )
+        // Nếu đăng nhập thành công (Đoạn này thường là if (Auth::attempt(...)) )
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            if (Auth::user()->is_banned) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->withErrors([
+                    'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ: support@holomia.vn',
+                ]);
+            }
 
             // BẮT ĐẦU KIỂM TRA QUYỀN LỰC ĐỂ CHỈ ĐƯỜNG
             $userRole = Auth::user()->role;
@@ -74,10 +88,10 @@ class AuthController extends Controller
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
 
-    return back()->withErrors([
-        'email' => 'Thông tin đăng nhập không chính xác.',
-    ]);
-}
+        return back()->withErrors([
+            'email' => 'Thông tin đăng nhập không chính xác.',
+        ]);
+    }
     // --- 3. ĐĂNG XUẤT ---
     public function logout(Request $request)
     {
@@ -85,5 +99,92 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('home')->with('success', 'Đã đăng xuất.');
+    }
+
+    // --- 4. QUÊN MẬT KHẨU ---
+    public function showForgotPassword()
+    {
+        return view('auth.forgot_password');
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ], [
+            'email.required' => 'Vui lòng nhập email',
+            'email.email' => 'Email không hợp lệ',
+            'email.exists' => 'Email này chưa được đăng ký trong hệ thống',
+        ]);
+
+        // Tạo token ngẫu nhiên
+        $token = Str::random(64);
+
+        // Xóa token cũ nếu có, lưu token mới
+        DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->delete();
+
+        DB::table('password_reset_tokens')->insert([
+            'email' => $request->email,
+            'token' => Hash::make($token),
+            'created_at' => Carbon::now(),
+        ]);
+
+        // Gửi email chứa link reset
+        $resetLink = url('/dat-lai-mat-khau/' . $token . '?email=' . urlencode($request->email));
+
+        Mail::send('emails.reset_password', ['resetLink' => $resetLink], function ($m) use ($request) {
+            $m->to($request->email)
+                ->subject('Đặt lại mật khẩu - Holomia VR');
+        });
+
+        return back()->with('success', 'Đã gửi link đặt lại mật khẩu vào email của bạn!');
+    }
+
+    // --- 5. FORM ĐẶT LẠI MẬT KHẨU ---
+    public function showResetForm(Request $request, $token)
+    {
+        return view('auth.reset_password', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|min:6|confirmed',
+            'token' => 'required',
+        ], [
+            'password.min' => 'Mật khẩu phải từ 6 ký tự',
+            'password.confirmed' => 'Mật khẩu nhập lại không khớp',
+        ]);
+
+        // Tìm token trong DB
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record || !Hash::check($request->token, $record->token)) {
+            return back()->withErrors(['token' => 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.']);
+        }
+
+        // Token hết hạn sau 60 phút
+        if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->withErrors(['token' => 'Link đã hết hạn. Vui lòng gửi lại yêu cầu mới.']);
+        }
+
+        // Cập nhật mật khẩu mới
+        User::where('email', $request->email)->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Xóa token sau khi dùng
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return redirect()->route('login')->with('success', 'Mật khẩu đã được đặt lại! Vui lòng đăng nhập.');
     }
 }

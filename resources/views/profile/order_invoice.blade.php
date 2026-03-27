@@ -1,5 +1,4 @@
-
-<div class="text-dark" style="font-family: 'Consolas', 'Monaco', 'Segoe UI', sans-serif;">
+<div class="text-dark" style="font-family: 'Be Vietnam Pro', sans-serif;">
     
     {{-- 1. HEADER --}}
     <div class="text-center mb-3 pb-2 border-bottom border-light border-opacity-25" style="border-style: dashed !important;">
@@ -18,25 +17,25 @@
     {{-- 2. THÔNG TIN KHÁCH --}}
     <div class="mb-3 px-1 small">
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-dark">Khách hàng:</span>
+            <span class="text-dark">{{ __('profile.customer') ?? 'Khách hàng:' }}</span>
             <span class="fw-bold text-dark">{{ $order->customer_name }}</span>
         </div>
 
         {{-- Dòng hiển thị Cơ sở mới thêm --}}
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-dark-50">Cơ sở:</span>
+            <span class="text-dark-50">{{ __('profile.location') ?? 'Cơ sở:' }}</span>
             <strong class="text-primary text-end">{{ $order->location->name ?? 'Đang cập nhật' }}</strong>
         </div>
         
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-dark">Thanh toán:</span>
+            <span class="text-dark">{{ __('profile.payment_method') ?? 'Thanh toán:' }}</span>
             <span class="text-primary text-uppercase fw-bold">
                 @if($order->payment_method == 'wallet')
-                    Ví Holomia
+                    {{ __('profile.payment_wallet') ?? 'Ví Holomia' }}
                 @elseif($order->payment_method == 'cod')
-                    Tiền mặt
+                    {{ __('profile.payment_cash') ?? 'Tiền mặt' }}
                 @else
-                    Chuyển khoản
+                    {{ __('profile.payment_banking') ?? 'Chuyển khoản' }}
                 @endif
             </span>
         </div>
@@ -47,9 +46,9 @@
         <table class="table table-sm table-borderless mb-0" style="--bs-table-bg: transparent; --bs-table-accent-bg: transparent; --bs-table-striped-bg: transparent; --bs-table-hover-bg: transparent; color: #212529;">
             <thead class="text-dark border-bottom border-light border-opacity-25" style="border-style: dashed !important; font-size: 0.85rem; position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
                 <tr>
-                    <th class="ps-0 text-start text-dark">Loại vé</th>
-                    <th class="text-center text-dark" style="width: 30px;">SL</th>
-                    <th class="pe-0 text-end text-dark">Tiền</th>
+                    <th class="ps-0 text-start text-dark">{{ __('profile.ticket_type') ?? 'Loại vé' }}</th>
+                    <th class="text-center text-dark" style="width: 30px;">{{ __('profile.quantity') ?? 'SL' }}</th>
+                    <th class="pe-0 text-end text-dark">{{ __('profile.amount') ?? 'Tiền' }}</th>
                 </tr>
             </thead>
             <tbody style="border-bottom: 1px dashed rgba(0,0,0,0.1);">
@@ -75,7 +74,7 @@
                                     </div>
                                 @else
                                     <button id="review-btn-{{ $item->id }}" class="btn btn-outline-info btn-sm mt-1 px-3 py-1 text-primary fw-bold" style="font-size: 0.75rem; border: 1px solid #0dcaf0 !important; border-radius: 20px;" onclick="openReviewModal({{ $item->ticket_id }}, {{ $item->id }}, '{{ addslashes($item->ticket_name) }}')">
-                                        Đánh giá
+                                        {{ __('profile.review') ?? 'Đánh giá' }}
                                     </button>
                                 @endif
                             @endif
@@ -98,7 +97,7 @@
         @endphp
 
         <div class="d-flex justify-content-between mb-1">
-            <span class="text-dark small">Tạm tính:</span>
+            <span class="text-dark small">{{ __('profile.subtotal') ?? 'Tạm tính:' }}</span>
             <span class="small text-dark">{{ number_format($originalTotal) }}đ</span>
         </div>
 
@@ -111,7 +110,7 @@
         @endif
 
         <div class="d-flex justify-content-between align-items-center mt-1">
-            <span class="text-dark fw-bold text-uppercase small">TỔNG CỘNG:</span>
+            <span class="text-dark fw-bold text-uppercase small">{{ __('profile.total') ?? 'TỔNG CỘNG:' }}</span>
             <span class="fs-4 fw-bold text-primary">{{ number_format($finalTotal) }}đ</span>
         </div>
     </div>
@@ -121,14 +120,14 @@
         <div style="cursor: pointer;" onclick="const icon = this.querySelector('.qr-icon'); const real = this.querySelector('.qr-real'); if(icon) icon.style.display='none'; if(real) real.style.display='block';">
             <div class="qr-icon">
                 <i class="bi bi-qr-code-scan text-dark" style="font-size: 2rem;"></i>
-                <p class="mb-0 small fst-italic mt-1 text-primary" style="font-size: 0.75rem;">Nhấn vào đây để lấy mã QR Check-in</p>
+                <p class="mb-0 small fst-italic mt-1 text-primary" style="font-size: 0.75rem;">{{ __('profile.click_to_get_qr') ?? 'Nhấn vào đây để lấy mã QR Check-in' }}</p>
             </div>
             <div class="qr-real" style="display: none;">
                 @php $qrData = route('ticket.scan', $order->id); @endphp
                 <div class="bg-white d-inline-block p-1 rounded mb-1">
                     {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->margin(1)->generate($qrData) !!}
                 </div>
-                <p class="mb-0 small fw-bold mt-1 text-dark">Đưa mã này cho nhân viên</p>
+                <p class="mb-0 small fw-bold mt-1 text-dark">{{ __('profile.show_qr_to_staff') ?? 'Đưa mã này cho nhân viên' }}</p>
             </div>
         </div>
     </div>
@@ -137,7 +136,7 @@
     @if($order->status == 'paid' || $order->status == 'pending')
         <div class="mt-3 text-center border-top border-light border-opacity-10 pt-3">
             <button class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-bold" onclick="confirmRefund({{ $order->id }})">
-                <i class="bi bi-arrow-return-left me-1"></i> HOÀN TRẢ VÉ
+                <i class="bi bi-arrow-return-left me-1"></i> {{ __('profile.refund_ticket') ?? 'HOÀN TRẢ VÉ' }}
             </button>
         </div>
     @endif

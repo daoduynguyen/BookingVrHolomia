@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title'        => 'Checkout - Holomia VR',
+    'title'             => 'Checkout',
+    'order_summary'     => 'Order Summary',
+    'payment_method'    => 'Payment Method',
+    'wallet'            => 'Holomia Wallet',
+    'bank_transfer'     => 'Bank Transfer',
+    'wallet_balance'    => 'Wallet Balance',
+    'insufficient'      => 'Insufficient balance. Please top up.',
+    'topup_wallet'      => 'Top Up',
+    'place_order'       => 'Confirm Booking',
+    'processing'        => 'Processing...',
+    'order_success'     => 'Booking confirmed!',
+    'order_failed'      => 'Booking failed. Please try again.',
+    'booking_info'      => 'Booking Details',
+    'contact_info'      => 'Contact Information',
+    'full_name'         => 'Full Name',
+    'phone'             => 'Phone Number',
+    'email'             => 'Ticket Email',
+    'notes'             => 'Notes',
+    'terms'             => 'I agree to the terms of service',
+    'coupon'            => 'Coupon Code',
+    'total'             => 'Total Amount',
+];

@@ -37,10 +37,10 @@ class Ticket extends Model
         return $this->belongsTo(Category::class);
     }
 
-    // Quan hệ: 1 Vé thuộc về 1 Cơ sở
-    public function location()
+    // Quan hệ: 1 Vé có thể thuộc nhiều Cơ sở
+    public function locations()
     {
-        return $this->belongsTo(Location::class);
+        return $this->belongsToMany(Location::class);
     }
 
     // Quan hệ: 1 Vé có nhiều đánh giá

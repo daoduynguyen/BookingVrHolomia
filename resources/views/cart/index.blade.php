@@ -46,20 +46,20 @@
                                 <tbody>
                                     {{-- Khởi tạo biến tính tổng --}}
                                     @php 
-                                        $total = 0; 
-                                        $totalDiscount = 0; 
+                                        $total = 0;
+    $totalDiscount = 0; 
                                     @endphp
 
                                     @foreach($cart as $id => $item)
                                         @php 
                                             // Tính toán cho từng item
-                                            $subtotal = $item['price'] * $item['quantity'];
-                                            $itemDiscount = $item['discount'] ?? 0;
-                                            $itemFinalPrice = $subtotal - $itemDiscount;
-                                            
-                                            // Cộng dồn vào tổng đơn hàng
-                                            $total += $subtotal;
-                                            $totalDiscount += $itemDiscount;
+        $subtotal = $item['price'] * $item['quantity'];
+        $itemDiscount = $item['discount'] ?? 0;
+        $itemFinalPrice = $subtotal - $itemDiscount;
+
+        // Cộng dồn vào tổng đơn hàng
+        $total += $subtotal;
+        $totalDiscount += $itemDiscount;
                                         @endphp
 
                                         <tr data-id="{{ $id }}">
@@ -75,7 +75,7 @@
                                                             <br>
                                                             <i class="bi bi-clock"></i> 
                                                             @php
-                                                                $slot = \App\Models\TimeSlot::find($item['slot_id']);
+        $slot = \App\Models\TimeSlot::find($item['slot_id']);
                                                             @endphp
                                                             {{ $slot ? substr($slot->start_time, 0, 5) . ' - ' . substr($slot->end_time, 0, 5) : 'Chưa chọn giờ' }}
                                                         </div>
@@ -133,6 +133,37 @@
                     <div class="card bg-white border border-light shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
                         <h5 class="fw-bold mb-4 border-bottom border-light pb-3 text-dark">Thanh toán</h5>
 
+                        {{-- Hiển thị phương thức đã chọn --}}
+                        @php
+    $cartItems = session('cart', []);
+    $firstCartItem = reset($cartItems);
+    $selectedMethod = $firstCartItem['customer_info']['payment_method'] ?? 'cod';
+                        @endphp
+                        <div class="p-3 rounded-3 mb-3 d-flex align-items-center gap-2
+                            {{ $selectedMethod == 'cod' ? 'bg-warning bg-opacity-10 border border-warning border-opacity-25' : '' }}
+                            {{ $selectedMethod == 'banking' ? 'bg-primary bg-opacity-10 border border-primary border-opacity-25' : '' }}
+                            {{ $selectedMethod == 'wallet' ? 'bg-success bg-opacity-10 border border-success border-opacity-25' : '' }}">
+                            @if($selectedMethod == 'cod')
+                                <i class="bi bi-shop text-warning fs-5"></i>
+                                <div>
+                                    <div class="fw-bold text-dark small">Thanh toán tại quầy</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">Vui lòng đến quầy thanh toán trước giờ chơi</div>
+                                </div>
+                            @elseif($selectedMethod == 'banking')
+                                <i class="bi bi-qr-code-scan text-primary fs-5"></i>
+                                <div>
+                                    <div class="fw-bold text-dark small">Chuyển khoản / QR</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">Quét mã QR sau khi xác nhận</div>
+                                </div>
+                            @else
+                                <i class="bi bi-wallet2 text-success fs-5"></i>
+                                <div>
+                                    <div class="fw-bold text-dark small">Ví Holomia</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">Trừ tiền ví ngay lập tức</div>
+                                </div>
+                            @endif
+                        </div>
+
                         {{-- Hiển thị Tổng tiền gốc --}}
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Tổng tiền vé:</span>
@@ -156,15 +187,24 @@
                             <span class="fs-4 fw-bold text-primary" id="grand-total">{{ number_format($total - $totalDiscount) }}đ</span>
                         </div>
 
-                        <p class="small text-muted mb-4 fst-italic">Phí dịch vụ và thuế sẽ được tính ở bước tiếp theo.</p>
+                        <p class="small text-muted mb-4 fst-italic">Hãy kiểm tra lại thông tin trước khi xác nhận!</p>
 
                         {{-- Form Submit --}}
-                        <form action="{{ route('payment.final') }}" method="POST" 
-                              onsubmit="let btn = this.querySelector('button[type=submit]'); btn.disabled = true; btn.innerHTML = '<i class=\'bi bi-hourglass-split\'></i> Đang xử lý...';">
+                        <form action="{{ route('payment.final') }}" method="POST" id="checkout-form">
                             @csrf
-                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm">
-                                XÁC NHẬN THANH TOÁN <i class="bi bi-check-circle-fill ms-2"></i>
-                            </button>
+                            @if($selectedMethod == 'cod')
+                                <button type="button" class="btn btn-warning w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm text-dark" onclick="confirmCOD()">
+                                    <i class="bi bi-shop me-2"></i>ĐẶT VÉ - THANH TOÁN TẠI QUẦY
+                                </button>
+                            @elseif($selectedMethod == 'banking')
+                                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm">
+                                    <i class="bi bi-qr-code-scan me-2"></i>TIẾP TỤC CHUYỂN KHOẢN
+                                </button>
+                            @else
+                                <button type="submit" class="btn btn-success w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm">
+                                    <i class="bi bi-wallet2 me-2"></i>THANH TOÁN BẰNG VÍ
+                                </button>
+                            @endif
                         </form>
 
                         <div class="text-center mt-3">
@@ -190,7 +230,44 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript">
+
+        // Xác nhận COD
+        function confirmCOD() {
+            Swal.fire({
+                html: `
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                                 style="width:60px;height:60px;background:rgba(255,193,7,0.15);">
+                                <i class="bi bi-shop" style="font-size:2rem;color:#ffc107;"></i>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-2">Xác nhận đặt vé</h5>
+                        <p class="text-muted mb-3" style="font-size:0.9rem;">
+                            Bạn đã chọn <strong>Thanh toán tại quầy</strong>.<br>
+                            Vui lòng đến quầy thanh toán <strong>trước 15 phút</strong> so với giờ chơi.
+                        </p>
+                        <div class="bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3 p-3 text-start" style="font-size:0.85rem;">
+                            <i class="bi bi-info-circle-fill text-warning me-2"></i>
+                            Đơn hàng sẽ ở trạng thái <strong>"Chờ xử lý"</strong> cho đến khi nhân viên xác nhận thanh toán tại quầy.
+                        </div>
+                    </div>
+                `,
+                background: '#fff',
+                showCancelButton: true,
+                confirmButtonText: 'Xác nhận đặt vé',
+                cancelButtonText: 'Quay lại',
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                width: '380px',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('checkout-form').submit();
+                }
+            });
+        }
         $(document).ready(function () {
             
             // --- 1. CODE ẨN THÔNG BÁO SAU 3 GIÂY ---
@@ -219,12 +296,18 @@
                         id: id, 
                         quantity: quantity
                     },
+
+                     beforeSend: function() {
+                       ele.prop('disabled', true);
+                    },
+                
                     success: function (response) {
                         // Vì logic giảm giá phụ thuộc vào số lượng, an toàn nhất là tải lại trang
                         // để server tính toán lại mọi mã giảm giá và hiển thị cho chính xác
                         window.location.reload(); 
                     },
                     error: function(xhr) {
+                        ele.prop('disabled', false);
                         console.log(xhr.responseText); 
                     }
                 });

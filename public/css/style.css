@@ -1,351 +1,598 @@
 /* ==========================================================================
-   1. ĐỊNH DẠNG CHUNG (CORE - MODERN LIGHT THEME)
+   HOLOMIA VR — DESIGN SYSTEM v3
+   Chuyên nghiệp · Thân thiện · Dễ nhìn · Màu xanh chủ đạo
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
 
+/* --------------------------------------------------------------------------
+   1. DESIGN TOKENS
+   -------------------------------------------------------------------------- */
 :root {
-    --primary: #2563eb;       /* Modern Royal Blue */
-    --primary-hover: #1d4ed8;
-    --secondary: #0ea5e9;     /* Light Sky Blue for accents */
-    --bg-main: #ffffff;       /* Pure white background as requested */
-    --bg-card: #f3f4f6;       /* Light gray for cards to stand out */
-    --text-main: #1f2937;     /* Dark gray/black text */
-    --text-muted: #4b5563;    /* Darker gray text for better visibility */
-    --border-color: #e5e7eb;  /* Very light border */
-    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --primary:        #1e88e5;
+    --primary-dark:   #1565c0;
+    --primary-light:  #e3f2fd;
+    --primary-glow:   rgba(30, 136, 229, 0.18);
+    --accent:         #ff6f00;
+    --accent-light:   #fff3e0;
+    --success:        #2e7d32;
+    --success-light:  #e8f5e9;
+    --danger:         #c62828;
+    --warning:        #f9a825;
+    --warning-light:  #fff8e1;
+    --bg-page:        #f0f4f8;
+    --bg-card:        #ffffff;
+    --bg-input:       #f5f8ff;
+    --bg-subtle:      #eef2f7;
+    --text-heading:   #0d1b2a;
+    --text-body:      #2c3e50;
+    --text-secondary: #5a6a7e;
+    --text-muted:     #8fa0b4;
+    --text-price:     #e65100;
+    --text-on-dark:   #e8f4fd;
+    --border:         #dde3ec;
+    --border-hover:   #b0bec5;
+    --border-focus:   #1e88e5;
+    --shadow-xs:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-sm:  0 3px 10px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md:  0 6px 20px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+    --shadow-lg:  0 12px 35px rgba(0,0,0,0.11), 0 4px 10px rgba(0,0,0,0.06);
+    --shadow-primary: 0 4px 18px rgba(30,136,229,0.28);
+    --radius-xs:  4px;
+    --radius-sm:  8px;
+    --radius-md:  12px;
+    --radius-lg:  18px;
+    --radius-xl:  24px;
+    --radius-pill: 999px;
+    --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out:   cubic-bezier(0, 0, 0.2, 1);
+    --duration:   0.22s;
 }
+
+/* --------------------------------------------------------------------------
+   2. BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
-    background-color: var(--bg-main) !important;
-    color: var(--text-main) !important;
-    font-family: 'Outfit', sans-serif; 
-    line-height: 1.6;
+    background-color: var(--bg-page) !important;
+    color: var(--text-body) !important;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Force light theme text where Bootstrap bg-dark/text-white is hardcoded */
-.text-white { color: var(--text-main) !important; }
-.bg-dark { background-color: var(--bg-main) !important; }
-.bg-black { background-color: #111827 !important; color: #fff !important; }
-.bg-black .text-white { color: #fff !important; }
-.bg-black .text-info { color: var(--secondary) !important; }
-.bg-black .text-muted { color: #9ca3af !important; }
-
-/* Thay thế text-info bằng màu primary mới */
-.text-info { color: var(--primary) !important; }
-
-/* Fix bố cục chung */
-.section-padding { padding-top: 60px; padding-bottom: 60px; }
-.container-custom { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-
-/* ==========================================================================
-   2. NAVBAR (MENU HIỆN ĐẠI)
-   ========================================================================== */
-.navbar {
-    z-index: 9999 !important;
-    background-color: rgba(255, 255, 255, 0.98) !important; 
-    box-shadow: var(--shadow-sm);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-color) !important;
-}
-
-.navbar-brand {
-    font-weight: 800;
-    font-size: 1.6rem;
-    color: var(--primary) !important;
-    text-transform: uppercase;
-    letter-spacing: -0.5px;
-}
-
-.navbar-nav .nav-link {
-    font-size: 0.95rem !important;
-    font-weight: 700 !important; /* Tăng độ đậm */
-    text-transform: uppercase !important;
-    color: #1f2937 !important; /* Đen/Xám cực đậm cho dễ đọc */
-    padding: 8px 16px !important;
-    margin: 0 4px;
-    border-radius: 20px;
-    transition: all 0.2s ease;
-    border: none !important;
-}
-
-.navbar-nav .nav-link:hover, 
-.navbar-nav .nav-link.active {
-    color: var(--primary) !important;
-    background-color: rgba(37, 99, 235, 0.08);
-    transform: translateY(-1px);
-}
-
-/* Navbar utilities icon */
-.cart-icon-hover { color: var(--text-main) !important; transition: all 0.2s ease; }
-.cart-icon-hover:hover { color: var(--primary) !important; transform: scale(1.1); }
-
-/* ==========================================================================
-   3. HỒ SƠ & CARD (GIAO DIỆN KHỐI TÁCH BIỆT NỀN)
-   ========================================================================== */
-.profile-content, 
-.card, 
-.checkout-left .card {
-    background-color: var(--bg-card) !important; /* Xám nhạt phân biệt với nền trắng */
-    border: 1px solid #e5e7eb !important; /* Viền xám mảnh */
-    border-radius: 16px !important;
-    padding: 25px !important;
-    box-shadow: var(--shadow-sm) !important;
-    margin-bottom: 25px;
-    color: var(--text-main);
-    transition: all 0.3s ease;
-}
-
-.card:hover {
-    box-shadow: var(--shadow-md) !important;
-    border-color: #d1d5db !important; /* Viền đậm hơn chút khi hover */
-}
-
-.card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
-    color: var(--text-main) !important;
+h1,h2,h3,h4,h5,h6 {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--text-heading);
     font-weight: 700;
+    line-height: 1.3;
 }
 
-/* ==========================================================================
-   4. FORM ELEMENTS (TỐI ƯU SÁNG, BO GÓC)
-   ========================================================================== */
-.form-label {
-    color: #374151 !important; /* Xám đậm hơn cho dễ nhìn */
-    font-weight: 700 !important;
-    margin-bottom: 8px !important;
-    font-size: 0.9rem;
+a { transition: color var(--duration) var(--ease); }
+
+.bg-light     { background-color: var(--bg-page) !important; }
+.bg-white     { background-color: var(--bg-card) !important; }
+.bg-secondary { background-color: var(--bg-subtle) !important; color: var(--text-body) !important; }
+.bg-dark      { background-color: #0d1b2a !important; }
+.bg-black     { background-color: #060d15 !important; }
+.text-dark    { color: var(--text-body) !important; }
+.text-muted   { color: var(--text-muted) !important; }
+.text-info    { color: var(--primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+
+.bg-black .text-white, .bg-dark .text-white, footer .text-white { color: var(--text-on-dark) !important; }
+.bg-black .text-secondary, .bg-dark .text-secondary, footer .text-secondary { color: #8fa0b4 !important; }
+.bg-black .text-info, footer .text-info { color: #64b5f6 !important; }
+.bg-black .text-muted, footer .text-muted { color: #607d8b !important; }
+
+.section-padding  { padding-top: 72px; padding-bottom: 72px; }
+.container-custom { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.text-shadow { text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
+
+/* --------------------------------------------------------------------------
+   GLOBAL PAGE SPACING — fix sát lề trên mọi trang
+   -------------------------------------------------------------------------- */
+/* Container mặc định rộng hơn, có padding ngang đủ */
+.container {
+    padding-left: 28px !important;
+    padding-right: 28px !important;
 }
 
-.form-control, .form-select {
-    background-color: #f1f5f9 !important; /* Xám xanh nhạt nền input */
-    border: 1px solid #cbd5e1 !important;
-    color: #0f172a !important; /* Text cực đậm */
-    padding: 14px 20px !important;
-    border-radius: 12px !important;
-    transition: all 0.2s ease;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+/* Mọi trang dùng container py-5 — tăng thở dọc */
+.container.py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
 }
 
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+/* Card bên trong trang — đảm bảo padding nội dung */
+.card.p-4 { padding: 1.75rem !important; }
+.card.p-5, .card.p-md-5 { padding: 2.25rem !important; }
+
+/* Row gutter chuẩn cho tất cả trang */
+.row.g-5 { --bs-gutter-x: 2rem; --bs-gutter-y: 2rem; }
+.row.g-4 { --bs-gutter-x: 1.5rem; --bs-gutter-y: 1.5rem; }
+
+/* --------------------------------------------------------------------------
+   3. NAVBAR (chỉ áp dụng cho navbar mặc định bootstrap, không override .holomia-navbar)
+   -------------------------------------------------------------------------- */
+.navbar:not(.holomia-navbar) {
+    z-index: 9999 !important;
     background-color: #ffffff !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 12px 0;
+    transition: box-shadow var(--duration) var(--ease);
+}
+.navbar:not(.holomia-navbar) .navbar-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.45rem;
+    color: var(--primary) !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.navbar:not(.holomia-navbar) .navbar-nav .nav-link {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px;
+    color: var(--text-body) !important;
+    padding: 8px 14px !important;
+    border-radius: var(--radius-sm);
+    transition: color var(--duration) var(--ease), background-color var(--duration) var(--ease) !important;
+}
+.navbar:not(.holomia-navbar) .navbar-nav .nav-link:hover {
+    color: var(--primary) !important;
+    background-color: var(--primary-light) !important;
+}
+.navbar:not(.holomia-navbar) .navbar-nav .nav-link.active {
+    color: var(--primary) !important;
+    background-color: var(--primary-light) !important;
+    font-weight: 700 !important;
+}
+.cart-icon-hover {
+    transition: color var(--duration) var(--ease), transform var(--duration) var(--ease) !important;
+}
+.navbar:not(.holomia-navbar) .btn-outline-primary {
+    border: 2px solid var(--primary) !important;
+    color: var(--primary) !important;
+    border-radius: var(--radius-pill) !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem;
+    padding: 7px 20px;
+    transition: all var(--duration) var(--ease) !important;
+    background: transparent !important;
+}
+.navbar:not(.holomia-navbar) .btn-outline-primary:hover {
+    background-color: var(--primary) !important;
+    color: #fff !important;
+    box-shadow: var(--shadow-primary) !important;
+}
+.navbar:not(.holomia-navbar) .btn-outline-info {
+    border: 2px solid var(--primary) !important;
+    color: var(--primary) !important;
+    border-radius: var(--radius-pill) !important;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 7px 20px;
+    background: transparent !important;
+    transition: all var(--duration) var(--ease) !important;
+}
+.navbar:not(.holomia-navbar) .btn-outline-info:hover {
+    background-color: var(--primary) !important;
+    color: #fff !important;
 }
 
-.form-control::placeholder { color: #94a3b8 !important; }
-
-/* Dropdown styling */
+/* --------------------------------------------------------------------------
+   4. DROPDOWN
+   -------------------------------------------------------------------------- */
 .dropdown-menu {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: var(--shadow-md);
-    padding: 10px 0;
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-md) !important;
+    padding: 8px !important;
+    animation: dropIn 0.18s var(--ease-out);
+}
+@keyframes dropIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 .dropdown-item {
-    padding: 10px 20px;
+    color: var(--text-body) !important;
     font-weight: 500;
-    color: #4b5563 !important;
+    font-size: 0.88rem;
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--duration) var(--ease), color var(--duration) var(--ease);
 }
 .dropdown-item:hover {
-    background-color: #f1f5f9;
+    background-color: var(--primary-light) !important;
     color: var(--primary) !important;
 }
+.dropdown-item.text-danger { color: var(--danger) !important; }
+.dropdown-item.text-danger:hover { background-color: #ffebee !important; }
+.dropdown-divider { border-top-color: var(--border) !important; margin: 6px 0 !important; }
 
-/* ==========================================================================
-   5. VÉ & VOUCHER (STYLE NỔI BẬT TỪ NỀN SÁNG)
-   ========================================================================== */
-.voucher-ticket {
-    display: flex; 
-    height: 140px; 
-    margin-bottom: 24px;
-    background-color: var(--bg-card); /* Nền vé hơi xám xíu so với nền chính */
-    border: 1px solid #e5e7eb; /* Viền vé sắc nét */
-    border-radius: 16px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+@media (min-width: 992px) {
+    .navbar-nav .dropdown:hover .dropdown-menu { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   5. BUTTONS
+   -------------------------------------------------------------------------- */
+.btn {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    transition: all var(--duration) var(--ease) !important;
+    border-radius: var(--radius-pill) !important;
+}
+.btn-primary, .btn-info {
+    background-color: var(--primary) !important;
+    background-image: none !important;
+    border: none !important;
+    color: #fff !important;
+    font-size: 0.88rem;
+    padding: 10px 26px;
+    box-shadow: var(--shadow-primary) !important;
+}
+.btn-primary:hover, .btn-info:hover {
+    background-color: var(--primary-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(30,136,229,0.38) !important;
+}
+.btn-primary:active, .btn-info:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--shadow-primary) !important;
+}
+.btn-primary.w-100 {
+    padding: 12px !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+.btn-outline-primary {
+    border: 2px solid var(--primary) !important;
+    color: var(--primary) !important;
+    background: transparent !important;
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary) !important;
+    color: #fff !important;
+    box-shadow: var(--shadow-primary) !important;
+}
+.btn-outline-secondary {
+    border: 2px solid var(--border) !important;
+    color: var(--text-secondary) !important;
+    background: transparent !important;
+}
+.btn-outline-secondary:hover {
+    background-color: var(--bg-subtle) !important;
+    border-color: var(--border-hover) !important;
+}
+.btn-danger { background-color: var(--danger) !important; border: none !important; color: #fff !important; }
+.btn[disabled], .btn:disabled { opacity: 0.55 !important; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* --------------------------------------------------------------------------
+   6. CARD GAME
+   -------------------------------------------------------------------------- */
+.card {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-xs) !important;
+    padding: 0 !important;
+    transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease), border-color var(--duration) var(--ease) !important;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
 }
-.voucher-ticket:hover { 
-    transform: translateY(-5px); 
-    border-color: #cbd5e1;
-    box-shadow: var(--shadow-md);
+.card:hover {
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-4px);
+    border-color: var(--border-hover) !important;
 }
-
-/* Cột trái (Màu xanh) */
-.voucher-left {
-    flex: 0 0 160px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: #fff; 
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    border-right: 2px dashed rgba(255, 255, 255, 0.5); /* Đường gân xé vé */
+.card h1,.card h2,.card h3,.card h4,.card h5,.card h6 { color: var(--text-heading) !important; }
+.card-game .position-relative { overflow: hidden; }
+.card-game .card-img-top {
+    transition: transform 0.4s var(--ease) !important;
+    display: block; width: 100%; border-radius: 0 !important;
 }
-
-/* Cột phải (Thông tin) */
-.voucher-right {
-    flex: 1; 
-    padding: 15px 25px;
-    display: flex; align-items: center; justify-content: space-between;
-    color: var(--text-main);
+.card-game:hover .card-img-top { transform: scale(1.06); }
+.card-body { padding: 16px !important; }
+.card-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: var(--text-heading) !important;
+    margin-bottom: 6px !important;
+    line-height: 1.4;
 }
-
-/* --- VÉ BẢO TRÌ (XÁM XỊT) --- */
-.ticket-maintenance {
-    background-color: #0f0f0f !important;
-    border: 1px dashed #333 !important;
-    opacity: 0.6;
-    pointer-events: none;
-    filter: grayscale(100%); /* Chuyển sang đen trắng */
-}
-.ticket-maintenance .voucher-left {
-    background: #333 !important;
-    color: #888 !important;
-}
-
-/* ==========================================================================
-   6. ADMIN SIDEBAR (GIAO DIỆN QUẢN TRỊ)
-   ========================================================================== */
-body.admin-body { background-color: #121212; }
-
-.sidebar-container {
-    background: #0f0f0f;
-    border-right: 1px solid #2d2d2d;
-    min-height: 100vh;
-    width: 280px;
-    display: flex; flex-direction: column;
-    position: sticky; top: 0;
-}
-
-.sidebar-brand h3 { color: var(--text-main); text-transform: uppercase; margin: 20px 0; text-align: center; }
-
-.sidebar-container .nav-link {
-    color: #a0a0a0 !important;
-    padding: 12px 24px !important;
-    font-weight: 500;
-    border-left: 3px solid transparent;
-}
-.sidebar-container .nav-link:hover, 
-.sidebar-container .nav-link.active {
+.card-body .badge.bg-primary,
+.badge.bg-primary.bg-opacity-10 {
+    background-color: var(--primary-light) !important;
     color: var(--primary) !important;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-left-color: var(--primary);
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    padding: 5px 11px !important;
+    border-radius: var(--radius-pill) !important;
+    border: 1px solid rgba(30,136,229,0.15);
+}
+.badge.bg-warning {
+    background-color: var(--warning) !important;
+    color: #1a1a1a !important;
+    font-weight: 800 !important;
+    font-size: 0.78rem !important;
+    padding: 5px 10px !important;
+    border-radius: var(--radius-pill) !important;
+    box-shadow: 0 2px 8px rgba(249,168,37,0.4);
+}
+.card-body .fs-5.text-primary,
+.card-body .fw-bold.text-primary,
+.card-body .text-primary.fs-5 {
+    color: var(--text-price) !important;
+    font-size: 1.2rem !important;
+    font-weight: 800 !important;
+}
+.card-body small, .card-body .small { color: var(--text-muted) !important; font-size: 0.8rem !important; }
+.card-body p.small, .card-body .text-muted { color: var(--text-secondary) !important; font-size: 0.83rem !important; }
+.card-body .border-top { border-color: var(--border) !important; }
+
+/* --------------------------------------------------------------------------
+   7. MAINTENANCE
+   -------------------------------------------------------------------------- */
+.card-maintenance {
+    background-color: #f8f9fa !important;
+    border: 2px dashed #ced4da !important;
+    opacity: 0.78; position: relative; overflow: hidden;
+}
+.card-maintenance:hover { transform: none !important; }
+.card-maintenance img { filter: grayscale(100%); opacity: 0.3; transition: none !important; }
+.card-maintenance:hover img { transform: none !important; }
+.maintenance-overlay {
+    position: absolute;
+    top: 42%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-14deg);
+    background-color: #d32f2f;
+    color: #fff;
+    font-weight: 900;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    padding: 7px 24px;
+    border: 2px solid rgba(255,255,255,0.85);
+    border-radius: 3px;
+    box-shadow: 0 0 22px rgba(211,47,47,0.45);
+    z-index: 10;
+    pointer-events: none;
+    white-space: nowrap;
 }
 
-/* ==========================================================================
-   7. PHÂN TRANG (PAGINATION) - FIX CHO LIGHT MODE
-   ========================================================================== */
+/* --------------------------------------------------------------------------
+   8. WISHLIST
+   -------------------------------------------------------------------------- */
+.btn-wishlist {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.92) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: transform var(--duration) var(--ease), background var(--duration) var(--ease) !important;
+    padding: 0 !important;
+}
+.btn-wishlist:hover { transform: scale(1.15) !important; background: #fff !important; }
+
+/* --------------------------------------------------------------------------
+   9. FORMS
+   -------------------------------------------------------------------------- */
+.form-label {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+.form-control, .form-select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-body);
+    font-size: 0.95rem;
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+    box-shadow: var(--shadow-xs);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+    background-color: #fff;
+    outline: none;
+}
+.form-control::placeholder { color: var(--text-muted); }
+.form-control:disabled, .form-control[readonly] {
+    background-color: var(--bg-subtle);
+    color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   10. PROFILE PANEL
+   -------------------------------------------------------------------------- */
+.profile-content {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 28px !important;
+    box-shadow: var(--shadow-xs) !important;
+    margin-bottom: 24px;
+}
+
+/* --------------------------------------------------------------------------
+   11. VOUCHER / VE
+   -------------------------------------------------------------------------- */
+.voucher-ticket {
+    display: flex; height: 145px; margin-bottom: 20px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+.voucher-ticket:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border-hover); }
+.voucher-left {
+    flex: 0 0 155px;
+    background: linear-gradient(135deg, var(--primary), #42a5f5);
+    color: #fff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-right: 2px dashed rgba(255,255,255,0.35);
+    gap: 4px;
+}
+.voucher-right {
+    flex: 1; padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--text-body);
+}
+.ticket-maintenance {
+    background-color: #f4f4f4 !important;
+    border: 1px dashed #bbb !important;
+    opacity: 0.58; pointer-events: none; filter: grayscale(100%);
+}
+.ticket-maintenance .voucher-left { background: linear-gradient(135deg, #999, #bbb) !important; }
+
+/* --------------------------------------------------------------------------
+   12. PAGINATION
+   -------------------------------------------------------------------------- */
+.pagination { gap: 4px; }
 .page-link {
     background-color: var(--bg-card) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-main) !important;
-    border-radius: 8px;
-    margin: 0 4px;
-    transition: all 0.2s ease;
+    border: 1.5px solid var(--border) !important;
+    color: var(--text-secondary) !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600; font-size: 0.875rem;
+    padding: 8px 14px;
+    transition: all var(--duration) var(--ease) !important;
+    box-shadow: none !important;
 }
 .page-link:hover {
-    background-color: #f3f4f6 !important;
+    background-color: var(--primary-light) !important;
     color: var(--primary) !important;
+    border-color: rgba(30,136,229,0.3) !important;
+    transform: translateY(-1px);
 }
 .page-item.active .page-link {
     background-color: var(--primary) !important;
     border-color: var(--primary) !important;
-    color: #fff !important; 
+    color: #fff !important;
     font-weight: 700;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-primary) !important;
 }
 .page-item.disabled .page-link {
-    background-color: #f9fafb !important;
-    color: #d1d5db !important;
-    border-color: var(--border-color) !important;
+    background-color: var(--bg-subtle) !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border) !important;
+    transform: none !important;
 }
 
-/* ==========================================================================
-   8. HOVER DROPDOWN & UTILS
-   ========================================================================== */
-@media (min-width: 992px) {
-    .navbar-nav .dropdown:hover .dropdown-menu {
-        display: block; margin-top: 0; animation: slideUp 0.3s ease;
-    }
+/* --------------------------------------------------------------------------
+   13. ALERTS
+   -------------------------------------------------------------------------- */
+.alert { border-radius: var(--radius-md) !important; border: none !important; font-weight: 500; padding: 14px 20px !important; }
+.alert-success { background-color: var(--success-light) !important; color: var(--success) !important; border-left: 4px solid var(--success) !important; }
+.alert-danger  { background-color: #ffebee !important; color: var(--danger) !important; border-left: 4px solid var(--danger) !important; }
+.alert-warning { background-color: var(--warning-light) !important; color: #e65100 !important; border-left: 4px solid var(--warning) !important; }
+.alert-info    { background-color: var(--primary-light) !important; color: var(--primary-dark) !important; border-left: 4px solid var(--primary) !important; }
+
+/* --------------------------------------------------------------------------
+   14. TABLES
+   -------------------------------------------------------------------------- */
+.table { color: var(--text-body) !important; border-color: var(--border) !important; }
+.table thead th {
+    background-color: var(--bg-subtle) !important;
+    color: var(--text-heading) !important;
+    font-weight: 700; font-size: 0.83rem;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-color: var(--border) !important; padding: 13px 16px;
+}
+.table tbody td { border-color: var(--border) !important; padding: 13px 16px; vertical-align: middle; font-size: 0.9rem; }
+.table-hover tbody tr:hover { background-color: var(--primary-light) !important; }
+
+/* --------------------------------------------------------------------------
+   15. ADMIN SIDEBAR
+   -------------------------------------------------------------------------- */
+body.admin-body { background-color: #eef2f7 !important; }
+.sidebar-container {
+    background: #0d1b2a;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    min-height: 100vh; width: 260px;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0;
+}
+.sidebar-brand h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: #64b5f6; text-transform: uppercase;
+    margin: 22px 0; text-align: center;
+    font-size: 1rem; font-weight: 800; letter-spacing: 2px;
+}
+.sidebar-container .nav-link {
+    color: #8fa0b4 !important;
+    padding: 11px 22px !important;
+    font-weight: 500; font-size: 0.9rem;
+    border-left: 3px solid transparent;
+    transition: all var(--duration) var(--ease);
+}
+.sidebar-container .nav-link:hover,
+.sidebar-container .nav-link.active {
+    color: #fff !important;
+    background-color: rgba(30,136,229,0.12);
+    border-left-color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   16. FOOTER
+   -------------------------------------------------------------------------- */
+footer { background-color: #060d15 !important; }
+footer a { transition: color var(--duration) var(--ease); }
+footer a:hover { color: #64b5f6 !important; text-decoration: none !important; }
+footer .border-top { border-color: rgba(255,255,255,0.08) !important; }
+footer .bi { transition: transform var(--duration) var(--ease); }
+footer a:hover .bi { transform: scale(1.2); }
+
+/* --------------------------------------------------------------------------
+   17. ANIMATIONS
+   -------------------------------------------------------------------------- */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+}
+@keyframes arrowDown {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50%       { transform: translateY(7px); opacity: 1; }
 }
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.dropdown-menu {
-    background-color: #1e293b;
-    border: 1px solid #333;
-}
-.dropdown-item { color: #cbd5e1; padding: 8px 20px; }
-.dropdown-item:hover {
-    background-color: rgba(13, 202, 240, 0.1);
-    color: var(--primary);
-}
-.dropdown-divider { border-top-color: #333; }
+.animate-bounce { animation: bounce 2.2s ease-in-out infinite; }
+.animate-down   { animation: arrowDown 1.6s ease-in-out infinite; }
 
-/* Nút bấm (Buttons) */
-.btn-info, .btn-primary {
-    background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
-    border: none !important;
-    color: #fff !important;
-    font-weight: 800 !important;
-    padding: 12px 28px;
-    border-radius: 50px !important;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-sm);
-    letter-spacing: 0.5px;
-}
-.btn-info:hover, .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3) !important;
-}
+.col-md-4 { animation: fadeInUp 0.4s var(--ease-out) both; }
+.col-md-4:nth-child(2) { animation-delay: 0.07s; }
+.col-md-4:nth-child(3) { animation-delay: 0.14s; }
+.col-md-4:nth-child(4) { animation-delay: 0.07s; }
+.col-md-4:nth-child(5) { animation-delay: 0.14s; }
+.col-md-4:nth-child(6) { animation-delay: 0.21s; }
 
-/* Override bắt buộc để xóa nền trắng của Bootstrap */
-.bg-white, .bg-light, .bg-secondary {
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
+/* --------------------------------------------------------------------------
+   18. RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .voucher-left { flex: 0 0 110px; font-size: 0.85rem; }
+    .card:hover { transform: none; }
 }
-.text-dark { color: var(--text-main) !important; }
-
-/* ==========================================================================
-   STYLE CHO VÉ BẢO TRÌ (GIAO DIỆN LIGHT MODE)
-   ========================================================================== */
-
-/* 1. Tổng thể Card: Sáng xám và viền đứt */
-.card-maintenance {
-    background-color: #f3f4f6 !important; 
-    border: 2px dashed #d1d5db !important;   
-    position: relative; 
-    overflow: hidden;
-    opacity: 0.8;
-}
-
-/* 2. Ảnh game: Chuyển trắng đen & Mờ đi */
-.card-maintenance img {
-    filter: grayscale(100%); /* Mất màu */
-    opacity: 0.3;            /* Mờ tịt */
-    transition: none;        /* Tắt hiệu ứng zoom khi hover */
-}
-
-/* 3. TEM "BẢO TRÌ" (QUAN TRỌNG NHẤT) */
-.maintenance-overlay {
-    position: absolute;
-    top: 40%;  /* Nằm đè lên vùng ảnh */
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-15deg); /* Xoay nghiêng 15 độ */
-    
-    background-color: #dc3545; /* Đỏ rực */
-    color: #ffffff;
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 1.1rem;
-    padding: 8px 25px;
-    border: 2px solid #fff;
-    box-shadow: 0 0 15px rgba(220, 53, 69, 0.6); /* Phát sáng nhẹ màu đỏ */
-    z-index: 10;
-    pointer-events: none; /* Bấm xuyên qua được */
-    white-space: nowrap;
-}
-

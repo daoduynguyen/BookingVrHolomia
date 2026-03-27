@@ -3,7 +3,7 @@
 <head>
     <title>Phản hồi từ Holomia VR</title>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+<body style="font-family: 'Be Vietnam Pro', sans-serif; line-height: 1.6;">
     <h3>Xin chào {{ $customerName }},</h3>
     
     <p>Cảm ơn bạn đã liên hệ với Holomia VR. Về thắc mắc của bạn, chúng tôi xin phản hồi như sau:</p>

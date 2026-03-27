@@ -1,5 +1,7 @@
 @extends('layouts.admin')
-{{-- Admin Quản lý liên hệ --}}
+
+@section('title', 'Quản lý Liên hệ')
+
 @section('admin_content')
 <div class="container-fluid">
     {{-- 1. Tiêu đề chuẩn Dark Mode --}}

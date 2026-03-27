@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => 'कार्ट - Holomia VR',
+    'title' => 'आपकी कार्ट',
+    'product' => 'उत्पाद',
+    'price' => 'मूल्य',
+    'quantity' => 'मात्रा',
+    'subtotal' => 'उप-योग',
+    'total' => 'कुल',
+    'discount' => 'छूट',
+    'final_total' => 'देय राशि',
+    'checkout' => 'चेकआउट',
+    'continue_shop' => 'खरीदारी जारी रखें',
+    'empty_cart' => 'कार्ट खाली है।',
+    'empty_desc' => 'आपकी कार्ट में कोई टिकट नहीं है।',
+    'remove' => 'हटाएं',
+    'clear_cart' => 'कार्ट साफ़ करें',
+    'coupon_code' => 'कूपन कोड',
+    'apply_coupon' => 'लागू करें',
+    'date' => 'खेलने की तारीख',
+    'time_slot' => 'समय स्लॉट',
+    'branch' => 'शाखा',
+    'players' => 'खिलाड़ी',
+];

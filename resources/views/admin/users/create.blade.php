@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-
+@section('title', 'Thêm Người dùng')
 @section('admin_content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">

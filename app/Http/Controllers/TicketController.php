@@ -17,7 +17,7 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     public function index()
     {
-        $tickets = Ticket::with(['category', 'location'])
+        $tickets = Ticket::with(['category', 'locations'])
                         ->whereIn('status', ['active', 'maintenance'])
                         ->orderBy('play_count', 'desc') 
                         ->take(6) 
@@ -31,14 +31,16 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     public function shop(Request $request)
     {
-        $query = Ticket::with(['category', 'location'])
+        $query = Ticket::with(['category', 'locations'])
                        ->whereIn('status', ['active', 'maintenance']);
 
         $locationName = "Tất cả vé";
 
         // Lọc theo Cơ sở (Location)
         if ($request->has('location_id') && $request->location_id != null) {
-            $query->where('location_id', $request->location_id);
+            $query->whereHas('locations', function($q) use ($request) {
+                $q->where('locations.id', $request->location_id);
+            });
             $loc = Location::find($request->location_id);
             if ($loc) {
                 $locationName = "Vé tại " . $loc->name;
@@ -50,7 +52,7 @@ class TicketController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $tickets = $query->orderBy('play_count', 'desc')->paginate(9); 
+        $tickets = $query->orderBy('play_count', 'desc')->paginate(9)->appends(request()->query()); 
 
         return view('shop', compact('tickets', 'locationName'));
     }
@@ -60,7 +62,7 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     public function show($id)
     {
-        $ticket = Ticket::with(['category', 'location'])->findOrFail($id);
+        $ticket = Ticket::with(['category', 'locations'])->findOrFail($id);
         
         $related = Ticket::where('category_id', $ticket->category_id)
                         ->where('id', '!=', $id)

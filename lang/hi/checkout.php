@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => 'चेकआउट - Holomia VR',
+    'title' => 'चेकआउट',
+    'order_summary' => 'ऑर्डर सारांश',
+    'payment_method' => 'भुगतान विधि',
+    'wallet' => 'Holomia वॉलेट',
+    'bank_transfer' => 'बैंक ट्रांसफर',
+    'wallet_balance' => 'वॉलेट बैलेंस',
+    'insufficient' => 'अपर्याप्त बैलेंस। कृपया टॉप अप करें।',
+    'topup_wallet' => 'टॉप अप',
+    'place_order' => 'बुकिंग की पुष्टि करें',
+    'processing' => 'प्रोसेसिंग...',
+    'order_success' => 'बुकिंग सफल!',
+    'order_failed' => 'बुकिंग विफल। पुनः प्रयास करें।',
+    'booking_info' => 'बुकिंग विवरण',
+    'contact_info' => 'संपर्क जानकारी',
+    'full_name' => 'पूरा नाम',
+    'phone' => 'फ़ोन नंबर',
+    'email' => 'टिकट ईमेल',
+    'notes' => 'नोट्स',
+    'terms' => 'मैं सेवा की शर्तों से सहमत हूं',
+    'coupon' => 'कूपन कोड',
+    'total' => 'कुल राशि',
+];

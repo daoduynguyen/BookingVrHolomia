@@ -39,18 +39,23 @@ class AdminController extends Controller
         $pendingOrders = (clone $ordersQuery)->where('status', 'pending')->count();
         $totalTickets = (clone $ticketsQuery)->count();
         $totalUsers = $usersQuery->count();
+        $completedOrders  = (clone $ordersQuery)->where('status', 'completed')->count();
+        $cancelledOrders  = (clone $ordersQuery)->where('status', 'cancelled')->count();
+        $refundedOrders   = (clone $ordersQuery)->where('status', 'refunded')->count();
 
-        // 2. CHART DOANH THU 7 NGÀY
         // 2. DỮ LIỆU BIỂU ĐỒ CỘT & ĐƯỜNG (7 NGÀY QUA)
         $chartStats = (clone $ordersQuery)->where('status', 'paid')
+            ->whereBetween('created_at', [
+                now()->subDays(6)->startOfDay(),
+                now()->endOfDay(),
+            ])
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(total_amount) as total'),
-                DB::raw('COUNT(id) as order_count') // DÒNG NÀY ĐỂ ĐẾM ĐƠN
+                DB::raw('COUNT(id) as order_count')
             )
             ->groupBy('date')
             ->orderBy('date', 'asc')
-            ->take(7)
             ->get();
 
         $orderCountData = $chartStats->pluck('order_count')->toArray(); // LẤY MẢNG SỐ LƯỢNG ĐƠN RA
@@ -61,7 +66,8 @@ class AdminController extends Controller
         $pieData = [
             (clone $ordersQuery)->where('status', 'paid')->count(),
             (clone $ordersQuery)->where('status', 'pending')->count(),
-            (clone $ordersQuery)->where('status', 'cancelled')->count()
+            (clone $ordersQuery)->where('status', 'cancelled')->count(),
+            (clone $ordersQuery)->where('status', 'completed')->count(),
         ];
 
         //  4. BẢNG XẾP HẠNG DOANH THU THEO CƠ SỞ (CHỈ SUPER ADMIN CÓ)
@@ -77,7 +83,8 @@ class AdminController extends Controller
         }
 
         return view('admin.dashboard', compact(
-            'totalRevenue', 'pendingOrders', 'totalTickets', 'totalUsers',    
+            'totalRevenue', 'pendingOrders', 'totalTickets', 'totalUsers',
+            'completedOrders', 'cancelledOrders', 'refundedOrders',
             'revenueLabels', 'revenueData', 'pieData',
             'revenueByLocation','orderCountData'
         ));
@@ -150,6 +157,22 @@ class AdminController extends Controller
         $user->delete();
 
         return back()->with('success', 'Đã xóa tài khoản người dùng thành công!');
+    }
+
+    public function toggleBan($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Không cho chặn chính mình hoặc super_admin
+        if ($user->id === auth()->id() || $user->role === 'super_admin') {
+            return back()->with('error', 'Không thể chặn tài khoản này!');
+        }
+
+        $user->is_banned = !$user->is_banned;
+        $user->save();
+
+        $msg = $user->is_banned ? 'Đã chặn tài khoản ' . $user->name : 'Đã mở khóa tài khoản ' . $user->name;
+        return back()->with('success', $msg);
     } 
 
     //Tin nhắn liên hệ 

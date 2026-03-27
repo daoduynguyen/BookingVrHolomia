@@ -15,10 +15,10 @@ class Location extends Model
         'hotline'
     ];
 
-    // Quan hệ: 1 Cơ sở có nhiều Vé/Game
+    // Quan hệ: 1 Cơ sở có nhiều Vé/Game (nhiều nhiều)
     public function tickets()
     {
-        return $this->hasMany(Ticket::class);
+        return $this->belongsToMany(Ticket::class);
     }
 
     

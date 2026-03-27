@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => 'チケットストア - Holomia VR',
+    'shop_title' => 'チケット一覧',
+    'total_games' => '現在 :count 種類のゲームを提供中',
+    'search_placeholder' => 'ゲームを検索...',
+    'filter_location' => '店舗で絞り込む',
+    'all_locations' => 'すべての店舗',
+    'filter_category' => 'カテゴリ',
+    'all_categories' => 'すべて',
+    'sort_by' => '並び替え',
+    'newest' => '新着順',
+    'popular' => '人気順',
+    'price_low' => '価格が安い順',
+    'price_high' => '価格が高い順',
+    'no_results' => '該当するゲームが見つかりません。',
+    'price_from' => '料金：',
+    'plays' => '回プレイ',
+    'book_now' => '今すぐ予約',
+    'view_info' => '詳細を見る',
+    'maintenance' => 'メンテナンス中',
+    'wishlist_added' => 'お気に入りに追加しました！',
+    'wishlist_removed' => 'お気に入りから削除しました！',
+    'meta_description' => 'Holomia VRで10種類以上のVRゲーム体験を探して予約しましょう。',
+];

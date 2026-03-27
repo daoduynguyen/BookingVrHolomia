@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => '购物车 - Holomia VR',
+    'title' => '您的购物车',
+    'product' => '商品',
+    'price' => '价格',
+    'quantity' => '数量',
+    'subtotal' => '小计',
+    'total' => '合计',
+    'discount' => '折扣',
+    'final_total' => '应付金额',
+    'checkout' => '结账',
+    'continue_shop' => '继续购物',
+    'empty_cart' => '购物车为空。',
+    'empty_desc' => '您的购物车中没有任何票务。',
+    'remove' => '删除',
+    'clear_cart' => '清空购物车',
+    'coupon_code' => '优惠码',
+    'apply_coupon' => '使用',
+    'date' => '游玩日期',
+    'time_slot' => '时间段',
+    'branch' => '门店',
+    'players' => '游玩人数',
+];

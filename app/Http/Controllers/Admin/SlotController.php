@@ -7,21 +7,28 @@ use Illuminate\Http\Request;
 use App\Models\TimeSlot;
 use App\Models\Ticket;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class SlotController extends Controller
 {
     public function index(Request $request)
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
         
         // 1. Mặc định hiển thị lịch của ngày hôm nay (Hoặc ngày Admin chọn)
-        $selectedDate = $request->input('date', \Carbon\Carbon::today()->format('Y-m-d'));
+        $selectedDate = $request->input('date', Carbon::today()->format('Y-m-d'));
 
         // Khởi tạo Query gốc
-        $ticketQuery = \App\Models\Ticket::query();
-        $slotQuery = \App\Models\TimeSlot::with('ticket')->where('date', $selectedDate);
+        $ticketQuery = Ticket::query();
+        
+        // Thêm tìm kiếm theo tên vé
+        if ($request->has('search') && $request->search != '') {
+            $ticketQuery->where('name', 'like', '%' . $request->search . '%');
+        }
 
-        // 🔥 CHỐT CHẶN BẢO MẬT: ÉP THEO CƠ SỞ
+        $slotQuery = TimeSlot::with('ticket')->where('date', $selectedDate);
+
+        // CHỐT CHẶN BẢO MẬT: ÉP THEO CƠ SỞ
         if ($user && $user->role !== 'super_admin' && $user->location_id) {
             
             // a. Ép bộ lọc Game/Vé chỉ hiện game của cơ sở này
@@ -61,9 +68,13 @@ class SlotController extends Controller
             return back()->with('error', 'Giờ bắt đầu phải nhỏ hơn giờ kết thúc!');
         }
 
-        // 2. Lấy location_id từ Ticket
-        $ticket = Ticket::find($request->ticket_id);
-        $locationId = $ticket->location_id ?? 1;
+        // 2. Lấy location_id từ Ticket (eager load để tránh N+1 và null)
+        $ticket = Ticket::with('locations')->find($request->ticket_id);
+        $locationId = $ticket->locations->first()->id ?? null;
+
+        if (!$locationId) {
+            return back()->with('error', 'Vé này chưa được gán cơ sở. Vui lòng cập nhật vé trước!');
+        }
 
         TimeSlot::create([
             'ticket_id'  => $request->ticket_id,
@@ -141,20 +152,35 @@ class SlotController extends Controller
         // Dùng CarbonPeriod để lặp qua mảng các ngày từ start_date đến end_date
         $period = \Carbon\CarbonPeriod::create($request->start_date, $request->end_date);
 
+        $dailyStart = Carbon::parse($request->input('start_time', '08:00'))->format('H:i:00');
+        $dailyEnd   = Carbon::parse($request->input('end_time', '21:00'))->format('H:i:00');
+
         foreach ($period as $dateObj) {
             $currentDate = $dateObj->format('Y-m-d'); // Lấy ngày hiện tại trong vòng lặp
 
             foreach ($tickets as $ticket) {
-                $locationId = $ticket->location_id ?? 1;
+                $locationId = $ticket->locations->first()->id ?? 1;
+                $baseDuration = (int)$ticket->duration > 0 ? (int)$ticket->duration : 60;
 
-                // Tạo từ 08:00 đến 21:00
-                for ($i = 8; $i <= 21; $i++) {
-                    $startTime = sprintf('%02d:00:00', $i);
-                    $endTime = sprintf('%02d:00:00', $i + 1);
+             // Làm tròn lên số tận 0 hoặc 5 TIẾP THEO (không giữ nguyên nếu đã là bội 5)
+                $duration = (int)(floor(($baseDuration) / 5) + 1) * 5;
+                $currentTimeStr = $dailyStart;
+
+                while (strtotime($currentTimeStr) < strtotime($dailyEnd)) {
+                    $slotStartCarbon = Carbon::parse($currentTimeStr);
+                    $slotEndCarbon = (clone $slotStartCarbon)->addMinutes($duration);
+
+                    // Không dính ca qua ngày hôm sau hoặc qua giờ kết thúc
+                    if ($slotEndCarbon->format('H:i:00') > $dailyEnd || $slotEndCarbon->format('H:i:00') < $dailyStart) {
+                        break;
+                    }
+
+                    $startTime = $slotStartCarbon->format('H:i:00');
+                    $endTime = $slotEndCarbon->format('H:i:00');
 
                     $slot = TimeSlot::firstOrCreate([
                         'ticket_id'  => $ticket->id,
-                        'date'       => $currentDate, // Dùng ngày trong vòng lặp
+                        'date'       => $currentDate,
                         'start_time' => $startTime,
                     ], [
                         'location_id'=> $locationId,
@@ -166,6 +192,8 @@ class SlotController extends Controller
                     if ($slot->wasRecentlyCreated) {
                         $count++;
                     }
+
+                    $currentTimeStr = $endTime;
                 }
             }
         }
@@ -173,7 +201,7 @@ class SlotController extends Controller
         if ($count > 0) {
             $startStr = Carbon::parse($request->start_date)->format('d/m/Y');
             $endStr = Carbon::parse($request->end_date)->format('d/m/Y');
-            return back()->with('success', "Tuyệt vời! Đã tạo thành công {$count} ca chơi từ ngày {$startStr} đến {$endStr}.");
+            return back()->with('success', "Tuyệt vời! Đã tạo thành công {$count} ca chơi tùy chỉnh từ ngày {$startStr} đến {$endStr}.");
         } else {
             return back()->with('error', "Khoảng thời gian này đã có sẵn lịch, không có ca mới nào được tạo thêm.");
         }

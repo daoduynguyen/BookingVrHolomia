@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ $ticket->name }} - Chi tiết</title>
+    <meta name="description" content="Trải nghiệm {{ $ticket->name }} tại Holomia VR. {{ Str::limit(strip_tags($ticket->description), 120) }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
@@ -35,7 +36,7 @@
                     {{-- 1. VIDEO TRAILER --}}
                     @if($ticket->trailer_url)
                         @php
-                            $embedUrl = str_replace('watch?v=', 'embed/', $ticket->trailer_url);
+    $embedUrl = str_replace('watch?v=', 'embed/', $ticket->trailer_url);
                         @endphp
                         <div class="ratio ratio-16x9 mb-4 shadow-sm rounded-4 overflow-hidden border border-light">
                             <iframe src="{{ $embedUrl }}" title="YouTube video" allowfullscreen></iframe>
@@ -117,11 +118,65 @@
                 <div class="h-100 d-flex flex-column justify-content-start">
 
                     <div class="text-center mb-4">
-                        <h1 class="fw-bold text-dark mb-2" style="font-size: 2.5rem;">{{ $ticket->name }}</h1>
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                            <h1 class="fw-bold text-dark mb-0" style="font-size: 2.5rem;">{{ $ticket->name }}</h1>
+                            {{-- NÚT CHIA SẺ --}}
+                            <button id="btn-share" class="btn btn-light border rounded-circle shadow-sm"
+                                style="width:40px;height:40px;padding:0;flex-shrink:0;"
+                                title="Chia sẻ">
+                                <i class="bi bi-share-fill text-primary" style="font-size:16px;"></i>
+                            </button>
+                        </div>
+
+                        {{-- SHARE DROPDOWN --}}
+                        <div id="share-panel" class="d-none shadow rounded-4 border bg-white p-3 mx-auto" style="max-width:320px; z-index:100;">
+                            <p class="fw-bold text-dark mb-3 text-start small">Chia sẻ với bạn bè</p>
+                            <div class="d-flex justify-content-around mb-2">
+                                {{-- Facebook --}}
+                                <a href="#" class="share-btn text-center text-decoration-none" data-platform="facebook">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" style="width:50px;height:50px;background:#1877F2;">
+                                        <i class="bi bi-facebook text-white fs-5"></i>
+                                    </div>
+                                    <small class="text-muted" style="font-size:11px;">Facebook</small>
+                                </a>
+                                {{-- Messenger --}}
+                                <a href="#" class="share-btn text-center text-decoration-none" data-platform="messenger">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" style="width:50px;height:50px;background:linear-gradient(45deg,#0084FF,#B44FE8);">
+                                        <i class="bi bi-messenger text-white fs-5"></i>
+                                    </div>
+                                    <small class="text-muted" style="font-size:11px;">Messenger</small>
+                                </a>
+                                {{-- Zalo --}}
+                                <a href="#" class="share-btn text-center text-decoration-none" data-platform="zalo">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" style="width:50px;height:50px;background:#0068FF;">
+                                        <span class="text-white fw-bold" style="font-size:14px;">Z</span>
+                                    </div>
+                                    <small class="text-muted" style="font-size:11px;">Zalo</small>
+                                </a>
+                                {{-- Twitter/X --}}
+                                <a href="#" class="share-btn text-center text-decoration-none" data-platform="twitter">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" style="width:50px;height:50px;background:#000000;">
+                                        <i class="bi bi-twitter-x text-white fs-5"></i>
+                                    </div>
+                                    <small class="text-muted" style="font-size:11px;">Twitter</small>
+                                </a>
+                            </div>
+
+                            <hr class="my-2">
+
+                            {{-- COPY LINK --}}
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="text" id="share-link-input" class="form-control form-control-sm bg-light border-light"
+                                    value="{{ url()->current() }}" readonly style="font-size:12px;">
+                                <button id="btn-copy-link" class="btn btn-primary btn-sm px-3 fw-bold" style="white-space:nowrap;">
+                                    <i class="bi bi-clipboard me-1"></i>Sao chép
+                                </button>
+                            </div>
+                        </div>
 
                         <div class="d-flex align-items-center justify-content-center gap-3 text-muted">
                             <span class="d-flex align-items-center gap-1">
-                                <i class="bi bi-geo-alt-fill text-danger"></i> {{ $ticket->location->name }}
+                                <i class="bi bi-geo-alt-fill text-danger"></i> {{ $ticket->locations->pluck('name')->join(', ') ?: 'Nhiều cơ sở' }}
                             </span>
                             <span class="opacity-25">|</span>
                             <span
@@ -192,12 +247,14 @@
                                     <i class="bi bi-cone-striped me-2"></i> ĐANG BẢO TRÌ
                                 </button>
                             @else
-                               <form action="{{ route('booking.form', $ticket->id) }}" method="GET">
-    
-                                  <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold text-uppercase py-3 shadow-sm rounded-pill hover-scale">
-                                       ĐẶT VÉ NGAY <i class="bi bi-arrow-right-circle-fill ms-2"></i>
-                                  </button>
-                               </form>
+                                <form action="{{ route('booking.form', $ticket->id) }}" method="GET" id="booking-form">
+                                    <input type="hidden" name="selected_ticket_type" id="hidden_selected_type"
+                                        value="{{ isset($ticket->ticket_types[0]['name']) ? $ticket->ticket_types[0]['name'] : '' }}">
+                                   <button type="submit" class="btn w-100 btn-lg fw-bold text-uppercase py-3 shadow-sm rounded-pill"
+                                            style="background: linear-gradient(135deg, #2563eb, #0dcaf0); border: none; color: #fff; letter-spacing: 1px;">
+                                            ĐẶT VÉ NGAY <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                                   </button>
+                                </form>
                             @endif
 
                             <div class="mt-3 text-center small text-muted fst-italic">
@@ -214,6 +271,71 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.querySelectorAll('input[name="selected_ticket_type"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.getElementById('hidden_selected_type').value = this.value;
+        });
+    });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    (function() {
+        const btnShare  = document.getElementById('btn-share');
+        const panel     = document.getElementById('share-panel');
+        const btnCopy   = document.getElementById('btn-copy-link');
+        const linkInput = document.getElementById('share-link-input');
+        const pageUrl   = encodeURIComponent(window.location.href);
+        const pageTitle = encodeURIComponent(document.title);
+
+        btnShare.addEventListener('click', function(e) {
+            e.stopPropagation();
+            panel.classList.toggle('d-none');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!panel.contains(e.target) && e.target !== btnShare) {
+                panel.classList.add('d-none');
+            }
+        });
+
+        document.querySelectorAll('.share-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const platform = this.dataset.platform;
+                let url = '';
+                if (platform === 'facebook') {
+                    url = 'https://www.facebook.com/sharer/sharer.php?u=' + pageUrl;
+                } else if (platform === 'messenger') {
+                    url = 'https://www.facebook.com/dialog/send?link=' + pageUrl + '&app_id=291494419107518&redirect_uri=' + pageUrl;
+                } else if (platform === 'zalo') {
+                    url = 'https://zalo.me/share?url=' + pageUrl + '&title=' + pageTitle;
+                } else if (platform === 'twitter') {
+                    url = 'https://twitter.com/intent/tweet?url=' + pageUrl + '&text=' + pageTitle;
+                }
+                if (url) window.open(url, '_blank', 'width=600,height=500');
+                panel.classList.add('d-none');
+            });
+        });
+
+        btnCopy.addEventListener('click', function() {
+            navigator.clipboard.writeText(linkInput.value).then(function() {
+                btnCopy.innerHTML = '<i class="bi bi-check-lg me-1"></i>Đã sao chép';
+                btnCopy.classList.replace('btn-primary', 'btn-success');
+                setTimeout(function() {
+                    btnCopy.innerHTML = '<i class="bi bi-clipboard me-1"></i>Sao chép';
+                    btnCopy.classList.replace('btn-success', 'btn-primary');
+                    panel.classList.add('d-none');
+                }, 1500);
+            });
+        });
+    })();
+    </script>
+
+@include('partials.footer')
+
 </body>
 
 </html>

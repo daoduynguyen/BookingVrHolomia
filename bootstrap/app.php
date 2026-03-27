@@ -10,9 +10,22 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
+   ->withMiddleware(function (Middleware $middleware): void {
+    $middleware->validateCsrfTokens(except: [
+        'webhook/sepay',
+    ]);
+
+    // Tự động check banned trên mọi request web có auth
+    $middleware->appendToGroup('web', \App\Http\Middleware\CheckBanned::class);
+
+    // Set locale middleware for language switching
+    $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
+
+    // Đăng ký alias để dùng trong route nếu cần
+    $middleware->alias([
+        'check.banned' => \App\Http\Middleware\CheckBanned::class,
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

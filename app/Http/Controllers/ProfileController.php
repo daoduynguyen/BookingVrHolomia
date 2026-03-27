@@ -67,6 +67,7 @@ class ProfileController extends Controller
             'address'  => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
             'gender'   => 'nullable|in:male,female,other',
+            'language' => 'nullable|in:vi,en,ja,zh,ko,hi',
         ]);
 
         $user->update([
@@ -75,6 +76,7 @@ class ProfileController extends Controller
             'address'  => $request->address,
             'birthday' => $request->birthday,
             'gender'   => $request->gender,
+            'language' => $request->language ?? 'vi',
         ]);
 
         return back()->with('success', 'Cập nhật hồ sơ thành công!');
@@ -159,8 +161,21 @@ class ProfileController extends Controller
     // 5. Scan vé (QR)
     public function scanTicket($id)
     {
-        $order = \App\Models\Order::with('orderItems', 'slot')->findOrFail($id);
+        $order = Order::with('orderItems', 'slot')->findOrFail($id);
 
         return view('profile.ticket_scan', compact('order'));
+    }
+
+    // Hàm xử lý chuyển đổi ngôn ngữ
+    public function switchLanguage($locale)
+    {
+        // Danh sách 6 ngôn ngữ bạn muốn hỗ trợ
+        $allowedLangs = ['vi', 'en', 'ko', 'zh', 'ja', 'hi']; 
+        
+        if (in_array($locale, $allowedLangs)) {
+            session()->put('locale', $locale);
+        }
+        
+        return redirect()->back();
     }
 }

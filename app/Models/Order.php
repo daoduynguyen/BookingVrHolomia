@@ -12,7 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'customer_name', 'customer_phone', 'customer_email', 
         'total_amount', 'status', 'payment_method', 'notes','shipping_address','booking_date','slot_id',
-        'quantity','location_id',
+        'quantity','location_id','coupon_code', 'discount_amount',
     ];
 
     public function user() {

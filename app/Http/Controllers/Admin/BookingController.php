@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth; // Thêm thư viện Auth để check User
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderCompletedMail;
 
 //Quản lý đơn hàng
 class BookingController extends Controller
@@ -57,20 +59,35 @@ class BookingController extends Controller
     }
 
     // 2. Cập nhật trạng thái
-    public function updateStatus(Request $request, $id) {
-        $order = Order::findOrFail($id); 
-        $user = Auth::user();
+public function updateStatus(Request $request, $id) {
+    $order = Order::with(['details.ticket', 'slot', 'location'])->findOrFail($id);
+    $user = Auth::user();
 
-        // BẢO MẬT: Chặn Admin chi nhánh sửa đơn của chi nhánh khác (Đề phòng hack qua URL)
-        if ($user->role !== 'super_admin' && $user->location_id && $order->location_id !== $user->location_id) {
-            return redirect()->back()->with('error', 'CẢNH BÁO: Bạn không có quyền thao tác trên đơn hàng của cơ sở khác!');
-        }
-
-        $order->status = $request->status;
-        $order->save();
-
-        return redirect()->back()->with('success', 'Đã cập nhật trạng thái đơn hàng #' . $id);
+    // BẢO MẬT: Chặn Admin chi nhánh sửa đơn của chi nhánh khác
+    if ($user->role !== 'super_admin' && $user->location_id && $order->location_id !== $user->location_id) {
+        return redirect()->back()->with('error', 'CẢNH BÁO: Bạn không có quyền thao tác trên đơn hàng của cơ sở khác!');
     }
+
+    $oldStatus = $order->status;
+    $newStatus = $request->status;
+
+    $order->status = $newStatus;
+    $order->save();
+
+    // Gửi email khi chuyển sang "Hoàn thành"
+    if ($newStatus === 'completed' && $oldStatus !== 'completed') {
+        $email = $order->user->email ?? $order->customer_email ?? null;
+        if ($email) {
+            try {
+                Mail::to($email)->send(new OrderCompletedMail($order));
+            } catch (\Exception $e) {
+                \Log::error('Gửi email hoàn thành thất bại (Order #' . $id . '): ' . $e->getMessage());
+            }
+        }
+    }
+
+    return redirect()->back()->with('success', 'Đã cập nhật trạng thái đơn hàng #' . $id);
+}
 
     // 3. Xóa đơn hàng
     public function destroy($id) {

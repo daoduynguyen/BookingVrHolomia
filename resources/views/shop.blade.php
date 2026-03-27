@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cửa hàng vé - Holomia VR</title>
+    <title>{{ __('shop.page_title') }}</title>
+    <meta name="description" content="{{ __('shop.meta_description') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
@@ -47,9 +48,9 @@
             
             <div class="container position-relative text-center text-white" style="z-index: 1;">
                 <h1 class="display-4 fw-bold text-uppercase mb-2 text-shadow" style="letter-spacing: 2px;">
-                    <i class="bi bi-shop text-info"></i> KHO VÉ TOÀN TẬP
+                    <i class="bi bi-shop text-info"></i> {{ __('shop.shop_title') }}
                 </h1>
-                <p class="lead text-light opacity-75">Hiện có tổng cộng {{ $tickets->total() }} trò chơi trong hệ thống</p>
+                <p class="lead text-light opacity-75">{{ __('shop.total_games', ['count' => $tickets->total()]) }}</p>
             </div>
         </div>
     </div>
@@ -65,22 +66,25 @@
                     <div
                         class="card h-100 card-game overflow-hidden rounded-4 border-0 {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
 
-                        @if($ticket->status == 'maintenance')
-                            <div class="badge-maintenance">BẢO TRÌ</div>
-                        @endif
-
                         <div class="position-relative">
-                            <img src="{{ $ticket->image_url }}" class="card-img-top"
-                                style="height: 200px; object-fit: cover;">
+                            <img src="{{ $ticket->image_url ?? 'https://via.placeholder.com/640x480' }}"
+                                class="card-img-top"
+                                alt="{{ $ticket->name }}"
+                                style="height: 240px; object-fit: cover;">
 
-                            {{-- Badge danh mục --}}
-                            <span class="position-absolute top-0 start-0 m-3 badge bg-primary bg-opacity-90 px-3 py-2 rounded-pill shadow-sm">
-                                {{ $ticket->category->name }}
-                            </span>
+                            {{-- Tem BẢO TRÌ nằm chéo đè lên ảnh --}}
+                            @if($ticket->status == 'maintenance')
+                                <div class="maintenance-overlay">🔧 BẢO TRÌ</div>
+                            @endif
 
-                            {{-- NÚT THẢ TIM  --}}
+                            {{-- Badge rating góc trên phải --}}
+                            <div class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
+                                <i class="bi bi-star-fill text-dark"></i> {{ $ticket->avg_rating }}
+                            </div>
+
+                            {{-- NÚT THẢ TIM góc trên trái --}}
                             <button
-                                class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3 shadow-sm btn-wishlist btn-toggle-wishlist-global"
+                                class="btn btn-light rounded-circle position-absolute top-0 start-0 m-3 shadow-sm btn-wishlist btn-toggle-wishlist-global"
                                 data-id="{{ $ticket->id }}" title="Thêm vào yêu thích">
                                 @if(Auth::check() && Auth::user()->favorites->contains($ticket->id))
                                     <i class="bi bi-heart-fill text-danger fs-5"></i>
@@ -91,30 +95,37 @@
                         </div>
 
                         <div class="card-body d-flex flex-column p-4">
-                            <h5 class="card-title fw-bold text-truncate mb-3 align-items-center" style="font-size: 1.25rem;">{{ $ticket->name }}</h5>
-
-                            <div class="d-flex justify-content-between small text-muted mb-4 fw-medium">
-                                <span><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $ticket->location->name }}</span>
-                                <span class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill"><i class="bi bi-star-fill"></i> {{ $ticket->avg_rating }}</span>
+                            {{-- Danh mục + lượt chơi --}}
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
+                                <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+                                    <i class="bi bi-person-check-fill text-secondary"></i> {{ number_format($ticket->play_count) }} {{ __('shop.views') ?? 'lượt' }}
+                                </small>
                             </div>
 
-                            <div
-                                class="mt-auto d-flex justify-content-between align-items-center bg-light p-3 rounded-4 shadow-sm border border-light">
-                                <div>
-                                    <span class="d-block small text-muted fw-bold mb-1" style="font-size: 0.75rem;">GIÁ TỪ</span>
+                            <h5 class="card-title fw-bold mb-2 text-truncate" title="{{ $ticket->name }}" style="font-size: 1.2rem;">
+                                {{ $ticket->name }}
+                            </h5>
+
+                            <p class="small text-muted mb-4 fw-medium">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $ticket->locations->pluck('name')->join(', ') ?: __('shop.multiple_branches') }}
+                            </p>
+
+                            <div class="mt-auto pt-3 border-top border-light mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted fw-medium">{{ __('shop.price_from') ?? 'Giá vé từ:' }}</span>
                                     <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                                 </div>
-
-                                @if($ticket->status == 'maintenance')
-                                    <button class="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm" disabled>Tạm đóng</button>
-                                @else
-                                    {{-- TRỎ ĐẾN ROUTE booking.form --}}
-                                    <a href="{{ route('booking.form', $ticket->id) }}"
-                                        class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center">
-                                        <i class="bi bi-ticket-perforated me-2"></i> ĐẶT VÉ
-                                    </a>
-                                @endif
                             </div>
+
+                            @if($ticket->status == 'maintenance')
+                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm" disabled>{{ __('shop.maintenance') }}</button>
+                            @else
+                                <a href="{{ route('ticket.show', $ticket->id) }}"
+                                    class="btn btn-primary w-100 fw-bold py-2 text-uppercase shadow-sm">
+                                    {{ __('shop.book_now') }}
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -127,9 +138,7 @@
 
     </div>
 
-    <footer class="bg-black text-center py-4 border-top border-secondary mt-5 text-muted">
-        <p class="mb-0">© 2026 Holomia VR System</p>
-    </footer>
+    @include('partials.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -143,9 +152,9 @@
                 @if(!Auth::check())
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Chưa đăng nhập',
-                        text: 'Vui lòng đăng nhập để lưu danh sách yêu thích!',
-                        confirmButtonText: 'Đăng nhập ngay',
+                        title: '{{ __("shop.not_logged_in") ?? "Chưa đăng nhập" }}',
+                        text: '{{ __("shop.login_to_save_favorite") ?? "Vui lòng đăng nhập để lưu danh sách yêu thích!" }}',
+                        confirmButtonText: '{{ __("shop.login_now") ?? "Đăng nhập ngay" }}',
                         confirmButtonColor: '#0dcaf0',
                         background: '#212529',
                         color: '#fff'
@@ -167,6 +176,14 @@
                     data: {
                         _token: '{{ csrf_token() }}'
                     },
+
+                      beforeSend: function () {
+                        btn.prop('disabled', true).css('opacity', '0.6');
+                    },
+                    complete: function () {
+                        btn.prop('disabled', false).css('opacity', '1');
+                    },
+                    
                     success: function (response) {
                         if (response.is_favorited) {
                             // Đổi thành tim đỏ
@@ -181,7 +198,7 @@
                                 background: '#212529',
                                 color: '#fff'
                             });
-                            Toast.fire({ icon: 'success', title: 'Đã thêm vào yêu thích' });
+                            Toast.fire({ icon: 'success', title: '{{ __("shop.added_to_favorite") ?? "Đã thêm vào yêu thích" }}' });
                         } else {
                             // Đổi về tim rỗng
                             icon.removeClass('bi-heart-fill').addClass('bi-heart');

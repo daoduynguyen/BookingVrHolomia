@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => '티켓 스토어 - Holomia VR',
+    'shop_title' => '전체 티켓',
+    'total_games' => '현재 :count개 게임 이용 가능',
+    'search_placeholder' => '게임 검색...',
+    'filter_location' => '지점별 필터',
+    'all_locations' => '모든 지점',
+    'filter_category' => '카테고리',
+    'all_categories' => '전체',
+    'sort_by' => '정렬',
+    'newest' => '최신순',
+    'popular' => '인기순',
+    'price_low' => '낮은 가격순',
+    'price_high' => '높은 가격순',
+    'no_results' => '일치하는 게임이 없습니다.',
+    'price_from' => '가격:',
+    'plays' => '회 플레이',
+    'book_now' => '지금 예약',
+    'view_info' => '자세히 보기',
+    'maintenance' => '점검 중',
+    'wishlist_added' => '찜 목록에 추가되었습니다!',
+    'wishlist_removed' => '찜 목록에서 제거되었습니다!',
+    'meta_description' => 'Holomia VR에서 10가지 이상의 VR 게임 경험을 탐색하고 예약하세요.',
+];

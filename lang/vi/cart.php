@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title'    => 'Giỏ hàng - Holomia VR',
+    'title'         => 'Giỏ hàng của bạn',
+    'product'       => 'Sản phẩm',
+    'price'         => 'Giá',
+    'quantity'      => 'Số lượng',
+    'subtotal'      => 'Thành tiền',
+    'total'         => 'Tổng cộng',
+    'discount'      => 'Giảm giá',
+    'final_total'   => 'Tổng thanh toán',
+    'checkout'      => 'Thanh toán',
+    'continue_shop' => 'Tiếp tục mua sắm',
+    'empty_cart'    => 'Giỏ hàng trống.',
+    'empty_desc'    => 'Bạn chưa có vé nào trong giỏ hàng.',
+    'remove'        => 'Xóa',
+    'clear_cart'    => 'Xóa giỏ hàng',
+    'coupon_code'   => 'Mã giảm giá',
+    'apply_coupon'  => 'Áp dụng',
+    'date'          => 'Ngày chơi',
+    'time_slot'     => 'Khung giờ',
+    'branch'        => 'Cơ sở',
+    'players'       => 'Số người',
+];

@@ -18,6 +18,18 @@ use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\SlotController;
+use App\Http\Controllers\Admin\LocationController;
+
+use App\Http\Controllers\WalletController;
+
+// Sepay Webhook (không cần auth - Sepay gọi vào)
+Route::post('/webhook/sepay', [WalletController::class, 'sepayWebhook'])->name('webhook.sepay');
+
+// Ví Holomia
+Route::middleware('auth')->group(function () {
+    Route::get('/vi/nap-tien', [WalletController::class, 'topupPage'])->name('wallet.topup');
+    Route::get('/vi/kiem-tra-nap', [WalletController::class, 'checkTopupStatus'])->name('wallet.check');
+});
 
 // --- QUY TRÌNH ĐẶT VÉ MỚI (Booking Flow) ---
 
@@ -27,6 +39,7 @@ Route::get('/booking/nhap-thong-tin/{id}', [CheckoutController::class , 'booking
 // BƯỚC 3: Màn hình Giỏ hàng (Đóng vai trò trang Review - Xem lại đơn)
 Route::get('/gio-hang', [CartController::class , 'index'])->name('cart.index');
 Route::get('/gio-hang/xoa/{id}', [CartController::class , 'remove'])->name('cart.remove');
+Route::get('/gio-hang/xoa-het', [CartController::class , 'clear'])->name('cart.clear');
 Route::patch('/gio-hang/cap-nhat', [CartController::class , 'update'])->name('cart.update'); // Để sửa số lượng nếu muốn
 
 
@@ -97,6 +110,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
                         // Quản lý người dùng
                         Route::get('/users', [AdminController::class , 'manageUsers'])->name('users');
                         Route::delete('/users/delete/{id}', [AdminController::class , 'deleteUser'])->name('users.delete');
+                        Route::post('/users/{id}/ban', [AdminController::class , 'toggleBan'])->name('users.ban');
 
                         // Quản lý tin nhắn liên hệ
                         Route::get('/contacts', [AdminController::class , 'listContacts'])->name('contacts');
@@ -104,8 +118,9 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
                         //Phản hồi khách hàng
                         Route::post('/contacts/reply/{id}', [AdminController::class , 'replyContact'])->name('contacts.reply');
 
-                        // 5. Quản lý Mã giảm giá
+                        // 5. Quản lý Mã giảm giá và Cơ sở
                         Route::resource('coupons', CouponController::class);
+                        Route::resource('locations', LocationController::class)->except(['show']);
 
                         // Cập nhật quyền người dùng
                         Route::post('/users/{id}/role', [AdminController::class , 'updateUserRole'])->name('users.updateRole');
@@ -124,22 +139,17 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 
 /* |-------------------------------------------------------------------------- | 2. CÁC ROUTE KHÁCH HÀNG (Client) |-------------------------------------------------------------------------- */
 
+// Route đổi ngôn ngữ (Chuẩn Controller)
+Route::get('/lang/{locale}', [ProfileController::class, 'switchLanguage'])->name('lang.switch');
+
 // Trang chủ & Sản phẩm
 Route::get('/', [TicketController::class , 'index'])->name('home');
 Route::get('/tro-choi/{id}', [TicketController::class , 'show'])->name('ticket.show');
 Route::get('/danh-sach-ve', [TicketController::class , 'shop'])->name('ticket.shop');
 Route::get('/gioi-thieu', [TicketController::class , 'about'])->name('about');
 
-// Đặt vé (Booking phía khách)
-Route::get('/dat-ve/{id}', [TicketController::class , 'create'])->name('booking.create');
-Route::post('/dat-ve', [TicketController::class , 'store'])->name('booking.store');
-
 // Giỏ hàng
 Route::get('/add-to-cart/{id}', [CartController::class , 'addToCart'])->name('cart.add');
-Route::get('/cart', [CartController::class , 'index'])->name('cart.index');
-Route::get('/cart/clear', [CartController::class , 'clear'])->name('cart.clear');
-Route::patch('/update-cart', [CartController::class , 'update'])->name('cart.update');
-Route::get('/cart/remove/{id}', [CartController::class , 'remove'])->name('cart.remove');
 
 // Liên hệ
 Route::get('/lien-he', [ContactController::class , 'index'])->name('contact');
@@ -148,8 +158,25 @@ Route::post('/lien-he', [ContactController::class , 'send'])->name('contact.send
 // AI Chat
 Route::post('/ai-chat', [ChatAIController::class , 'chat'])->name('ai.chat');
 
-// Route lấy khung giờ cho AJAX (Đặt bên ngoài middleware auth để khách chưa log cũng thấy)
-Route::get('/api/get-slots', [App\Http\Controllers\CheckoutController::class , 'getSlots'])->name('api.slots');
+// API kiểm tra trạng thái đơn hàng (dùng cho polling trang banking)
+Route::get('/api/check-order-status/{id}', function ($id) {
+    $order = \App\Models\Order::find($id);
+    if (!$order || $order->user_id !== auth()->id()) {
+        return response()->json(['status' => 'not_found']);
+    }
+    return response()->json(['status' => $order->status]);
+})->middleware('auth');
+
+Route::get('/api/order-status/{id}', function ($id) {
+    $order = \App\Models\Order::find($id);
+    if (!$order || $order->user_id !== auth()->id()) {
+        return response()->json(['status' => 'not_found']);
+    }
+    return response()->json(['status' => $order->status]);
+})->middleware('auth');
+
+// API lấy danh sách khung giờ theo vé + ngày
+Route::get('/api/get-slots', [CheckoutController::class, 'getSlots'])->name('api.get_slots');
 
 /* |-------------------------------------------------------------------------- | 3. KHU VỰC ĐĂNG NHẬP / PROFILE / THANH TOÁN |-------------------------------------------------------------------------- */
 
@@ -159,16 +186,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class , 'register']);
     Route::get('/login', [AuthController::class , 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class , 'login']);
+    Route::get('/quen-mat-khau', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/quen-mat-khau', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/dat-lai-mat-khau/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/dat-lai-mat-khau', [AuthController::class, 'resetPassword'])->name('password.update');
 
 });
 
 // Khách ĐÃ đăng nhập
 Route::middleware('auth')->group(function () {
     // Thanh toán
-    Route::post('/thanh-toan/chot-don', [CheckoutController::class , 'finalPayment'])->name('payment.final');
+    Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])->name('payment.final');
+    Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('payment.banking');
     Route::post('/booking/xac-nhan', [CheckoutController::class , 'confirmToCart'])->name('booking.confirm');
     Route::get('/checkout/banking/{id}', [CheckoutController::class , 'banking'])->name('checkout.banking');
-    Route::post('/checkout/check-coupon', [CheckoutController::class , 'checkCoupon'])->name('checkout.check_coupon');
     Route::get('/remove-coupon', [CheckoutController::class , 'removeCoupon'])->name('coupon.remove');
     Route::post('/checkout/check-coupon', [CheckoutController::class , 'checkCoupon'])->name('check.coupon');
     Route::get('/order/refund/{id}', [CheckoutController::class , 'refundOrder'])->name('order.refund');
@@ -187,20 +218,5 @@ Route::middleware('auth')->group(function () {
 
 });
 
-Route::get('/run-migrations', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return 'Migrations ran successfully: <br>' . nl2br(\Illuminate\Support\Facades\Artisan::output());
-    }
-    catch (\Exception $e) {
-        return 'Error running migrations: ' . $e->getMessage();
-    }
-});
-
 // Route dành cho khách/nhân viên quét mã QR xem vé
 Route::get('/scan-ticket/{id}', [ProfileController::class , 'scanTicket'])->name('ticket.scan');
-
-Route::get('/setup-storage', function () {
-    \Illuminate\Support\Facades\Artisan::call('storage:link');
-    return 'Đã kết nối thư mục ảnh thành công!';
-});

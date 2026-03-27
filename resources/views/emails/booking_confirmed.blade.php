@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vé Điện Tử Holomia VR</title>
 </head>
-<body style="background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 20px;">
+<body style="background-color: #121212; color: #ffffff; font-family: 'Be Vietnam Pro', sans-serif; margin: 0; padding: 20px;">
 
     <div style="max-width: 600px; margin: 0 auto; background-color: #1a1d20; border: 1px solid #333; border-radius: 10px; overflow: hidden;">
         

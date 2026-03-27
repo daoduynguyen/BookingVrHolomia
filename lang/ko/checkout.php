@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'page_title' => '결제 - Holomia VR',
+    'title' => '결제',
+    'order_summary' => '주문 요약',
+    'payment_method' => '결제 방법',
+    'wallet' => 'Holomia 지갑',
+    'bank_transfer' => '계좌이체',
+    'wallet_balance' => '지갑 잔액',
+    'insufficient' => '잔액이 부족합니다. 충전해 주세요.',
+    'topup_wallet' => '충전',
+    'place_order' => '예약 확정',
+    'processing' => '처리 중...',
+    'order_success' => '예약이 확정되었습니다!',
+    'order_failed' => '예약에 실패했습니다. 다시 시도해 주세요.',
+    'booking_info' => '예약 상세',
+    'contact_info' => '연락처 정보',
+    'full_name' => '이름',
+    'phone' => '전화번호',
+    'email' => '티켓 수신 이메일',
+    'notes' => '메모',
+    'terms' => '이용약관에 동의합니다',
+    'coupon' => '쿠폰 코드',
+    'total' => '결제 총액',
+];

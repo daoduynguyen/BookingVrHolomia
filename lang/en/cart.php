@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title'    => 'Cart - Holomia VR',
+    'title'         => 'Your Cart',
+    'product'       => 'Product',
+    'price'         => 'Price',
+    'quantity'      => 'Quantity',
+    'subtotal'      => 'Subtotal',
+    'total'         => 'Total',
+    'discount'      => 'Discount',
+    'final_total'   => 'Amount Due',
+    'checkout'      => 'Checkout',
+    'continue_shop' => 'Continue Shopping',
+    'empty_cart'    => 'Your cart is empty.',
+    'empty_desc'    => 'You have no tickets in your cart.',
+    'remove'        => 'Remove',
+    'clear_cart'    => 'Clear Cart',
+    'coupon_code'   => 'Coupon Code',
+    'apply_coupon'  => 'Apply',
+    'date'          => 'Play Date',
+    'time_slot'     => 'Time Slot',
+    'branch'        => 'Branch',
+    'players'       => 'Players',
+];
