@@ -57,12 +57,13 @@
     <div class="container pb-5" id="list-games">
 
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show shadow mb-5" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                <strong>{{ __('home.success') }}</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+    <div style="position:fixed; top:80px; right:20px; z-index:9999; min-width:320px; max-width:400px;"
+         class="alert alert-success alert-dismissible fade show shadow">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <strong>{{ __('home.success') }}</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
 
         <div class="text-center mb-5">
             <h2 class="text-info fw-bold text-uppercase display-6">

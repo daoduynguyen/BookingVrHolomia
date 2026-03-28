@@ -23,6 +23,12 @@ class User extends Authenticatable
         'avatar',
         'gender',
         'language',
+        'provider_name',
+        'provider_id',
+        'balance',
+        'points',
+        'tier',
+        'notification_prefs', 'ui_settings', 'privacy_settings', 'default_payment', 'currency',
     ];
 
 
@@ -37,6 +43,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'notification_prefs' => 'array',
+        'ui_settings' => 'array',
+        'privacy_settings' => 'array',
     ];
 
     // --- KHAI BÁO QUAN HỆ ---

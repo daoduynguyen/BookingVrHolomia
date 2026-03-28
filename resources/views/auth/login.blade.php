@@ -263,9 +263,9 @@
     <div class="right-panel">
         <div class="form-wrapper">
 
-            <div class="form-header">
-                <h2>{{ __('auth.login_heading') }}</h2>
-                <p>{{ __('auth.login_subheading') }}</p>
+            <div class="form-header text-center mb-4">
+                <h2 style="font-weight: 700; font-size: 2rem;">{{ __('auth.login_heading') }}</h2>
+                <p class="text-muted mt-2">{{ __('auth.login_subheading') }}</p>
             </div>
 
             @if($errors->any())
@@ -275,25 +275,41 @@
             @endif
 
             @if(session('success'))
-                <div class="alert alert-success py-2 small mb-4 rounded-3">
+                <div class="alert alert-success py-2 small mb-4 rounded-3 text-center">
                     <i class="bi bi-check-circle-fill me-1"></i> {{ session('success') }}
                 </div>
             @endif
+
+            {{-- Social Logins --}}
+            <div class="d-flex flex-column gap-3 mb-4">
+                <a href="{{ route('social.redirect', 'google') }}" class="btn btn-social btn-google">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Tiếp tục với Google
+                </a>
+                <a href="{{ route('social.redirect', 'facebook') }}" class="btn btn-social btn-facebook">
+                    <i class="bi bi-facebook" style="color: #1877F2; font-size: 1.25rem;"></i>
+                    Tiếp tục với Facebook
+                </a>
+                <a href="javascript:alert('Tính năng đăng nhập bằng WhatsApp đang được phát triển. Vui lòng sử dụng phương thức khác!');" class="btn btn-social btn-whatsapp">
+                    <i class="bi bi-whatsapp" style="color: #25D366; font-size: 1.25rem;"></i>
+                    Tiếp tục với WhatsApp
+                </a>
+            </div>
+
+            <div class="divider">{{ __('auth.or') }} email</div>
 
             <form action="{{ route('login') }}" method="POST">
                 @csrf
 
                 <div class="mb-3">
-                    <label class="form-label">{{ __('auth.email') }}</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
                         <input type="email" name="email" class="form-control"
-                            placeholder="email@example.com" required value="{{ old('email') }}" autofocus>
+                            placeholder="Nhập email của bạn" required value="{{ old('email') }}" autofocus>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">{{ __('auth.password') }}</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
                         <input type="password" name="password" id="password"
@@ -319,17 +335,15 @@
                 </div>
 
                 <button type="submit" class="btn-login mb-4">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>{{ __('auth.login') }}
+                    {{ __('auth.login') }}
                 </button>
-
-                <div class="divider">{{ __('auth.or') }}</div>
 
                 <div class="text-center" style="font-size:0.9rem;">
                     <span class="text-muted">{{ __('auth.no_account') }}</span>
                     <a href="{{ route('register') }}" class="link-blue ms-1">{{ __('auth.register_now') }}</a>
                 </div>
 
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 pt-2 border-top">
                     <a href="{{ route('home') }}" class="link-muted">
                         <i class="bi bi-arrow-left me-1"></i>{{ __('auth.back_to_home') }}
                     </a>
@@ -338,6 +352,77 @@
 
         </div>
     </div>
+
+    <style>
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #374151;
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-social:hover {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+            color: #111827;
+            transform: translateY(-1px);
+        }
+
+        .btn-social img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-login {
+            background: #111827;
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            border: none;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            background: #1f2937;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            padding: 12px 14px;
+            background: #f9fafb;
+        }
+
+        .input-group-text {
+            border-radius: 12px 0 0 12px;
+            border: 2px solid #e5e7eb;
+            border-right: none;
+            background: #f9fafb;
+        }
+
+        .form-control:focus, .input-group:focus-within .input-group-text, .input-group:focus-within .form-control {
+            background: #fff;
+            border-color: #0d1b4b;
+        }
+
+        .input-group .btn {
+            border-radius: 0 12px 12px 0;
+            border: 2px solid #e5e7eb;
+        }
+    </style>
 
     <script>
     function togglePwd() {

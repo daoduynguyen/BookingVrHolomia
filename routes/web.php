@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TicketController;
-
+use App\Http\Controllers\LocationSelectorController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProfileController;
@@ -21,14 +21,15 @@ use App\Http\Controllers\Admin\SlotController;
 use App\Http\Controllers\Admin\LocationController;
 
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\SettingsController;
 
 // Sepay Webhook (không cần auth - Sepay gọi vào)
-Route::post('/webhook/sepay', [WalletController::class, 'sepayWebhook'])->name('webhook.sepay');
+Route::post('/webhook/sepay', [WalletController::class , 'sepayWebhook'])->name('webhook.sepay');
 
 // Ví Holomia
 Route::middleware('auth')->group(function () {
-    Route::get('/vi/nap-tien', [WalletController::class, 'topupPage'])->name('wallet.topup');
-    Route::get('/vi/kiem-tra-nap', [WalletController::class, 'checkTopupStatus'])->name('wallet.check');
+    Route::get('/vi/nap-tien', [WalletController::class , 'topupPage'])->name('wallet.topup');
+    Route::get('/vi/kiem-tra-nap', [WalletController::class , 'checkTopupStatus'])->name('wallet.check');
 });
 
 // --- QUY TRÌNH ĐẶT VÉ MỚI (Booking Flow) ---
@@ -134,19 +135,30 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
                     }
                     );
                 }
-                );            });
+                );
+            });
 
 
 /* |-------------------------------------------------------------------------- | 2. CÁC ROUTE KHÁCH HÀNG (Client) |-------------------------------------------------------------------------- */
 
 // Route đổi ngôn ngữ (Chuẩn Controller)
-Route::get('/lang/{locale}', [ProfileController::class, 'switchLanguage'])->name('lang.switch');
+Route::get('/lang/{locale}', [ProfileController::class , 'switchLanguage'])->name('lang.switch');
 
 // Trang chủ & Sản phẩm
-Route::get('/', [TicketController::class , 'index'])->name('home');
+Route::get('/', [TicketController::class , 'index'])->name('home')
+    ->middleware('require.location');
 Route::get('/tro-choi/{id}', [TicketController::class , 'show'])->name('ticket.show');
-Route::get('/danh-sach-ve', [TicketController::class , 'shop'])->name('ticket.shop');
 Route::get('/gioi-thieu', [TicketController::class , 'about'])->name('about');
+//   Route chọn cơ sở (màn hình đầu tiên khách thấy trước khi vào shop)
+Route::get('/chon-co-so', [LocationSelectorController::class , 'select'])->name('location.select');
+Route::post('/chon-co-so', [LocationSelectorController::class , 'store'])->name('location.store');
+Route::get('/doi-co-so', [LocationSelectorController::class , 'reset'])->name('location.reset');
+
+//  /danh-sach-ve giờ yêu cầu đã chọn cơ sở trước
+Route::get('/danh-sach-ve', [TicketController::class , 'shop'])
+    ->name('ticket.shop')
+    ->middleware('require.location');
+
 
 // Giỏ hàng
 Route::get('/add-to-cart/{id}', [CartController::class , 'addToCart'])->name('cart.add');
@@ -169,14 +181,20 @@ Route::get('/api/check-order-status/{id}', function ($id) {
 
 Route::get('/api/order-status/{id}', function ($id) {
     $order = \App\Models\Order::find($id);
-    if (!$order || $order->user_id !== auth()->id()) {
+    if (!$order) {
+        return response()->json(['status' => 'not_found']);
+    }
+    // Cho phép cả người dùng đã đăng nhập và Guest có session hợp lệ
+    $isOwner = auth()->check() && $order->user_id === auth()->id();
+    $isGuest = !$order->user_id && session('guest_order_' . $id);
+    if (!$isOwner && !$isGuest) {
         return response()->json(['status' => 'not_found']);
     }
     return response()->json(['status' => $order->status]);
-})->middleware('auth');
+});
 
 // API lấy danh sách khung giờ theo vé + ngày
-Route::get('/api/get-slots', [CheckoutController::class, 'getSlots'])->name('api.get_slots');
+Route::get('/api/get-slots', [CheckoutController::class , 'getSlots'])->name('api.get_slots');
 
 /* |-------------------------------------------------------------------------- | 3. KHU VỰC ĐĂNG NHẬP / PROFILE / THANH TOÁN |-------------------------------------------------------------------------- */
 
@@ -186,22 +204,24 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class , 'register']);
     Route::get('/login', [AuthController::class , 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class , 'login']);
-    Route::get('/quen-mat-khau', [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('/quen-mat-khau', [AuthController::class, 'sendResetLink'])->name('password.email');
-    Route::get('/dat-lai-mat-khau/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/dat-lai-mat-khau', [AuthController::class, 'resetPassword'])->name('password.update');
+    Route::get('/quen-mat-khau', [AuthController::class , 'showForgotPassword'])->name('password.request');
+    Route::post('/quen-mat-khau', [AuthController::class , 'sendResetLink'])->name('password.email');
+    Route::get('/dat-lai-mat-khau/{token}', [AuthController::class , 'showResetForm'])->name('password.reset');
+    Route::post('/dat-lai-mat-khau', [AuthController::class , 'resetPassword'])->name('password.update');
 
 });
 
-// Khách ĐÃ đăng nhập
+// Khách ĐÃ đăng nhập HOẶC Khách viếng thăm (Guest Checkout)
+// Thanh toán
+Route::post('/thanh-toan/chot-don', [CheckoutController::class , 'finalPayment'])->name('payment.final');
+Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class , 'bankingPaymentPage'])->name('payment.banking');
+Route::post('/booking/xac-nhan', [CheckoutController::class , 'confirmToCart'])->name('booking.confirm');
+Route::get('/checkout/banking/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('checkout.banking');
+Route::get('/remove-coupon', [CheckoutController::class , 'removeCoupon'])->name('coupon.remove');
+Route::post('/checkout/check-coupon', [CheckoutController::class , 'checkCoupon'])->name('check.coupon');
+
+// Khách ĐÃ đăng nhập (Chỉ dành cho thao tác cá nhân nghiêm ngặt)
 Route::middleware('auth')->group(function () {
-    // Thanh toán
-    Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])->name('payment.final');
-    Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('payment.banking');
-    Route::post('/booking/xac-nhan', [CheckoutController::class , 'confirmToCart'])->name('booking.confirm');
-    Route::get('/checkout/banking/{id}', [CheckoutController::class , 'banking'])->name('checkout.banking');
-    Route::get('/remove-coupon', [CheckoutController::class , 'removeCoupon'])->name('coupon.remove');
-    Route::post('/checkout/check-coupon', [CheckoutController::class , 'checkCoupon'])->name('check.coupon');
     Route::get('/order/refund/{id}', [CheckoutController::class , 'refundOrder'])->name('order.refund');
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class , 'index'])->name('profile.index');
@@ -209,6 +229,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', [ProfileController::class , 'uploadAvatar'])->name('profile.avatar');
     Route::post('/profile/password', [ProfileController::class , 'changePassword'])->name('profile.password');
     Route::get('/profile/order/{id}', [ProfileController::class , 'showOrder'])->name('profile.order.detail');
+
+    // Cài đặt
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/ui', [SettingsController::class, 'saveUI'])->name('settings.ui');
+    Route::post('/settings/language', [SettingsController::class, 'saveLanguage'])->name('settings.language');
+    Route::post('/settings/notifications', [SettingsController::class, 'saveNotifications'])->name('settings.notifications');
+    Route::post('/settings/privacy', [SettingsController::class, 'savePrivacy'])->name('settings.privacy');
+    Route::post('/settings/payment', [SettingsController::class, 'savePayment'])->name('settings.payment');
+    Route::post('/settings/accessibility', [SettingsController::class, 'saveAccessibility'])->name('settings.accessibility');
+    Route::post('/settings/password', [SettingsController::class, 'savePassword'])->name('settings.password');
+    Route::post('/settings/logout-all', [SettingsController::class, 'logoutAllDevices'])->name('settings.logout_all');
+    Route::post('/settings/delete-account', [SettingsController::class, 'deleteAccount'])->name('settings.delete_account');
+    Route::post('/settings/unlink-social', [SettingsController::class, 'unlinkSocial'])->name('settings.unlink_social');
 
     // Đăng xuất
     Route::post('/logout', [AuthController::class , 'logout'])->name('logout');
@@ -220,3 +253,12 @@ Route::middleware('auth')->group(function () {
 
 // Route dành cho khách/nhân viên quét mã QR xem vé
 Route::get('/scan-ticket/{id}', [ProfileController::class , 'scanTicket'])->name('ticket.scan');
+
+// routes/web.php - thêm route mới không cần middleware
+Route::get('/dat-ve-thanh-cong', function () {
+    return view('checkout.success');
+})->name('booking.success');
+
+// ===== SOCIAL LOGIN ROUTES =====
+Route::get('auth/{provider}/redirect', [\App\Http\Controllers\SocialLoginController::class, 'redirect'])->name('social.redirect');
+Route::get('auth/{provider}/callback', [\App\Http\Controllers\SocialLoginController::class, 'callback'])->name('social.callback');

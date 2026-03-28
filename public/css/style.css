@@ -596,3 +596,107 @@ footer a:hover .bi { transform: scale(1.2); }
     .voucher-left { flex: 0 0 110px; font-size: 0.85rem; }
     .card:hover { transform: none; }
 }
+/* ==========================================================================
+   19. DARK MODE — body.dark-mode
+   ========================================================================== */
+body.dark-mode {
+    --bg-page:        #0d1117;
+    --bg-card:        #161b22;
+    --bg-input:       #1c2128;
+    --bg-subtle:      #1c2128;
+    --text-heading:   #e6edf3;
+    --text-body:      #c9d1d9;
+    --text-secondary: #8b949e;
+    --text-muted:     #6e7681;
+    --border:         #30363d;
+    --border-hover:   #58a6ff;
+    --border-focus:   #58a6ff;
+}
+
+body.dark-mode .card,
+body.dark-mode .settings-content-card {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+    color: var(--text-body) !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: var(--bg-input) !important;
+    border-color: var(--border) !important;
+    color: var(--text-body) !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.15) !important;
+}
+
+body.dark-mode .modal-content {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+    color: var(--text-body) !important;
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--text-body) !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: var(--bg-subtle) !important;
+    color: var(--text-heading) !important;
+}
+
+body.dark-mode .table {
+    color: var(--text-body) !important;
+    --bs-table-bg: var(--bg-card);
+    --bs-table-border-color: var(--border);
+}
+
+body.dark-mode .table-hover tbody tr:hover {
+    background-color: var(--bg-subtle) !important;
+}
+
+body.dark-mode hr,
+body.dark-mode .dropdown-divider {
+    border-color: var(--border) !important;
+    opacity: 1;
+}
+
+body.dark-mode .alert-success {
+    background-color: rgba(35,134,54,0.15) !important;
+    border-color: rgba(35,134,54,0.4) !important;
+    color: #3fb950 !important;
+}
+
+body.dark-mode .alert-danger {
+    background-color: rgba(248,81,73,0.15) !important;
+    border-color: rgba(248,81,73,0.4) !important;
+    color: #f85149 !important;
+}
+
+body.dark-mode .badge.bg-primary-subtle,
+body.dark-mode .badge.bg-success-subtle {
+    background-color: rgba(30,136,229,0.2) !important;
+    color: #58a6ff !important;
+}
+
+/* High contrast override */
+body.high-contrast {
+    --text-body: #000000;
+    --text-heading: #000000;
+    --bg-card: #ffffff;
+    --border: #000000;
+}
+body.dark-mode.high-contrast {
+    --text-body: #ffffff;
+    --text-heading: #ffffff;
+    --bg-card: #000000;
+    --border: #ffffff;
+}

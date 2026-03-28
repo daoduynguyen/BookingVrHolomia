@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css">
 <style>
     .holomia-navbar {
         background: linear-gradient(90deg, #0d1b3e 0%, #0a2a6e 55%, #1565c0 100%);
@@ -166,14 +167,50 @@
         background: rgba(239,68,68,0.15);
         color: #fca5a5 !important;
     }
+    /* Badge cơ sở đang chọn */
+    .location-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(56,189,248,0.15);
+        border: 1px solid rgba(56,189,248,0.35);
+        color: #38bdf8;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .location-badge:hover {
+        background: rgba(56,189,248,0.25);
+        border-color: #38bdf8;
+        color: #fff;
+    }
+
+
 </style>
 
 {{-- Menu --}}
 <nav class="holomia-navbar navbar navbar-expand-lg">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">
-            <i class="bi bi-vr"></i> HOLOMIA VR
-        </a>
+        <div class="d-flex flex-column justify-content-center">
+            <a class="navbar-brand m-0 lh-1" href="{{ route('home') }}" style="padding-bottom: 2px;">
+                <i class="bi bi-vr"></i> HOLOMIA VR
+            </a>
+            
+            {{-- ===== BADGE CƠ SỞ ĐANG CHỌN (CHUYỂN XUỐNG DƯỚI) ===== --}}
+            @if(session('selected_location'))
+                <div class="mt-1 d-none d-md-block">
+                    <a href="{{ route('location.reset') }}" class="location-badge d-inline-flex align-items-center" title="Đổi cơ sở" style="padding: 2px 8px; font-size: 0.75rem;">
+                        <i class="bi bi-geo-alt-fill me-1"></i>
+                        {{ session('selected_location') == 'all' ? 'Tất cả cơ sở' : ($currentLocation->name ?? 'Tất cả cơ sở') }}
+                        <i class="bi bi-x-circle ms-1" style="font-size:10px; opacity:0.7;"></i>
+                    </a>
+                </div>
+            @endif
+        </div>
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             style="color: rgba(255,255,255,0.8);">
@@ -211,16 +248,32 @@
                             <h6 class="dropdown-header">{{ __('navbar.choose_branch') }}</h6>
                         </li>
                         @if(isset($globalLocations) && count($globalLocations) > 0)
-                            @foreach($globalLocations as $loc)
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('ticket.shop', ['location_id' => $loc->id]) }}">
-                                        <i class="bi bi-geo-alt-fill me-2" style="color:#f87171;"></i> {{ $loc->name }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        @else
-                            <li><span class="dropdown-item text-muted">{{ __('navbar.updating') }}</span></li>
-                        @endif
+    @foreach($globalLocations as $loc)
+        <li>
+           <a class="dropdown-item {{ (isset($selectedLocationId) && $selectedLocationId == $loc->id) ? 'text-info' : '' }}"
+                href="#"
+                onclick="event.preventDefault(); document.getElementById('loc-form-{{ $loc->id }}').submit();">
+                <i class="bi bi-geo-alt-fill me-2" style="color:#f87171;"></i>
+                {{ $loc->name }}
+                @if(isset($selectedLocationId) && $selectedLocationId == $loc->id)
+                    <i class="bi bi-check-circle-fill ms-1" style="font-size:11px;"></i>
+                @endif
+            </a>
+            <form id="loc-form-{{ $loc->id }}" action="{{ route('location.store') }}" method="POST" class="d-none">
+                @csrf
+                <input type="hidden" name="location" value="{{ $loc->id }}">
+            </form>
+        </li>
+    @endforeach
+@else
+    <li><span class="dropdown-item text-muted">{{ __('navbar.updating') }}</span></li>
+@endif
+<li><hr class="dropdown-divider"></li>
+<li>
+    <a class="dropdown-item" href="{{ route('location.reset') }}">
+        <i class="bi bi-arrow-repeat me-2" style="color:#38bdf8;"></i> Đổi cơ sở khác
+    </a>
+</li>
                     </ul>
                 </li>
             </ul>
@@ -253,12 +306,17 @@
                         @else
                             <i class="bi bi-person-circle fs-5"></i>
                         @endif
-                        {{ __('navbar.hi') }}, {{ Auth::user()->name }}
+                        {{ __('navbar.hi') }}, {{ last(explode(' ', Auth::user()->name)) }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-user">
                         <li>
                             <a class="dropdown-item" href="{{ route('profile.index') }}">
                                 <i class="bi bi-person me-2"></i> {{ __('navbar.profile') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('settings.index') }}">
+                                <i class="bi bi-gear me-2"></i> Cài đặt
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -280,3 +338,90 @@
         </div>
     </div>
 </nav>
+
+{{-- ===== GLOBAL UI SETTINGS — chạy trên mọi trang ===== --}}
+<script>
+(function () {
+    // Đọc settings từ localStorage (được lưu khi user save trên trang Settings)
+    @auth
+    {{-- Server-side render settings từ DB để luôn đồng bộ --}}
+    @php $ui = Auth::user()->ui_settings ?? []; @endphp
+    const serverSettings = {
+        theme:        '{{ $ui["theme"]        ?? "light" }}',
+        font:         '{{ $ui["font"]          ?? "Be Vietnam Pro" }}',
+        fontSize:     '{{ is_numeric($ui["font_size"] ?? "") ? ($ui["font_size"] ?? 15) : 15 }}',
+        color:        '{{ $ui["primary_color"] ?? "#1e88e5" }}',
+        highContrast: {{ ($ui["high_contrast"] ?? false) ? 'true' : 'false' }},
+        reduceMotion: {{ ($ui["reduce_motion"] ?? false) ? 'true' : 'false' }},
+        largeText:    {{ ($ui["large_text"]    ?? false) ? 'true' : 'false' }},
+    };
+    // Đồng bộ localStorage với DB
+    localStorage.setItem('holomia_ui', JSON.stringify(serverSettings));
+    applyHolomiaUI(serverSettings);
+    @else
+    // Chưa đăng nhập: đọc từ localStorage nếu có
+    try {
+        const saved = JSON.parse(localStorage.getItem('holomia_ui') || 'null');
+        if (saved) applyHolomiaUI(saved);
+    } catch(e) {}
+    @endauth
+
+    function applyHolomiaUI(s) {
+        const body = document.body;
+        const html = document.documentElement;
+
+        // Theme dark/light/auto
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = s.theme === 'dark' || (s.theme === 'auto' && prefersDark);
+        body.classList.toggle('dark-mode', isDark);
+
+        // Font chữ
+        if (s.font) body.style.fontFamily = `'${s.font}', sans-serif`;
+
+        // Cỡ chữ (px trực tiếp)
+        const baseSize = parseInt(s.fontSize) || 15;
+        html.style.fontSize = s.largeText ? (baseSize * 1.1) + 'px' : baseSize + 'px';
+
+        // Màu chủ đạo
+        if (s.color) {
+            html.style.setProperty('--primary', s.color);
+            html.style.setProperty('--primary-dark', shadeColor(s.color, -20));
+            html.style.setProperty('--primary-light', hexToRgba(s.color, 0.1));
+            html.style.setProperty('--primary-glow',  hexToRgba(s.color, 0.18));
+        }
+
+        // Tương phản cao
+        body.classList.toggle('high-contrast', !!s.highContrast);
+
+        // Giảm hiệu ứng
+        const existing = document.getElementById('reduce-motion-style');
+        if (existing) existing.remove();
+        if (s.reduceMotion) {
+            const style = document.createElement('style');
+            style.id = 'reduce-motion-style';
+            style.textContent = '*, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }';
+            document.head.appendChild(style);
+        }
+    }
+
+    function shadeColor(hex, pct) {
+        const num = parseInt(hex.replace('#',''), 16);
+        const r = Math.max(0, Math.min(255, (num >> 16)         + pct * 2.55));
+        const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + pct * 2.55));
+        const b = Math.max(0, Math.min(255, (num & 0xff)        + pct * 2.55));
+        return '#' + [r,g,b].map(v => Math.round(v).toString(16).padStart(2,'0')).join('');
+    }
+    function hexToRgba(hex, alpha) {
+        const num = parseInt(hex.replace('#',''), 16);
+        return `rgba(${(num>>16)&255},${(num>>8)&255},${num&255},${alpha})`;
+    }
+
+    // Lắng nghe OS thay đổi chế độ sáng/tối khi theme = auto
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        try {
+            const s = JSON.parse(localStorage.getItem('holomia_ui') || 'null');
+            if (s && s.theme === 'auto') applyHolomiaUI(s);
+        } catch(e) {}
+    });
+})();
+</script>

@@ -49,6 +49,11 @@
                             <input type="text" name="customer_phone" class="form-control"
                                 value="{{ Auth::check() ? Auth::user()->phone : '' }}" required>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold">Email nhận vé</label>
+                            <input type="email" name="customer_email" class="form-control"
+                                value="{{ Auth::check() ? Auth::user()->email : '' }}" required placeholder="Ví dụ: nguyenvan@gmail.com">
+                        </div>
 
                         {{-- CHỌN NGÀY VÀ GIỜ --}}
                         <div class="row">
@@ -128,6 +133,7 @@
                         </div>
 
                         {{-- Ví Holomia --}}
+                        @if(Auth::check())
                         <div class="form-check p-3 border border-light rounded bg-white shadow-sm payment-box" style="transition: 0.3s;">
                             <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
                             <label class="form-check-label d-flex align-items-center gap-2 w-100" for="wallet" style="cursor: pointer;">
@@ -142,6 +148,11 @@
                                 <i class="bi bi-exclamation-circle-fill me-1"></i> Số dư không đủ để thanh toán hóa đơn này!
                             </div>
                         </div>
+                        @else
+                        <div class="alert alert-info small mt-3">
+                            <i class="bi bi-info-circle me-1"></i> Có tài khoản? <a href="{{ route('login') }}" class="fw-bold">Đăng nhập ngay</a> để nhận điểm thưởng.
+                        </div>
+                        @endif
                     </div>
                 </div>
                 {{-- CỘT PHẢI: TÓM TẮT TIỀN GỐC --}}

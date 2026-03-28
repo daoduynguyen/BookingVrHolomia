@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Models\Order;
 use App\Models\Coupon;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
@@ -17,7 +19,7 @@ class ProfileController extends Controller
         $userId = Auth::id();
 
         // Cập nhật trạng thái "hết hạn" cho đơn của user này
-        $now = \Carbon\Carbon::now();
+        $now = Carbon::now();
         Order::with('slot')
             ->where('user_id', $userId)
             ->whereIn('status', ['paid', 'pending'])
@@ -25,8 +27,8 @@ class ProfileController extends Controller
             ->each(function ($o) use ($now) {
                 /** @var \App\Models\Order $o */
                 if ($o->slot) {
-                    $playTime = \Carbon\Carbon::parse(
-                        \Carbon\Carbon::parse($o->booking_date)->format('Y-m-d') . ' ' . $o->slot->start_time
+                    $playTime = Carbon::parse(
+                        Carbon::parse($o->booking_date)->format('Y-m-d') . ' ' . $o->slot->start_time
                     );
                     if ($now->greaterThan($playTime)) {
                         $o->status = 'expired';
@@ -128,21 +130,6 @@ class ProfileController extends Controller
     public function showOrder($id)
     {
         try {
-            // Force create reviews table in the EXACT same database the web app is using
-            \Illuminate\Support\Facades\DB::statement("
-                CREATE TABLE IF NOT EXISTS `reviews` (
-                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                  `user_id` bigint(20) unsigned NOT NULL,
-                  `ticket_id` bigint(20) unsigned NOT NULL,
-                  `order_item_id` bigint(20) unsigned DEFAULT NULL,
-                  `rating` int(11) NOT NULL DEFAULT 5,
-                  `comment` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-                  `created_at` timestamp NULL DEFAULT NULL,
-                  `updated_at` timestamp NULL DEFAULT NULL,
-                  PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ");
-
             $order = Order::with(['orderItems.review', 'slot'])
                 ->where('user_id', Auth::id())
                 ->findOrFail($id);

@@ -11,17 +11,16 @@
 @endphp
 
 <div class="dropdown lang-switcher">
-    <button
-        class="btn-lang dropdown-toggle"
-        type="button"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-        title="{{ __('navbar.language') }}"
-    >
-        <span class="lang-flag">{{ $current['flag'] }}</span>
-        <span class="lang-code d-none d-lg-inline">{{ strtoupper($currentLocale) }}</span>
-        <i class="bi bi-chevron-down lang-chevron"></i>
-    </button>
+   <button
+    class="btn-lang dropdown-toggle"
+    type="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    title="{{ __('navbar.language') }}"
+>
+    <span class="fi fi-{{ $current['flag_code'] }}"></span> {{ $current['native'] }}
+    <i class="bi bi-chevron-down lang-chevron"></i>
+</button>
 
     <ul class="dropdown-menu dropdown-menu-end lang-menu">
         @foreach($languages as $code => $lang)
@@ -30,7 +29,7 @@
                     class="dropdown-item lang-item {{ $currentLocale === $code ? 'active' : '' }}"
                     href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}"
                 >
-                    <span class="lang-item-flag">{{ $lang['flag'] }}</span>
+                   <span class="fi fi-{{ $lang['flag_code'] }}"></span>
                     <span class="lang-item-name">{{ $lang['native'] }}</span>
                     @if($currentLocale === $code)
                         <i class="bi bi-check2 ms-auto text-info"></i>

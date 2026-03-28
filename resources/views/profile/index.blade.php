@@ -175,7 +175,7 @@
 
             {{-- CỘT TRÁI: SIDEBAR (col-lg-4) --}}
             <div class="col-lg-4">
-                <div class="profile-sidebar-card p-0 h-100">
+                <div class="profile-sidebar-card p-0 h-100 d-flex flex-column">
                     {{-- Avatar & Info --}}
                     <div class="profile-avatar-section">
                         <div class="position-relative d-inline-block">
@@ -199,7 +199,7 @@
                     </div>
 
                     {{-- Menu --}}
-                    <div class="nav flex-column nav-pills px-1 pb-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <div class="nav flex-column nav-pills px-1 flex-grow-1 justify-content-evenly py-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                         <button class="nav-link active" id="v-pills-profile-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab">
                             <i class="bi bi-person-gear"></i> {{ __('profile.my_profile') }}
@@ -220,12 +220,12 @@
                             <i class="bi bi-heart"></i> {{ __('profile.wishlist') }}
                         </button>
 
-                        <button class="nav-link" id="v-pills-password-tab"
-                            data-bs-toggle="pill" data-bs-target="#v-pills-password" type="button" role="tab">
+                        <a href="{{ route('settings.index') }}?tab=security"
+                           class="nav-link" style="text-decoration:none">
                             <i class="bi bi-shield-lock"></i> {{ __('profile.change_password') }}
-                        </button>
+                        </a>
 
-                        <hr style="border-color: rgba(255,255,255,0.12); margin: 8px 8px;">
+                        <hr style="border-color: rgba(255,255,255,0.12); margin: 4px 8px;">
 
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
@@ -369,17 +369,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                         <textarea name="address" class="form-control" rows="3"
                                             placeholder="{{ __('profile.enter_address') }}">{{ old('address', $user->address) }}</textarea>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label text-uppercase mb-2">{{ __('profile.language_label') }}</label>
-                                        <select name="language" class="form-select">
-                                            <option value="vi" {{ (old('language', $user->language) ?? app()->getLocale()) == 'vi' ? 'selected' : '' }}>Tiếng Việt</option>
-                                            <option value="en" {{ (old('language', $user->language) ?? app()->getLocale()) == 'en' ? 'selected' : '' }}>English</option>
-                                            <option value="ja" {{ (old('language', $user->language) ?? app()->getLocale()) == 'ja' ? 'selected' : '' }}>日本語</option>
-                                            <option value="zh" {{ (old('language', $user->language) ?? app()->getLocale()) == 'zh' ? 'selected' : '' }}>中文</option>
-                                            <option value="ko" {{ (old('language', $user->language) ?? app()->getLocale()) == 'ko' ? 'selected' : '' }}>한국어</option>
-                                            <option value="hi" {{ (old('language', $user->language) ?? app()->getLocale()) == 'hi' ? 'selected' : '' }}>हिन्दी</option>
-                                        </select>
-                                    </div>
+
                                 </div>
                                 <div class="mt-4 pt-3 text-end">
                                     <button type="submit" class="btn btn-primary px-5 py-3 fw-bold text-uppercase shadow-sm" style="border-radius: 12px; letter-spacing: 0.5px; transition: all 0.3s;">
@@ -642,38 +632,16 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                             @endif
                         </div>
 
-                        {{-- 5. TAB MẬT KHẨU --}}
+                        {{-- 5. TAB BẢO MẬT — chuyển sang Settings --}}
                         <div class="tab-pane fade" id="v-pills-password" role="tabpanel">
-                            <h4
-                                class="text-primary fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
-                                <i class="bi bi-shield-lock-fill me-2"></i> {{ __('profile.change_password') }}
-                            </h4>
-
-                            <form action="{{ route('profile.password') }}" method="POST" class="mx-auto"
-                                style="max-width: 500px;">
-                                @csrf
-                                <div class="mb-4">
-                                    <label class="form-label text-uppercase mb-2">{{ __('profile.current_password') }}</label>
-                                    <input type="password" name="current_password" class="form-control" required
-                                        placeholder="••••••">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label text-uppercase mb-2">{{ __('profile.new_password') }}</label>
-                                    <input type="password" name="new_password" class="form-control" required
-                                        placeholder="••••••">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label text-uppercase mb-2">{{ __('profile.confirm_password') }}</label>
-                                    <input type="password" name="new_password_confirmation" class="form-control"
-                                        required placeholder="••••••">
-                                </div>
-                                <div class="text-end mt-4 pt-3">
-                                    <button type="submit"
-                                        class="btn btn-primary px-5 py-3 fw-bold text-uppercase shadow-sm" style="border-radius: 12px; letter-spacing: 0.5px; transition: all 0.3s;">
-                                        <i class="bi bi-arrow-repeat me-2"></i> {{ __('profile.update') }}
-                                    </button>
-                                </div>
-                            </form>
+                            <div class="text-center py-5">
+                                <i class="bi bi-gear-fill display-4 text-primary opacity-75 mb-3 d-block"></i>
+                                <h5 class="fw-bold">Đổi mật khẩu đã chuyển vào Cài đặt</h5>
+                                <p class="text-muted mb-4">Để bảo mật hơn, tính năng đổi mật khẩu và các tùy chọn bảo mật khác đã được gộp vào trang Cài đặt.</p>
+                                <a href="{{ route('settings.index') }}?tab=security" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">
+                                    <i class="bi bi-shield-lock me-2"></i> Đến trang Cài đặt Bảo mật
+                                </a>
+                            </div>
                         </div>
 
                     </div>

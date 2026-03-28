@@ -53,6 +53,14 @@ class AuthController extends Controller
     // --- 2. ĐĂNG NHẬP ---
     public function showLogin()
     {
+        // Lưu lại trang trước đó để sau khi login nhảy về đúng chỗ (VD: đang ở trang thanh toán)
+        if (!session()->has('url.intended')) {
+            $prevUrl = url()->previous();
+            // Khách có thể bị đá từ trang khác sang login, ta lưu lại URL đó trừ chính trang login
+            if (!str_contains($prevUrl, '/login') && !str_contains($prevUrl, '/register')) {
+                session(['url.intended' => $prevUrl]);
+            }
+        }
         return view('auth.login');
     }
 
@@ -84,8 +92,8 @@ class AuthController extends Controller
                 return redirect()->route('admin.dashboard')->with('success', 'Chào mừng Quản trị viên trở lại!');
             }
 
-            // Nếu là khách hàng bình thường -> Cho ra cửa hàng mua vé
-            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
+            // Nếu là khách hàng bình thường -> Quay lại trang trước đó hoặc ra trang chủ
+            return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
         }
 
         return back()->withErrors([

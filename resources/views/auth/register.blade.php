@@ -245,19 +245,37 @@
     </div>
 
     {{-- RIGHT PANEL: FORM --}}
+    {{-- RIGHT PANEL: FORM --}}
     <div class="right-panel">
         <div class="form-wrapper">
 
-            <div class="form-header">
-                <h2>{{ __('auth.create_account') }}</h2>
-                <p>{{ __('auth.register_subheading') }}</p>
+            <div class="form-header text-center mb-4">
+                <h2 style="font-weight: 700; font-size: 2rem;">{{ __('auth.create_account') }}</h2>
+                <p class="text-muted mt-2">{{ __('auth.register_subheading') }}</p>
             </div>
+
+            {{-- Social Logins --}}
+            <div class="d-flex flex-column gap-3 mb-4">
+                <a href="{{ route('social.redirect', 'google') }}" class="btn btn-social btn-google">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Đăng ký với Google
+                </a>
+                <a href="{{ route('social.redirect', 'facebook') }}" class="btn btn-social btn-facebook">
+                    <i class="bi bi-facebook" style="color: #1877F2; font-size: 1.25rem;"></i>
+                    Đăng ký với Facebook
+                </a>
+                <a href="javascript:alert('Tính năng đăng nhập bằng WhatsApp đang được phát triển. Vui lòng sử dụng phương thức khác!');" class="btn btn-social btn-whatsapp">
+                    <i class="bi bi-whatsapp" style="color: #25D366; font-size: 1.25rem;"></i>
+                    Đăng ký với WhatsApp
+                </a>
+            </div>
+
+            <div class="divider">{{ __('auth.or') }} email</div>
 
             <form action="{{ route('register') }}" method="POST">
                 @csrf
 
                 <div class="mb-3">
-                    <label class="form-label">{{ __('auth.full_name') }} <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
@@ -269,7 +287,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">{{ __('auth.email') }} <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
@@ -281,7 +298,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">{{ __('auth.phone') }}</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
                         <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
@@ -293,7 +309,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">{{ __('auth.password') }} <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
                         <input type="password" name="password" id="password"
@@ -314,7 +329,6 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label">{{ __('auth.password_confirm') }} <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
                         <input type="password" name="password_confirmation" id="password2"
@@ -328,7 +342,7 @@
                 </div>
 
                 <button type="submit" class="btn-register mb-4">
-                    <i class="bi bi-person-plus-fill me-2"></i>{{ __('auth.register_btn') }}
+                    {{ __('auth.register_btn') }}
                 </button>
 
                 <div class="text-center" style="font-size:0.9rem;">
@@ -336,7 +350,7 @@
                     <a href="{{ route('login') }}" class="link-blue ms-1">{{ __('auth.login_now') }}</a>
                 </div>
 
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 pt-2 border-top">
                     <a href="{{ route('home') }}" class="link-muted">
                         <i class="bi bi-arrow-left me-1"></i>{{ __('auth.back_to_home') }}
                     </a>
@@ -345,6 +359,95 @@
 
         </div>
     </div>
+
+    <style>
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #9ca3af;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #374151;
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-social:hover {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+            color: #111827;
+            transform: translateY(-1px);
+        }
+
+        .btn-social img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-register {
+            background: #111827;
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            border: none;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-register:hover {
+            background: #1f2937;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            padding: 12px 14px;
+            background: #f9fafb;
+        }
+
+        .input-group-text {
+            border-radius: 12px 0 0 12px;
+            border: 2px solid #e5e7eb;
+            border-right: none;
+            background: #f9fafb;
+        }
+
+        .form-control:focus, .input-group:focus-within .input-group-text, .input-group:focus-within .form-control {
+            background: #fff;
+            border-color: #0d1b4b;
+            box-shadow: none;
+        }
+
+        .input-group .btn {
+            border-radius: 0 12px 12px 0;
+            border: 2px solid #e5e7eb;
+        }
+    </style>
 
     <script>
     // Strength labels from PHP (passed via meta or inline — we use JS object)

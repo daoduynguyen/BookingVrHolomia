@@ -22,10 +22,11 @@ class Ticket extends Model
         'status',
         'avg_rating',
         'play_count',
-        'trailer_url', 
+        'trailer_url',
         'gallery',
+        'ticket_types',
     ];
-    
+
     protected $casts = [
         'gallery' => 'array',
         'ticket_types' => 'array',

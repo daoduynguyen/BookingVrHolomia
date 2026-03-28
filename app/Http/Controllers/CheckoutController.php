@@ -136,7 +136,7 @@ class CheckoutController extends Controller
                             "slot_id" => $request->slot_id,
                             "coupon_code" => $couponCode,
                             "discount" => $calculateDiscount($finalPrice * $qty, $couponCode),
-                            "customer_info" => $request->only(['customer_name', 'customer_phone', 'payment_method', 'shipping_address', 'note']),
+                            "customer_info" => $request->only(['customer_name', 'customer_phone', 'customer_email', 'payment_method', 'shipping_address', 'note']),
                         ];
                     }
                 }
@@ -175,7 +175,7 @@ class CheckoutController extends Controller
                     "slot_id" => $request->slot_id,
                     "coupon_code" => $couponCode,
                     "discount" => $calculateDiscount($finalPrice * $qty, $couponCode),
-                    "customer_info" => $request->only(['customer_name', 'customer_phone', 'payment_method', 'shipping_address', 'note']),
+                    "customer_info" => $request->only(['customer_name', 'customer_phone', 'customer_email', 'payment_method', 'shipping_address', 'note']),
                 ];
             }
         }
@@ -276,6 +276,7 @@ class CheckoutController extends Controller
                 'user_id'         => Auth::id(),
                 'customer_name'   => $info['customer_name']    ?? ($user->name    ?? 'Khách'),
                 'customer_phone'  => $info['customer_phone']   ?? ($user->phone   ?? ''),
+                'customer_email'  => $info['customer_email']   ?? ($user->email   ?? ''),
                 'shipping_address'=> $info['shipping_address'] ?? ($user->address ?? 'Tại quầy'),
                 'total_amount'    => $finalTotal,
                 'discount_amount' => $discountAmount,
@@ -378,9 +379,10 @@ class CheckoutController extends Controller
                 }
 
                 // Gửi email vé điện tử
-                if ($user && $user->email) {
+                $validEmail = $order->customer_email ?? ($user->email ?? null);
+                if ($validEmail) {
                     try {
-                        Mail::to($user->email)->send(new BookingConfirmedMail($order));
+                        Mail::to($validEmail)->send(new BookingConfirmedMail($order));
                     } catch (\Exception $mailErr) {
                         Log::warning('Lỗi gửi mail: ' . $mailErr->getMessage());
                     }
@@ -404,8 +406,16 @@ class CheckoutController extends Controller
             // REDIRECT THEO TỪNG PHƯƠNG THỨC THANH TOÁN
             // =============================================
 
+            // Đánh dấu quyền truy cập xem thông tin banking order ngay trên session cho Guest
+            if (!Auth::check()) {
+                session(['guest_order_' . $order->id => true]);
+            }
+
             // 1. THANH TOÁN TẠI QUẦY (COD)
             if ($paymentMethod === 'cod') {
+                if (!Auth::check()) {
+                    return redirect()->route('home')->with('success', 'Bạn đã đặt vé thành công!');
+                }
                 return redirect()->route('profile.index')->with([
                     'cod_success'  => true,
                     'order_id'     => $order->id,
@@ -424,7 +434,7 @@ class CheckoutController extends Controller
                 'order_id'        => $order->id,
                 'total_amount'    => $order->total_amount,
                 'method'          => 'wallet',
-                'qr_code'         => $qr->qr_code,
+                'qr_code'         => $qr->qr_code ?? '',
             ]);
 
         }
@@ -441,8 +451,10 @@ class CheckoutController extends Controller
         $order = \App\Models\Order::with(['orderItems.ticket', 'location', 'slot'])->findOrFail($id);
 
         // Bảo mật: chỉ khách của đơn mới xem được
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
+        if ($order->user_id) {
+            if ($order->user_id !== Auth::id()) abort(403);
+        } else {
+            if (!session('guest_order_' . $order->id)) abort(403);
         }
 
         $bankBin     = \App\Models\Setting::where('key', 'bank_bin')->value('value')     ?? '970436';
@@ -471,7 +483,7 @@ class CheckoutController extends Controller
 
         if (!$coupon)
             return response()->json(['status' => 'error', 'message' => 'Mã giảm giá không tồn tại!']);
-        if ($coupon->expiration_date && Carbon::now()->gt($coupon->expiration_date))
+        if ($coupon->expiry_date && Carbon::now()->gt($coupon->expiry_date))
             return response()->json(['status' => 'error', 'message' => 'Mã này đã hết hạn!']);
         if ($coupon->quantity <= 0)
             return response()->json(['status' => 'error', 'message' => 'Mã này đã hết lượt sử dụng!']);
@@ -497,11 +509,19 @@ class CheckoutController extends Controller
             return response()->json([]);
         }
 
-        $slots = TimeSlot::where('ticket_id', $request->ticket_id)
+        $query = TimeSlot::where('ticket_id', $request->ticket_id)
             ->where('date', $request->date)
             ->where('status', 'open') // Chỉ lấy slot đang mở
-            ->whereColumn('booked_count', '<', 'capacity') // Chỉ lấy slot còn chỗ
-            ->orderBy('start_time', 'asc')
+            ->whereColumn('booked_count', '<', 'capacity'); // Chỉ lấy slot còn chỗ
+
+        // NGUYÊN TẮC QUAN TRỌNG: Nếu là mốc xem trong hôm nay, 
+        // chỉ hiển thị những khung giờ bắt đầu sau thời điểm hiện tại.
+        $targetDate = Carbon::parse($request->date);
+        if ($targetDate->isToday()) {
+            $query->where('start_time', '>', Carbon::now()->format('H:i:s'));
+        }
+
+        $slots = $query->orderBy('start_time', 'asc')
             ->get()
             ->map(function ($slot) {
             return [

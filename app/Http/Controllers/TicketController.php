@@ -7,8 +7,11 @@ use App\Models\Location;
 use App\Models\Ticket;
 use App\Models\Booking;
 use App\Models\BookingDetail;
-use Illuminate\Support\Facades\DB; 
-use Carbon\Carbon; 
+use Illuminate\Support\Facades\DB;
+
+use Carbon\Carbon;
+
+use Illuminate\Support\Facades\Session;
 
 class TicketController extends Controller
 {
@@ -18,44 +21,61 @@ class TicketController extends Controller
     public function index()
     {
         $tickets = Ticket::with(['category', 'locations'])
-                        ->whereIn('status', ['active', 'maintenance'])
-                        ->orderBy('play_count', 'desc') 
-                        ->take(6) 
-                        ->get();
+            ->whereIn('status', ['active', 'maintenance'])
+            ->orderBy('play_count', 'desc')
+            ->take(6)
+            ->get();
 
         return view('home', compact('tickets'));
     }
 
-  // ---------------------------------------------------------
+    // ---------------------------------------------------------
     // 2. TRANG CỬA HÀNG: Hiển thị TẤT CẢ (Có phân trang)
     // ---------------------------------------------------------
-    public function shop(Request $request)
-    {
+    public function shop(Request $request)    {
         $query = Ticket::with(['category', 'locations'])
-                       ->whereIn('status', ['active', 'maintenance']);
+            ->whereIn('status', ['active', 'maintenance']);
 
         $locationName = "Tất cả vé";
 
-        // Lọc theo Cơ sở (Location)
-        if ($request->has('location_id') && $request->location_id != null) {
-            $query->whereHas('locations', function($q) use ($request) {
+        // ✅ ƯU TIÊN 1: Đọc cơ sở từ session (do khách đã chọn ở màn hình chọn cơ sở)
+        $sessionLocation = Session::get('selected_location');
+
+        if ($sessionLocation && $sessionLocation !== 'all') {
+            $query->whereHas('locations', function ($q) use ($sessionLocation) {
+                $q->where('locations.id', $sessionLocation);
+            });
+
+            $loc = Location::find($sessionLocation);
+            if ($loc) {
+                $locationName = "Vé tại " . $loc->name;
+            }
+        }
+
+        // ✅ ƯU TIÊN 2: Nếu có ?location_id trên URL thì lọc thêm (dùng cho admin preview hoặc link trực tiếp)
+        // Chỉ áp dụng khi session đang là 'all' hoặc chưa chọn
+        elseif ($request->filled('location_id')) {
+            $query->whereHas('locations', function ($q) use ($request) {
                 $q->where('locations.id', $request->location_id);
             });
+
             $loc = Location::find($request->location_id);
             if ($loc) {
                 $locationName = "Vé tại " . $loc->name;
             }
         }
 
-        //  Lọc thêm theo Thể loại (Category) 
-        if ($request->has('category_id') && $request->category_id != null) {
-            $query->where('category_id', $request->category_id);
+        // Lọc tìm kiếm theo tên (keyword)
+        if ($request->filled('keyword')) {
+            $query->where('name', 'like', '%' . $request->keyword . '%');
         }
 
-        $tickets = $query->orderBy('play_count', 'desc')->paginate(9)->appends(request()->query()); 
+        $tickets = $query->orderBy('play_count', 'desc')
+            ->paginate(9)
+            ->appends($request->query());
 
-        return view('shop', compact('tickets', 'locationName'));
-    }
+        return view('shop', compact('tickets', 'locationName'));    }
+
 
     // ---------------------------------------------------------
     // 3. TRANG CHI TIẾT SẢN PHẨM
@@ -63,13 +83,13 @@ class TicketController extends Controller
     public function show($id)
     {
         $ticket = Ticket::with(['category', 'locations'])->findOrFail($id);
-        
+
         $related = Ticket::where('category_id', $ticket->category_id)
-                        ->where('id', '!=', $id)
-                        ->whereIn('status', ['active', 'maintenance']) 
-                        ->limit(3)
-                        ->get();
-        
+            ->where('id', '!=', $id)
+            ->whereIn('status', ['active', 'maintenance'])
+            ->limit(3)
+            ->get();
+
         return view('detail', compact('ticket', 'related'));
     }
 
@@ -82,7 +102,7 @@ class TicketController extends Controller
 
         if ($ticket->status == 'maintenance') {
             return redirect()->route('ticket.show', $id)
-                             ->with('error', 'Trò chơi đang bảo trì, không thể đặt vé lúc này!');
+                ->with('error', 'Trò chơi đang bảo trì, không thể đặt vé lúc này!');
         }
 
         // 🔥 Lấy tên loại vé khách vừa chọn (Từ nút Radio)
@@ -90,7 +110,7 @@ class TicketController extends Controller
 
         // Chuyển hướng sang Giỏ hàng, kèm theo loại vé
         return redirect()->route('cart.add', [
-            'id' => $id, 
+            'id' => $id,
             'type' => $selectedType
         ]);
     }
@@ -101,17 +121,17 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ticket_id'      => 'required|exists:tickets,id',
-            'customer_name'  => 'required|string|max:255',
+            'ticket_id' => 'required|exists:tickets,id',
+            'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:15',
-            'quantity'       => 'required|integer|min:1|max:50',
+            'quantity' => 'required|integer|min:1|max:50',
             'selected_ticket_type' => 'nullable|string' // 🔥 Thêm validate loại vé
         ]);
 
         DB::beginTransaction();
         try {
             $ticket = Ticket::findOrFail($request->ticket_id);
-            
+
             if ($ticket->status == 'maintenance') {
                 return back()->with('error', 'Trò chơi này đang bảo trì!');
             }
@@ -135,29 +155,30 @@ class TicketController extends Controller
 
             // Lưu Booking
             $booking = Booking::create([
-                'user_id'        => \Illuminate\Support\Facades\Auth::id() ?? null, 
-                'customer_name'  => $request->customer_name,
+                'user_id' => \Illuminate\Support\Facades\Auth::id() ?? null,
+                'customer_name' => $request->customer_name,
                 'customer_phone' => $request->customer_phone,
                 'customer_email' => $request->customer_email,
-                'total_amount'   => $totalAmount,
-                'status'         => 'pending',
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
                 'payment_method' => 'cod',
-                'booking_date'   => now(),
+                'booking_date' => now(),
             ]);
 
             // Lưu Booking Detail (Có lưu kèm Tên loại vé)
             BookingDetail::create([
-                'booking_id'  => $booking->id,
-                'ticket_id'   => $ticket->id,
+                'booking_id' => $booking->id,
+                'ticket_id' => $ticket->id,
                 'ticket_type' => $selectedTypeName, // 🔥 LƯU LOẠI VÉ ĐỂ SAU NÀY IN VÉ (Cần thêm cột ticket_type vào bảng booking_details nếu chưa có)
-                'quantity'    => $request->quantity,
-                'price'       => $pricePerTicket,
+                'quantity' => $request->quantity,
+                'price' => $pricePerTicket,
             ]);
 
             DB::commit();
             return redirect()->route('home')->with('success', 'Đặt vé thành công! Mã đơn: #' . $booking->id . ' - Tổng tiền: ' . number_format($totalAmount) . 'đ');
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
         }
@@ -179,7 +200,7 @@ class TicketController extends Controller
 
         if (($key = array_search($imageToRemove, $gallery)) !== false) {
             unset($gallery[$key]);
-            
+
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($imageToRemove)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($imageToRemove);
             }
