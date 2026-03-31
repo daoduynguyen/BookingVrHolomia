@@ -5,8 +5,9 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class OrderStatusMail extends Mailable
+class OrderStatusMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -19,6 +20,7 @@ class OrderStatusMail extends Mailable
         $this->order = $order;
         $this->statusName = $statusName;
         $this->messageBody = $messageBody;
+        $this->afterCommit();
     }
 
     public function build()

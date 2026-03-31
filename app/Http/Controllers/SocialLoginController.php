@@ -18,7 +18,7 @@ class SocialLoginController extends Controller
     {
         // Các provider hợp lệ
         $validProviders = ['google', 'facebook'];
-        
+
         if (!in_array($provider, $validProviders)) {
             return redirect()->route('login')->withErrors(['oauth' => 'Phương thức đăng nhập không được hỗ trợ.']);
         }
@@ -33,47 +33,51 @@ class SocialLoginController extends Controller
     {
         try {
             $socialUser = Socialite::driver($provider)->user();
-            
-            // Tìm user dựa trên provider_id và provider_name
+
             $user = User::where('provider_name', $provider)
-                        ->where('provider_id', $socialUser->getId())
-                        ->first();
+                ->where('provider_id', $socialUser->getId())
+                ->first();
 
             if ($user) {
-                // Đã từng đăng nhập bằng MXH này
+                // ✅ Cập nhật avatar mỗi lần đăng nhập (phòng trường hợp Google đổi URL)
+                $user->update([
+                    'avatar' => $socialUser->getAvatar(),
+                ]);
+
                 Auth::login($user);
                 return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
             }
 
-            // Nếu user chưa tồn tại dựa theo provider_id, ta kiểm tra xem Email này đã tồn tại chưa
             $existingUser = User::where('email', $socialUser->getEmail())->first();
-            
+
             if ($existingUser) {
-                // Email đã được dùng (ví dụ đăng ký thủ công). Cập nhật thêm provider_id vào tài khoản này
+                // ✅ Thêm avatar khi link tài khoản cũ với Google
                 $existingUser->update([
                     'provider_name' => $provider,
-                    'provider_id'   => $socialUser->getId(),
+                    'provider_id' => $socialUser->getId(),
+                    'avatar' => $existingUser->avatar ?: $socialUser->getAvatar(),
+                    // Dùng ?: để không ghi đè nếu user đã upload ảnh thủ công
                 ]);
                 Auth::login($existingUser);
                 return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
             }
 
-            // Nếu hoàn toàn là người mới, tạo mới User
+            // ✅ Lưu avatar khi tạo user mới
             $newUser = User::create([
-                'name'          => $socialUser->getName(),
-                'email'         => $socialUser->getEmail(),
+                'name' => $socialUser->getName(),
+                'email' => $socialUser->getEmail(),
                 'provider_name' => $provider,
-                'provider_id'   => $socialUser->getId(),
-                // Tạo một password ngẫu nhiên và mã hoá vì cột password bắt buộc (not null)
-                'password'      => Hash::make(Str::random(24)),
-                'role'          => 'customer',
+                'provider_id' => $socialUser->getId(),
+                'password' => Hash::make(Str::random(24)),
+                'role' => 'customer',
+                'avatar' => $socialUser->getAvatar(),
             ]);
 
             Auth::login($newUser);
-            return redirect()->intended(route('home'))->with('success', 'Tài khoản mới đã được tạo và đăng nhập thành công!');
+            return redirect()->intended(route('home'))->with('success', 'Tài khoản mới đã được tạo!');
 
         } catch (\Exception $e) {
-            return redirect()->route('login')->withErrors(['oauth' => 'Lỗi kết nối đến tài khoản Mạng xã hội của bạn. Vui lòng thử lại.']);
+            return redirect()->route('login')->withErrors(['oauth' => 'Lỗi kết nối. Vui lòng thử lại.']);
         }
     }
 }

@@ -47,8 +47,12 @@ class AuthController extends Controller
         // Đăng nhập luôn sau khi đăng ký
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Đăng ký thành công! Chào mừng ' . $user->name);
+        $user->sendEmailVerificationNotification();
+
+        return redirect()->route('verification.notice')
+            ->with('success', 'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.');
     }
+
 
     // --- 2. ĐĂNG NHẬP ---
     public function showLogin()

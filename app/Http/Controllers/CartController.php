@@ -35,7 +35,7 @@ class CartController extends Controller
     public function index()
     {
         $cart = session()->get('cart', []);
-        
+
         // BỘ LỌC RÁC: Xóa sạch các phần tử lỗi (không có giá) bị kẹt từ trước
         foreach ($cart as $key => $item) {
             if (!is_array($item) || !isset($item['price'])) {
@@ -52,7 +52,7 @@ class CartController extends Controller
     {
         $cart = session()->get('cart', []);
 
-        if(isset($cart[$id])) {
+        if (isset($cart[$id])) {
             unset($cart[$id]); // Xóa khỏi mảng
             session()->put('cart', $cart); // Lưu lại session
         }
@@ -64,10 +64,11 @@ class CartController extends Controller
     public function clear()
     {
         session()->forget('cart');
+        session()->forget('cart_created_at');
         return redirect()->route('ticket.shop')->with('success', 'Đã xóa sạch giỏ hàng!');
     }
 
-   // 5. Cập nhật số lượng (AJAX)
+    // 5. Cập nhật số lượng (AJAX)
     public function update(Request $request)
     {
         if ($request->id && $request->quantity) {
@@ -77,9 +78,9 @@ class CartController extends Controller
             if (isset($cart[$request->id])) {
                 // Cập nhật số lượng mới
                 $cart[$request->id]['quantity'] = $request->quantity;
-                
+
                 // Tính lại tiền Tạm tính (Subtotal) của riêng dòng vé này
-                $price = $cart[$request->id]['price'];
+                $price = $cart[$request->id]['price'] ?? 0;
                 $subTotal = $price * $request->quantity;
 
                 // 2. TÍNH LẠI MÃ GIẢM GIÁ (Dành riêng cho vé này)
@@ -90,7 +91,7 @@ class CartController extends Controller
                 if ($couponCode) {
                     // Truy vấn DB để lấy % giảm giá hoặc số tiền cố định
                     $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
-                    
+
                     if ($coupon) {
                         // Tính tiền được giảm dựa trên SubTotal mới
                         if ($coupon->type == 'percent') {
@@ -98,7 +99,7 @@ class CartController extends Controller
                         } else {
                             $discountAmount = $coupon->value;
                         }
-                        
+
                         // Không cho phép số tiền được giảm vượt quá tiền gốc của vé
                         if ($discountAmount > $subTotal) {
                             $discountAmount = $subTotal;
@@ -108,7 +109,7 @@ class CartController extends Controller
 
                 // 3. Cập nhật lại số tiền giảm vào đúng cái vé đó trong Giỏ hàng
                 $cart[$request->id]['discount'] = $discountAmount;
-                
+
                 // Lưu lại Session
                 session()->put('cart', $cart);
 
@@ -119,7 +120,7 @@ class CartController extends Controller
                 ]);
             }
         }
-        
+
         return response()->json(['success' => false, 'message' => 'Lỗi cập nhật']);
     }
 }

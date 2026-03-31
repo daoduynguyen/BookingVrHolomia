@@ -7,17 +7,19 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class BookingConfirmedMail extends Mailable
+class BookingConfirmedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
-
+    
     public $order;
 
     // Hàm này để nhận đơn hàng từ CheckoutController truyền sang
     public function __construct($order)
     {
         $this->order = $order;
+        $this->afterCommit();
     }
 
     public function envelope(): Envelope

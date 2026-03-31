@@ -64,20 +64,20 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'phone'    => 'nullable|string|max:15',
-            'address'  => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:15',
+            'address' => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
-            'gender'   => 'nullable|in:male,female,other',
+            'gender' => 'nullable|in:male,female,other',
             'language' => 'nullable|in:vi,en,ja,zh,ko,hi',
         ]);
 
         $user->update([
-            'name'     => $request->name,
-            'phone'    => $request->phone,
-            'address'  => $request->address,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'address' => $request->address,
             'birthday' => $request->birthday,
-            'gender'   => $request->gender,
+            'gender' => $request->gender,
             'language' => $request->language ?? 'vi',
         ]);
 
@@ -110,7 +110,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => 'required',
-            'new_password'     => 'required|min:6|confirmed',
+            'new_password' => 'required|min:6|confirmed',
         ], [
             'new_password.confirmed' => 'Mật khẩu nhập lại không khớp.',
         ]);
@@ -135,13 +135,18 @@ class ProfileController extends Controller
                 ->findOrFail($id);
 
             $html = view('profile.order_invoice', compact('order'))->render();
-
             return response()->json(['order' => $order, 'html' => $html]);
 
         } catch (\Exception $e) {
-            $errorMsg = 'Lỗi: ' . $e->getMessage() . '<br>At: ' . $e->getFile() . ':' . $e->getLine();
-            Log::error($errorMsg);
-            return response()->json(['html' => '<div class="text-danger p-3 bg-white">' . $errorMsg . '</div>']);
+            // Log lỗi thật ra file log, KHÔNG trả về cho client
+            Log::error('showOrder error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'order_id' => $id,
+            ]);
+
+            return response()->json([
+                'html' => '<div class="alert alert-danger">Không thể tải thông tin đơn hàng. Vui lòng thử lại.</div>'
+            ], 500);
         }
     }
 
@@ -150,6 +155,15 @@ class ProfileController extends Controller
     {
         $order = Order::with('orderItems', 'slot')->findOrFail($id);
 
+        // Chỉ admin và chủ đơn mới được xem
+        $user = Auth::user();
+        $isOwner = $user && $order->user_id === $user->id;
+        $isAdmin = $user && in_array($user->role, ['admin', 'super_admin', 'branch_admin']);
+
+        if (!$isOwner && !$isAdmin) {
+            abort(403, 'Bạn không có quyền xem vé này.');
+        }
+
         return view('profile.ticket_scan', compact('order'));
     }
 
@@ -157,12 +171,12 @@ class ProfileController extends Controller
     public function switchLanguage($locale)
     {
         // Danh sách 6 ngôn ngữ bạn muốn hỗ trợ
-        $allowedLangs = ['vi', 'en', 'ko', 'zh', 'ja', 'hi']; 
-        
+        $allowedLangs = ['vi', 'en', 'ko', 'zh', 'ja', 'hi'];
+
         if (in_array($locale, $allowedLangs)) {
             session()->put('locale', $locale);
         }
-        
+
         return redirect()->back();
     }
 }

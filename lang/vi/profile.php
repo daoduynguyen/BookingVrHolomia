@@ -14,6 +14,7 @@ return [
     'my_orders'         => 'Đơn hàng của tôi',
     'wishlist'          => 'Mục yêu thích',
     'change_password'   => 'Đổi mật khẩu',
+    'settings'          => 'Cài đặt',
     'logout'            => 'Đăng xuất',
     'member_tier'       => 'Hạng thành viên',
     'points'            => 'điểm',

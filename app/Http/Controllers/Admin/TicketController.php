@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Models\Category;
 use App\Models\Location;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class TicketController extends Controller
 {
@@ -97,6 +98,8 @@ class TicketController extends Controller
         } else {
             $ticket->locations()->sync($request->location_ids ?? []);
         }
+
+        Cache::forget('home_tickets');
 
         return redirect()->route('admin.tickets.index')->with('success', 'Thêm vé thành công!');
     }
@@ -240,6 +243,8 @@ class TicketController extends Controller
                 }
             }
 
+            Cache::forget('home_tickets');
+
             return redirect()->route('admin.tickets.index')
                 ->with('success', 'Cập nhật vé thành công! Đã tái tạo lịch theo thời lượng mới (' . $newDuration . ' phút → ca ' . $duration . ' phút).');
         }
@@ -250,6 +255,8 @@ class TicketController extends Controller
         } else {
             $ticket->locations()->sync($request->location_ids ?? []);
         }
+
+        Cache::forget('home_tickets');
 
         return redirect()->route('admin.tickets.index')->with('success', 'Cập nhật vé thành công!');
     }
@@ -266,6 +273,8 @@ class TicketController extends Controller
         }
 
         $ticket->delete();
+
+        Cache::forget('home_tickets');
 
         return back()->with('success', 'Đã xóa vé thành công!');
     }

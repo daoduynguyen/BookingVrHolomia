@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     {{-- Font động theo ngôn ngữ --}}
     <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/style.css') }}\" rel="stylesheet">
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <style>
         body { font-family: {{ $langConfig['font_family'] }}; }
     </style>
@@ -122,9 +122,18 @@
                                     </div>
                                 </div>
 
-                                <a href="{{ route('ticket.show', $ticket->id) }}" class="btn btn-primary w-100 fw-bold py-2 text-uppercase shadow-sm">
-                                    {{ $ticket->status == 'maintenance' ? __('home.view_info') : __('home.book_now') }}
-                                </a>
+                                @if($ticket->status == 'maintenance')
+                                    <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm" disabled>{{ __('home.maintenance') ?? 'Bảo trì' }}</button>
+                                @else
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('ticket.show', $ticket->id) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
+                                            {{ __('home.book_now') }}
+                                        </a>
+                                        <a href="{{ route('cart.add', $ticket->id) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="{{ __('home.add_to_cart') ?? 'Thêm vào giỏ' }}">
+                                            <i class="bi bi-cart-plus fs-5"></i>
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

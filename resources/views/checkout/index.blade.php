@@ -31,6 +31,9 @@
         <form action="{{ route('booking.confirm') }}" method="POST">
             @csrf
             <input type="hidden" name="ticket_id" value="{{ $ticket_id ?? '' }}">
+            @if(request()->has('replace_cart_id'))
+                <input type="hidden" name="replace_cart_id" value="{{ request('replace_cart_id') }}">
+            @endif
             <div id="price-data" data-base="{{ $ticket->price }}" data-surcharge="{{ $surchargeRate ?? 0 }}"
                 style="display: none;"></div>
 

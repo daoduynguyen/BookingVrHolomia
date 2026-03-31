@@ -15,6 +15,8 @@ use App\Models\TimeSlot;
 use App\Services\QrTicketService;
 use App\Mail\OrderStatusMail;
 use App\Mail\BookingConfirmedMail;
+use App\Jobs\SendTelegramNotification;
+use App\Services\LoyaltyService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 
@@ -28,11 +30,11 @@ class CheckoutController extends Controller
         // Không cho đặt vé đã bị ẩn/ngừng hoạt động
         if ($ticket->status !== 'active') {
             return redirect()->route('ticket.shop')
-                ->with('error', 'Vé này hiện không còn phục vụ. Vui lòng chọn vé khác!');
+                ->with('error', __('messages.ticket_unavailable'));
         }
 
         $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
-        $surchargeRate = (int)$surchargeStr;
+        $surchargeRate = (int) $surchargeStr;
 
         $totalWeek = $ticket->price;
 
@@ -59,7 +61,7 @@ class CheckoutController extends Controller
 
         // Không cho đặt vé đã bị ẩn/ngừng hoạt động
         if ($ticket->status !== 'active') {
-            return back()->with('error', 'Vé này hiện không còn phục vụ. Vui lòng chọn vé khác!')->withInput();
+            return back()->with('error', __('messages.ticket_unavailable'))->withInput();
         }
 
         $date = Carbon::parse($request->booking_date);
@@ -68,13 +70,13 @@ class CheckoutController extends Controller
         if ($request->slot_id) {
             $slot = TimeSlot::findOrFail($request->slot_id);
             if (!$slot->isBookable()) {
-                return back()->with('error', 'Khung giờ này đã đầy! Vui lòng chọn giờ khác.')->withInput();
+                return back()->with('error', __('messages.slot_full'))->withInput();
             }
         }
 
         // Lấy % phụ thu cuối tuần
         $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
-        $surchargeRate = (int)$surchargeStr / 100;
+        $surchargeRate = (int) $surchargeStr / 100;
 
         $cart = session()->get('cart', []);
         $couponCode = $request->input('applied_coupon');
@@ -96,14 +98,14 @@ class CheckoutController extends Controller
         // Nếu ticket có loại vé và khách gửi lên
         if ($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0 && is_array($submittedTypes)) {
             foreach ($submittedTypes as $typeName => $qty) {
-                $qty = (int)$qty;
+                $qty = (int) $qty;
                 if ($qty > 0) {
                     $totalQuantitySubmitted += $qty;
                     // Tìm giá của loại vé này
                     $basePrice = $ticket->price; // fallback
                     foreach ($ticket->ticket_types as $type) {
                         if ($type['name'] === $typeName) {
-                            $basePrice = (int)$type['price'];
+                            $basePrice = (int) $type['price'];
                             break;
                         }
                     }
@@ -123,8 +125,7 @@ class CheckoutController extends Controller
                         $newSubTotal = $finalPrice * $cart[$cartKey]['quantity'];
                         $cart[$cartKey]['coupon_code'] = $currentCoupon;
                         $cart[$cartKey]['discount'] = $calculateDiscount($newSubTotal, $currentCoupon);
-                    }
-                    else {
+                    } else {
                         $cart[$cartKey] = [
                             "id" => $ticket->id,
                             "name" => $ticket->name . ' - ' . $typeName,
@@ -141,10 +142,9 @@ class CheckoutController extends Controller
                     }
                 }
             }
-        }
-        else {
+        } else {
             // VÉ BÌNH THƯỜNG (KHÔNG CÓ TICKET_TYPES)
-            $qty = $request->input('quantity') ? (int)$request->input('quantity') : 1;
+            $qty = $request->input('quantity') ? (int) $request->input('quantity') : 1;
             $totalQuantitySubmitted = $qty;
 
             $basePrice = $ticket->price;
@@ -162,8 +162,7 @@ class CheckoutController extends Controller
                 $newSubTotal = $finalPrice * $cart[$cartKey]['quantity'];
                 $cart[$cartKey]['coupon_code'] = $currentCoupon;
                 $cart[$cartKey]['discount'] = $calculateDiscount($newSubTotal, $currentCoupon);
-            }
-            else {
+            } else {
                 $cart[$cartKey] = [
                     "id" => $ticket->id,
                     "name" => $ticket->name,
@@ -181,11 +180,19 @@ class CheckoutController extends Controller
         }
 
         if ($totalQuantitySubmitted <= 0) {
-            return back()->with('error', 'Vui lòng chọn ít nhất 1 vé!')->withInput();
+            return back()->with('error', __('messages.select_at_least_one'))->withInput();
+        }
+
+        if ($request->has('replace_cart_id') && isset($cart[$request->replace_cart_id])) {
+            unset($cart[$request->replace_cart_id]);
         }
 
         session()->put('cart', $cart);
-        return redirect()->route('cart.index')->with('success', 'Đã lưu thông tin vào giỏ hàng!');
+
+        if (!session()->has('cart_created_at')) {
+            session(['cart_created_at' => time()]);
+        }
+        return redirect()->route('cart.index')->with('success', __('messages.saved_to_cart'));
     }
 
     // 3. Thanh toán cuối cùng (Gọi từ trang Giỏ hàng) -> Tạo đơn + QR + Mail
@@ -194,7 +201,7 @@ class CheckoutController extends Controller
         $cart = session('cart');
 
         if (!$cart)
-            return redirect()->route('ticket.shop')->with('error', 'Giỏ hàng trống!');
+            return redirect()->route('ticket.shop')->with('error', __('messages.cart_empty'));
 
         DB::beginTransaction();
         try {
@@ -231,7 +238,7 @@ class CheckoutController extends Controller
             $user = Auth::user();
 
             $slotId = $firstItem['slot_id'] ?? null;
-            $slot = $slotId ?TimeSlot::find($slotId) : null;
+            $slot = $slotId ? TimeSlot::find($slotId) : null;
 
             // Tính tổng số lượng vé trong đơn
             $totalQty = array_sum(array_column($cart, 'quantity'));
@@ -240,7 +247,7 @@ class CheckoutController extends Controller
                 $slot = TimeSlot::lockForUpdate()->find($slotId);
                 if (!$slot || !$slot->isBookable($totalQty)) {
                     DB::rollBack();
-                    return back()->with('error', 'Khung giờ vừa hết chỗ! Vui lòng chọn giờ khác.');
+                    return back()->with('error', __('messages.slot_full'));
                 }
             }
 
@@ -268,26 +275,26 @@ class CheckoutController extends Controller
                 $freshUser = \App\Models\User::lockForUpdate()->find(Auth::id());
                 if (!$freshUser || $freshUser->balance < $finalTotal) {
                     DB::rollBack();
-                    return back()->with('error', 'Số dư ví không đủ! Vui lòng nạp thêm tiền.');
+                    return back()->with('error', __('messages.insufficient_balance'));
                 }
             }
 
             $order = Order::create([
-                'user_id'         => Auth::id(),
-                'customer_name'   => $info['customer_name']    ?? ($user->name    ?? 'Khách'),
-                'customer_phone'  => $info['customer_phone']   ?? ($user->phone   ?? ''),
-                'customer_email'  => $info['customer_email']   ?? ($user->email   ?? ''),
-                'shipping_address'=> $info['shipping_address'] ?? ($user->address ?? 'Tại quầy'),
-                'total_amount'    => $finalTotal,
+                'user_id' => Auth::id(),
+                'customer_name' => $info['customer_name'] ?? ($user->name ?? __('messages.guest')),
+                'customer_phone' => $info['customer_phone'] ?? ($user->phone ?? ''),
+                'customer_email' => $info['customer_email'] ?? ($user->email ?? ''),
+                'shipping_address' => $info['shipping_address'] ?? ($user->address ?? __('messages.at_counter')),
+                'total_amount' => $finalTotal,
                 'discount_amount' => $discountAmount,
-                'coupon_code'     => $couponCodeString,
-                'payment_method'  => $paymentMethod,
-                'status'          => 'pending',
-                'note'            => $info['note'] ?? '',
-                'booking_date'    => $firstItem['booking_date'] ?? Carbon::tomorrow()->format('Y-m-d'),
-                'slot_id'         => $slotId,
-                'quantity'        => $totalQty,
-                'location_id'     => $locationId,
+                'coupon_code' => $couponCodeString,
+                'payment_method' => $paymentMethod,
+                'status' => 'pending',
+                'note' => $info['note'] ?? '',
+                'booking_date' => $firstItem['booking_date'] ?? Carbon::tomorrow()->format('Y-m-d'),
+                'slot_id' => $slotId,
+                'quantity' => $totalQty,
+                'location_id' => $locationId,
             ]);
 
 
@@ -301,14 +308,10 @@ class CheckoutController extends Controller
                     . "💰 *Tổng tiền:* " . number_format($order->total_amount) . " VNĐ\n"
                     . "💳 *Trạng thái:* " . ($order->status == 'paid' ? '✅ Đã thanh toán' : '⏳ Chờ thanh toán');
 
-                // Bắn Request lên API của Telegram
-                Http::post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
-                    'chat_id' => env('TELEGRAM_CHAT_ID'),
-                    'text' => $message,
-                    'parse_mode' => 'Markdown', // Để Telegram hiểu các dấu * là in đậm
-                ]);
+                // Bắn Request lên API của Telegram thông qua Background Job
+                SendTelegramNotification::dispatch($message);
             } catch (\Exception $e) {
-                // Nếu lỗi mạng không gửi được thì ghi log, không làm đứng web của khách
+                // Ghi log
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
             }
             // 🚀 KẾT THÚC ĐOẠN CODE GỬI TELEGRAM 🚀
@@ -323,15 +326,15 @@ class CheckoutController extends Controller
 
                 // Ghi lịch sử ví
                 \App\Models\WalletTransaction::create([
-                    'user_id'        => $freshUser->id,
-                    'type'           => 'payment',
-                    'amount'         => $finalTotal,
+                    'user_id' => $freshUser->id,
+                    'type' => 'payment',
+                    'amount' => $finalTotal,
                     'balance_before' => $balanceBefore,
-                    'balance_after'  => $balanceBefore - $finalTotal,
-                    'description'    => 'Thanh toán đơn #' . $order->id,
+                    'balance_after' => $balanceBefore - $finalTotal,
+                    'description' => 'Thanh toán đơn #' . $order->id,
                     'reference_code' => 'DH' . $order->id,
-                    'order_id'       => $order->id,
-                    'status'         => 'completed',
+                    'order_id' => $order->id,
+                    'status' => 'completed',
                 ]);
             } elseif ($paymentMethod === 'banking') {
                 // Lưu mã tham chiếu để Sepay đối chiếu
@@ -371,11 +374,9 @@ class CheckoutController extends Controller
                         ->increment('play_count', $details['quantity']);
                 }
 
-                // Cộng điểm (1.000đ = 1 điểm) và xét thăng hạng
+                // Cộng điểm và xét thăng hạng qua LoyaltyService
                 if ($user) {
-                    $pointsEarned = floor($order->total_amount / 1000);
-                    $user->increment('points', $pointsEarned);
-                    $this->updateUserTier($user);
+                    LoyaltyService::addPoints($user, $order);
                 }
 
                 // Gửi email vé điện tử
@@ -397,9 +398,9 @@ class CheckoutController extends Controller
                         ->decrement('quantity');
                 }
             }
-            
+
             // Dọn dẹp Giỏ hàng
-            session()->forget(['cart', 'coupon', 'coupon_code']);
+            session()->forget(['cart', 'coupon', 'coupon_code', 'cart_created_at']);
             DB::commit();
 
             // =============================================
@@ -414,11 +415,11 @@ class CheckoutController extends Controller
             // 1. THANH TOÁN TẠI QUẦY (COD)
             if ($paymentMethod === 'cod') {
                 if (!Auth::check()) {
-                    return redirect()->route('home')->with('success', 'Bạn đã đặt vé thành công!');
+                    return redirect()->route('home')->with('success', __('messages.booking_success'));
                 }
                 return redirect()->route('profile.index')->with([
-                    'cod_success'  => true,
-                    'order_id'     => $order->id,
+                    'cod_success' => true,
+                    'order_id' => $order->id,
                     'total_amount' => $order->total_amount,
                 ]);
             }
@@ -431,16 +432,15 @@ class CheckoutController extends Controller
             // 3. VÍ HOLOMIA → Thông báo thành công
             return redirect()->route('profile.index')->with([
                 'payment_success' => true,
-                'order_id'        => $order->id,
-                'total_amount'    => $order->total_amount,
-                'method'          => 'wallet',
-                'qr_code'         => $qr->qr_code ?? '',
+                'order_id' => $order->id,
+                'total_amount' => $order->total_amount,
+                'method' => 'wallet',
+                'qr_code' => $qr->qr_code ?? '',
             ]);
 
-        }
-        catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+            return back()->with('error', __('messages.system_error') . $e->getMessage());
         }
     }
 
@@ -452,26 +452,33 @@ class CheckoutController extends Controller
 
         // Bảo mật: chỉ khách của đơn mới xem được
         if ($order->user_id) {
-            if ($order->user_id !== Auth::id()) abort(403);
+            if ($order->user_id !== Auth::id())
+                abort(403);
         } else {
-            if (!session('guest_order_' . $order->id)) abort(403);
+            if (!session('guest_order_' . $order->id))
+                abort(403);
         }
 
-        $bankBin     = \App\Models\Setting::where('key', 'bank_bin')->value('value')     ?? '970436';
+        $bankBin = \App\Models\Setting::where('key', 'bank_bin')->value('value') ?? '970436';
         $bankAccount = \App\Models\Setting::where('key', 'bank_account')->value('value') ?? '';
-        $bankName    = \App\Models\Setting::where('key', 'bank_name')->value('value')    ?? 'Ngân hàng';
-        $bankOwner   = \App\Models\Setting::where('key', 'bank_owner')->value('value')   ?? 'HOLOMIA VR';
+        $bankName = \App\Models\Setting::where('key', 'bank_name')->value('value') ?? 'Ngân hàng';
+        $bankOwner = \App\Models\Setting::where('key', 'bank_owner')->value('value') ?? 'HOLOMIA VR';
 
         $refCode = 'DH' . $order->id;
-        $amount  = $order->total_amount;
+        $amount = $order->total_amount;
 
         $qrUrl = "https://img.vietqr.io/image/{$bankBin}-{$bankAccount}-compact2.png"
-               . "?amount={$amount}&addInfo=" . urlencode($refCode)
-               . "&accountName=" . urlencode($bankOwner);
+            . "?amount={$amount}&addInfo=" . urlencode($refCode)
+            . "&accountName=" . urlencode($bankOwner);
 
         return view('checkout.banking_payment', compact(
-            'order', 'bankName', 'bankAccount', 'bankOwner',
-            'refCode', 'amount', 'qrUrl'
+            'order',
+            'bankName',
+            'bankAccount',
+            'bankOwner',
+            'refCode',
+            'amount',
+            'qrUrl'
         ));
     }
 
@@ -482,24 +489,24 @@ class CheckoutController extends Controller
         $coupon = Coupon::where('code', $code)->first();
 
         if (!$coupon)
-            return response()->json(['status' => 'error', 'message' => 'Mã giảm giá không tồn tại!']);
+            return response()->json(['status' => 'error', 'message' => __('messages.coupon_not_found')]);
         if ($coupon->expiry_date && Carbon::now()->gt($coupon->expiry_date))
-            return response()->json(['status' => 'error', 'message' => 'Mã này đã hết hạn!']);
+            return response()->json(['status' => 'error', 'message' => __('messages.coupon_expired')]);
         if ($coupon->quantity <= 0)
-            return response()->json(['status' => 'error', 'message' => 'Mã này đã hết lượt sử dụng!']);
+            return response()->json(['status' => 'error', 'message' => __('messages.coupon_used_up')]);
 
         $discount = $coupon->type == 'percent' ? ($totalAmount * $coupon->value) / 100 : $coupon->value;
         if ($discount > $totalAmount)
             $discount = $totalAmount;
 
         session()->put('coupon', ['code' => $coupon->code, 'discount' => $discount, 'type' => $coupon->type, 'value' => $coupon->value]);
-        return response()->json(['status' => 'success', 'message' => 'Áp dụng mã thành công!', 'discount' => $discount, 'new_total' => $totalAmount - $discount]);
+        return response()->json(['status' => 'success', 'message' => __('messages.coupon_applied'), 'discount' => $discount, 'new_total' => $totalAmount - $discount]);
     }
 
     public function removeCoupon()
     {
         session()->forget('coupon');
-        return back()->with('success', 'Đã gỡ mã giảm giá thành công!');
+        return back()->with('success', __('messages.coupon_removed'));
     }
 
     public function getSlots(Request $request)
@@ -524,12 +531,12 @@ class CheckoutController extends Controller
         $slots = $query->orderBy('start_time', 'asc')
             ->get()
             ->map(function ($slot) {
-            return [
-            'id' => $slot->id,
-            'label' => Carbon::parse($slot->start_time)->format('H:i') . ' - ' . Carbon::parse($slot->end_time)->format('H:i'),
-            'available' => $slot->capacity - $slot->booked_count
-            ];
-        });
+                return [
+                    'id' => $slot->id,
+                    'label' => Carbon::parse($slot->start_time)->format('H:i') . ' - ' . Carbon::parse($slot->end_time)->format('H:i'),
+                    'available' => $slot->capacity - $slot->booked_count
+                ];
+            });
 
         return response()->json($slots);
     }
@@ -539,6 +546,15 @@ class CheckoutController extends Controller
         $order = Order::with('slot')->findOrFail($id);
         /** @var \App\Models\User $user */
         $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login')
+                ->with('error', 'Vui lòng đăng nhập để thực hiện hoàn tiền.');
+        }
+
+        if ($order->user_id !== $user->id) {
+            abort(403, 'Bạn không có quyền hoàn tiền đơn hàng này.');
+        }
 
         // 1. Kiểm tra thời gian
         $now = Carbon::now();
@@ -554,12 +570,12 @@ class CheckoutController extends Controller
         // KIỂM TRA ĐIỀU KIỆN
         // Nếu quá 24h từ lúc đặt -> Lỗi
         if ($diffCreation > 24) {
-            return back()->with('error', 'Chỉ được hoàn vé trong vòng 24h sau khi đặt!');
+            return back()->with('error', __('messages.refund_time_limit'));
         }
 
         // Nếu khoảng cách đến giờ chơi < 48h (hoặc đã quá giờ chơi) -> Lỗi
         if ($diffPlay < 48) {
-            return back()->with('error', 'Chỉ được hoàn vé trước giờ chơi ít nhất 48h!');
+            return back()->with('error', __('messages.refund_play_limit'));
         }
 
         // 2. Thực hiện hoàn tiền và Nhả slot
@@ -571,27 +587,25 @@ class CheckoutController extends Controller
 
                 // Ghi lịch sử ví cho khoản hoàn tiền
                 \App\Models\WalletTransaction::create([
-                    'user_id'        => $user->id,
-                    'type'           => 'refund',
-                    'amount'         => $order->total_amount,
+                    'user_id' => $user->id,
+                    'type' => 'refund',
+                    'amount' => $order->total_amount,
                     'balance_before' => $balanceBefore,
-                    'balance_after'  => $balanceBefore + $order->total_amount,
-                    'description'    => 'Hoàn tiền đơn #' . $order->id,
+                    'balance_after' => $balanceBefore + $order->total_amount,
+                    'description' => 'Hoàn tiền đơn #' . $order->id,
                     'reference_code' => 'HD' . $order->id,
-                    'order_id'       => $order->id,
-                    'status'         => 'completed',
+                    'order_id' => $order->id,
+                    'status' => 'completed',
                 ]);
             }
 
             //  LOGIC TRỪ ĐIỂM KHI HOÀN VÉ
-            $pointsToDeduct = floor($order->total_amount / 1000);
+            $pointsToDeduct = floor($order->total_amount / LoyaltyService::POINTS_PER_VND);
 
             // Trừ điểm nhưng không để bị âm điểm
             $user->points = max(0, $user->points - $pointsToDeduct);
+            $user->tier = LoyaltyService::calculateTier($user->points);
             $user->save();
-
-            // Xét rớt hạng (nếu điểm bị tuột khỏi mốc)
-            $this->updateUserTier($user);
             // Đổi trạng thái đơn hàng
             $order->status = 'refunded';
             $order->save();
@@ -605,11 +619,7 @@ class CheckoutController extends Controller
                     . "💰 *Tiền đã hoàn:* " . number_format($order->total_amount) . " VNĐ\n"
                     . "🔄 *Trạng thái:* Đã nhả lại Slot trống";
 
-                Http::post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
-                    'chat_id' => env('TELEGRAM_CHAT_ID'),
-                    'text' => $message,
-                    'parse_mode' => 'Markdown', 
-                ]);
+                SendTelegramNotification::dispatch($message);
             } catch (\Exception $e) {
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
             }
@@ -620,8 +630,7 @@ class CheckoutController extends Controller
                     $messageBody = 'Yêu cầu hoàn vé của bạn đã được xử lý thành công. Số tiền ' . number_format($order->total_amount) . 'đ đã được cộng lại vào Ví của bạn. Các khung giờ chơi đã được hủy bỏ.';
                     Mail::to($order->user->email)
                         ->send(new OrderStatusMail($order, $statusName, $messageBody));
-                }
-                catch (\Exception $mailErr) {
+                } catch (\Exception $mailErr) {
                     Log::warning('Lỗi gửi mail hoàn vé: ' . $mailErr->getMessage());
                 }
             }
@@ -641,7 +650,7 @@ class CheckoutController extends Controller
             }
         });
 
-        return redirect()->route('profile.index')->with('success', 'Hoàn vé thành công! Tiền đã được cộng vào Ví của bạn.');
+        return redirect()->route('profile.index')->with('success', __('messages.refund_success'));
     }
     // HÀM TỰ ĐỘNG CẬP NHẬT HẠNG THÀNH VIÊN THEO MỐC MỚI
     public function updateUserTier($user)
@@ -652,14 +661,11 @@ class CheckoutController extends Controller
         // Xét từ cao xuống thấp
         if ($points >= 8000) {
             $newTier = 'VIP';
-        }
-        elseif ($points >= 5000) {
+        } elseif ($points >= 5000) {
             $newTier = 'Kim Cương';
-        }
-        elseif ($points >= 3000) {
+        } elseif ($points >= 3000) {
             $newTier = 'Vàng';
-        }
-        elseif ($points >= 1500) {
+        } elseif ($points >= 1500) {
             $newTier = 'Bạc';
         }
 
@@ -668,5 +674,34 @@ class CheckoutController extends Controller
             $user->tier = $newTier;
             $user->save();
         }
+    }
+
+    // Các hàm cho Route API & Thành công
+    public function checkOrderStatus($id)
+    {
+        $order = Order::find($id);
+        if (!$order || $order->user_id !== auth()->id()) {
+            return response()->json(['status' => 'not_found']);
+        }
+        return response()->json(['status' => $order->status]);
+    }
+
+    public function orderStatus($id)
+    {
+        $order = Order::find($id);
+        if (!$order) {
+            return response()->json(['status' => 'not_found']);
+        }
+        $isOwner = auth()->check() && $order->user_id === auth()->id();
+        $isGuest = !$order->user_id && session('guest_order_' . $id);
+        if (!$isOwner && !$isGuest) {
+            return response()->json(['status' => 'not_found']);
+        }
+        return response()->json(['status' => $order->status]);
+    }
+
+    public function bookingSuccess()
+    {
+        return view('checkout.success');
     }
 }

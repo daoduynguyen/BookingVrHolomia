@@ -10,7 +10,7 @@ use App\Models\BookingDetail;
 use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 
 class TicketController extends Controller
@@ -20,11 +20,13 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     public function index()
     {
-        $tickets = Ticket::with(['category', 'locations'])
-            ->whereIn('status', ['active', 'maintenance'])
-            ->orderBy('play_count', 'desc')
-            ->take(6)
-            ->get();
+        $tickets = Cache::remember('home_tickets', now()->addMinutes(10), function () {
+            return Ticket::with(['category', 'locations'])
+                ->whereIn('status', ['active', 'maintenance'])
+                ->orderBy('play_count', 'desc')
+                ->take(6)
+                ->get();
+        });
 
         return view('home', compact('tickets'));
     }
@@ -32,7 +34,8 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     // 2. TRANG CỬA HÀNG: Hiển thị TẤT CẢ (Có phân trang)
     // ---------------------------------------------------------
-    public function shop(Request $request)    {
+    public function shop(Request $request)
+    {
         $query = Ticket::with(['category', 'locations'])
             ->whereIn('status', ['active', 'maintenance']);
 
@@ -74,7 +77,8 @@ class TicketController extends Controller
             ->paginate(9)
             ->appends($request->query());
 
-        return view('shop', compact('tickets', 'locationName'));    }
+        return view('shop', compact('tickets', 'locationName'));
+    }
 
 
     // ---------------------------------------------------------
@@ -82,15 +86,31 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     public function show($id)
     {
-        $ticket = Ticket::with(['category', 'locations'])->findOrFail($id);
+        $ticket = Ticket::with(['category', 'locations', 'reviews.user'])->findOrFail($id);
 
-        $related = Ticket::where('category_id', $ticket->category_id)
-            ->where('id', '!=', $id)
-            ->whereIn('status', ['active', 'maintenance'])
-            ->limit(3)
+        // Tăng lượt xem
+        $ticket->increment('play_count');
+
+        // Gợi ý vé liên quan (cùng danh mục, khác ID, sắp theo đánh giá)
+        $relatedTickets = Ticket::where('category_id', $ticket->category_id)
+            ->where('id', '!=', $ticket->id)
+            ->where('status', 'active')
+            ->orderBy('avg_rating', 'desc')
+            ->take(4)
             ->get();
 
-        return view('detail', compact('ticket', 'related'));
+        // Nếu không đủ 4 vé cùng category, lấy thêm vé phổ biến khác
+        if ($relatedTickets->count() < 4) {
+            $moreTickets = Ticket::where('id', '!=', $ticket->id)
+                ->whereNotIn('id', $relatedTickets->pluck('id'))
+                ->where('status', 'active')
+                ->orderBy('play_count', 'desc')
+                ->take(4 - $relatedTickets->count())
+                ->get();
+            $relatedTickets = $relatedTickets->merge($moreTickets);
+        }
+
+        return view('detail', compact('ticket', 'relatedTickets'));
     }
 
     // ---------------------------------------------------------
@@ -177,8 +197,7 @@ class TicketController extends Controller
             DB::commit();
             return redirect()->route('home')->with('success', 'Đặt vé thành công! Mã đơn: #' . $booking->id . ' - Tổng tiền: ' . number_format($totalAmount) . 'đ');
 
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
         }

@@ -72,26 +72,26 @@
 
     /* Dropdown */
     .holomia-navbar .dropdown-menu {
-        background: #0f2252;
-        border: 1px solid rgba(56,189,248,0.2);
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(13,27,62,0.5);
-        padding: 0.5rem;
-        margin-top: 6px;
+        background: #0f2252 !important;
+        border: 1px solid rgba(56,189,248,0.2) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(13,27,62,0.5) !important;
+        padding: 0.5rem !important;
+        margin-top: 6px !important;
     }
 
     .holomia-navbar .dropdown-item {
-        color: rgba(255,255,255,0.8);
-        border-radius: 8px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        padding: 0.6rem 1rem;
-        transition: all 0.2s;
+        color: rgba(255,255,255,0.8) !important;
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        padding: 0.6rem 1rem !important;
+        transition: all 0.2s !important;
     }
 
     .holomia-navbar .dropdown-item:hover {
-        background: rgba(56,189,248,0.15);
-        color: #38bdf8;
+        background: rgba(56,189,248,0.15) !important;
+        color: #38bdf8 !important;
         transform: translateX(4px);
     }
 
@@ -231,7 +231,12 @@
                     <a class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}"
                         href="{{ route('contact') }}">{{ __('navbar.contact') }}</a>
                 </li>
-
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('location.all') ? 'active' : '' }}" href="{{ route('location.all') }}">
+        <i class="bi bi-geo-alt"></i> Cơ sở
+    </a>
+</li>
+ 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {{ request()->routeIs('ticket.*') ? 'active' : '' }}"
                         href="{{ route('ticket.shop') }}" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
@@ -243,37 +248,39 @@
                                 <i class="bi bi-grid-fill me-2 text-info"></i> {{ __('navbar.view_all') }}
                             </a>
                         </li>
+                        @if(!session('selected_location') || session('selected_location') == 'all')
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <h6 class="dropdown-header">{{ __('navbar.choose_branch') }}</h6>
+                            </li>
+                            @if(isset($globalLocations) && count($globalLocations) > 0)
+                                @foreach($globalLocations as $loc)
+                                    <li>
+                                    <a class="dropdown-item {{ (isset($selectedLocationId) && $selectedLocationId == $loc->id) ? 'text-info' : '' }}"
+                                            href="#"
+                                            onclick="event.preventDefault(); document.getElementById('loc-form-{{ $loc->id }}').submit();">
+                                            <i class="bi bi-geo-alt-fill me-2" style="color:#f87171;"></i>
+                                            {{ $loc->name }}
+                                            @if(isset($selectedLocationId) && $selectedLocationId == $loc->id)
+                                                <i class="bi bi-check-circle-fill ms-1" style="font-size:11px;"></i>
+                                            @endif
+                                        </a>
+                                        <form id="loc-form-{{ $loc->id }}" action="{{ route('location.store') }}" method="POST" class="d-none">
+                                            @csrf
+                                            <input type="hidden" name="location" value="{{ $loc->id }}">
+                                        </form>
+                                    </li>
+                                @endforeach
+                            @else
+                                <li><span class="dropdown-item text-muted">{{ __('navbar.updating') }}</span></li>
+                            @endif
+                        @endif
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <h6 class="dropdown-header">{{ __('navbar.choose_branch') }}</h6>
+                            <a class="dropdown-item" href="{{ route('location.reset') }}">
+                                <i class="bi bi-arrow-repeat me-2" style="color:#38bdf8;"></i> Đổi cơ sở khác
+                            </a>
                         </li>
-                        @if(isset($globalLocations) && count($globalLocations) > 0)
-    @foreach($globalLocations as $loc)
-        <li>
-           <a class="dropdown-item {{ (isset($selectedLocationId) && $selectedLocationId == $loc->id) ? 'text-info' : '' }}"
-                href="#"
-                onclick="event.preventDefault(); document.getElementById('loc-form-{{ $loc->id }}').submit();">
-                <i class="bi bi-geo-alt-fill me-2" style="color:#f87171;"></i>
-                {{ $loc->name }}
-                @if(isset($selectedLocationId) && $selectedLocationId == $loc->id)
-                    <i class="bi bi-check-circle-fill ms-1" style="font-size:11px;"></i>
-                @endif
-            </a>
-            <form id="loc-form-{{ $loc->id }}" action="{{ route('location.store') }}" method="POST" class="d-none">
-                @csrf
-                <input type="hidden" name="location" value="{{ $loc->id }}">
-            </form>
-        </li>
-    @endforeach
-@else
-    <li><span class="dropdown-item text-muted">{{ __('navbar.updating') }}</span></li>
-@endif
-<li><hr class="dropdown-divider"></li>
-<li>
-    <a class="dropdown-item" href="{{ route('location.reset') }}">
-        <i class="bi bi-arrow-repeat me-2" style="color:#38bdf8;"></i> Đổi cơ sở khác
-    </a>
-</li>
                     </ul>
                 </li>
             </ul>
@@ -347,13 +354,13 @@
     {{-- Server-side render settings từ DB để luôn đồng bộ --}}
     @php $ui = Auth::user()->ui_settings ?? []; @endphp
     const serverSettings = {
-        theme:        '{{ $ui["theme"]        ?? "light" }}',
-        font:         '{{ $ui["font"]          ?? "Be Vietnam Pro" }}',
+        theme:        '{{ $ui["theme"] ?? "light" }}',
+        font:         '{{ $ui["font"] ?? "Be Vietnam Pro" }}',
         fontSize:     '{{ is_numeric($ui["font_size"] ?? "") ? ($ui["font_size"] ?? 15) : 15 }}',
         color:        '{{ $ui["primary_color"] ?? "#1e88e5" }}',
         highContrast: {{ ($ui["high_contrast"] ?? false) ? 'true' : 'false' }},
         reduceMotion: {{ ($ui["reduce_motion"] ?? false) ? 'true' : 'false' }},
-        largeText:    {{ ($ui["large_text"]    ?? false) ? 'true' : 'false' }},
+        largeText:    {{ ($ui["large_text"] ?? false) ? 'true' : 'false' }},
     };
     // Đồng bộ localStorage với DB
     localStorage.setItem('holomia_ui', JSON.stringify(serverSettings));

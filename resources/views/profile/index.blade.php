@@ -220,9 +220,9 @@
                             <i class="bi bi-heart"></i> {{ __('profile.wishlist') }}
                         </button>
 
-                        <a href="{{ route('settings.index') }}?tab=security"
+                        <a href="{{ route('settings.index') }}"
                            class="nav-link" style="text-decoration:none">
-                            <i class="bi bi-shield-lock"></i> {{ __('profile.change_password') }}
+                            <i class="bi bi-gear"></i> {{ __('profile.settings') ?? 'Cài đặt' }}
                         </a>
 
                         <hr style="border-color: rgba(255,255,255,0.12); margin: 4px 8px;">
@@ -599,27 +599,32 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                                                 {{ number_format($item->price) }}đ
                                                             </p>
 
-                                                            <div class="mt-auto d-flex gap-2">
-                                                                {{-- Nút Mua ngay --}}
+                                                            <div class="mt-auto d-flex gap-2 align-items-center">
                                                                 {{-- Kiểm tra trạng thái bảo trì --}}
                                                                 @if($item->status == 'maintenance')
-                                                                    <button class="btn btn-sm btn-secondary flex-grow-1 fw-bold"
-                                                                        disabled>
+                                                                    <button class="btn btn-sm btn-secondary flex-grow-1 fw-bold text-nowrap" disabled>
                                                                         <i class="bi bi-cone-striped"></i> {{ __('profile.maintenance') }}
                                                                     </button>
                                                                 @else
-                                                                    {{-- Trỏ vào trang Nhập thông tin --}}
+                                                                    {{-- Nút Đặt vé --}}
                                                                     <a href="{{ route('booking.form', $item->id) }}"
-                                                                        class="btn btn-sm btn-primary flex-grow-1 fw-bold">
-                                                                        <i class="bi bi-ticket-perforated"></i> {{ __('profile.book_ticket') }}
+                                                                        class="btn btn-sm btn-primary flex-grow-1 fw-bold text-nowrap shadow-sm" style="min-width: 80px;">
+                                                                        {{ __('profile.book_ticket') }}
+                                                                    </a>
+                                                                    
+                                                                    {{-- Nút Thêm vào giỏ hàng --}}
+                                                                    <a href="{{ route('cart.add', $item->id) }}"
+                                                                        class="btn btn-sm btn-outline-primary border-primary-subtle d-flex align-items-center justify-content-center shadow-sm"
+                                                                        title="Thêm vào giỏ hàng" style="width: 32px; height: 32px; flex-shrink: 0;">
+                                                                        <i class="bi bi-cart-plus fs-6"></i>
                                                                     </a>
                                                                 @endif
 
                                                                 {{-- Nút Xóa tim (AJAX) --}}
                                                                 <button
-                                                                    class="btn btn-sm btn-outline-danger btn-toggle-wishlist"
-                                                                    data-id="{{ $item->id }}">
-                                                                    <i class="bi bi-trash"></i>
+                                                                    class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center btn-toggle-wishlist shadow-sm"
+                                                                    data-id="{{ $item->id }}" style="width: 32px; height: 32px; flex-shrink: 0;">
+                                                                    <i class="bi bi-trash fs-6"></i>
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -632,17 +637,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                             @endif
                         </div>
 
-                        {{-- 5. TAB BẢO MẬT — chuyển sang Settings --}}
-                        <div class="tab-pane fade" id="v-pills-password" role="tabpanel">
-                            <div class="text-center py-5">
-                                <i class="bi bi-gear-fill display-4 text-primary opacity-75 mb-3 d-block"></i>
-                                <h5 class="fw-bold">Đổi mật khẩu đã chuyển vào Cài đặt</h5>
-                                <p class="text-muted mb-4">Để bảo mật hơn, tính năng đổi mật khẩu và các tùy chọn bảo mật khác đã được gộp vào trang Cài đặt.</p>
-                                <a href="{{ route('settings.index') }}?tab=security" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">
-                                    <i class="bi bi-shield-lock me-2"></i> Đến trang Cài đặt Bảo mật
-                                </a>
-                            </div>
-                        </div>
+
 
                     </div>
                 </div>

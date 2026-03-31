@@ -121,10 +121,15 @@
                             @if($ticket->status == 'maintenance')
                                 <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm" disabled>{{ __('shop.maintenance') }}</button>
                             @else
-                                <a href="{{ route('ticket.show', $ticket->id) }}"
-                                    class="btn btn-primary w-100 fw-bold py-2 text-uppercase shadow-sm">
-                                    {{ __('shop.book_now') }}
-                                </a>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('ticket.show', $ticket->id) }}"
+                                        class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
+                                        {{ __('shop.book_now') }}
+                                    </a>
+                                    <a href="{{ route('cart.add', $ticket->id) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="{{ __('shop.add_to_cart') ?? 'Thêm vào giỏ' }}">
+                                        <i class="bi bi-cart-plus fs-5"></i>
+                                    </a>
+                                </div>
                             @endif
                         </div>
                     </div>

@@ -2,7 +2,17 @@
 
 @section('admin_content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">Chỉnh Sửa Cơ Sở</h2>
+    <div>
+        <h2 class="fw-bold mb-0">Chỉnh Sửa Cơ Sở</h2>
+        @if($location->slug)
+        <small class="text-muted">
+            Landing page:
+            <a href="{{ route('location.landing', $location->slug) }}" target="_blank" class="text-primary">
+                /co-so/{{ $location->slug }} <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+        </small>
+        @endif
+    </div>
     <a href="{{ route('admin.locations.index') }}" class="btn btn-secondary d-flex align-items-center gap-2">
         <i class="bi bi-arrow-left"></i> Quay Lại
     </a>
@@ -12,25 +22,113 @@
     <form action="{{ route('admin.locations.update', $location->id) }}" method="POST">
         @csrf
         @method('PUT')
-        
-        <div class="mb-3">
-            <label class="form-label fw-bold">Tên Cơ Sở</label>
-            <input type="text" name="name" class="form-control" value="{{ $location->name }}" required placeholder="Nhập tên cơ sở...">
+
+        {{-- ── THÔNG TIN CƠ BẢN ── --}}
+        <h6 class="fw-bold text-primary text-uppercase mb-3" style="letter-spacing:1px;">
+            <i class="bi bi-building me-2"></i>Thông tin cơ bản
+        </h6>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Tên Cơ Sở <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                       value="{{ old('name', $location->name) }}" required>
+                @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">
+                    Slug (URL)
+                    <span class="text-muted fw-normal" style="font-size:.8rem;">– tự tạo từ tên nếu để trống</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text text-muted">/co-so/</span>
+                    <input type="text" name="slug" class="form-control @error('slug') is-invalid @enderror"
+                           value="{{ old('slug', $location->slug) }}">
+                </div>
+                @error('slug') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-8">
+                <label class="form-label fw-bold">Địa Chỉ <span class="text-danger">*</span></label>
+                <input type="text" name="address" class="form-control @error('address') is-invalid @enderror"
+                       value="{{ old('address', $location->address) }}" required>
+                @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Hotline <span class="text-danger">*</span></label>
+                <input type="text" name="hotline" class="form-control @error('hotline') is-invalid @enderror"
+                       value="{{ old('hotline', $location->hotline) }}" required>
+                @error('hotline') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Giờ Mở Cửa</label>
+                <input type="text" name="opening_hours" class="form-control"
+                       value="{{ old('opening_hours', $location->opening_hours) }}"
+                       placeholder="09:00 – 22:00 mỗi ngày">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Facebook Fanpage</label>
+                <input type="url" name="facebook_url" class="form-control"
+                       value="{{ old('facebook_url', $location->facebook_url) }}"
+                       placeholder="https://facebook.com/holomia.hanoi">
+            </div>
         </div>
-        
-        <div class="mb-3">
-            <label class="form-label fw-bold">Địa Chỉ</label>
-            <input type="text" name="address" class="form-control" value="{{ $location->address }}" required placeholder="Nhập địa chỉ cơ sở...">
+
+        {{-- ── LANDING PAGE CONTENT ── --}}
+        <hr class="my-4">
+        <h6 class="fw-bold text-primary text-uppercase mb-3" style="letter-spacing:1px;">
+            <i class="bi bi-images me-2"></i>Nội dung Landing Page
+        </h6>
+
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <label class="form-label fw-bold">Mô Tả Cơ Sở</label>
+                <textarea name="description" class="form-control" rows="3"
+                          placeholder="Giới thiệu ngắn về cơ sở...">{{ old('description', $location->description) }}</textarea>
+                <div class="form-text">Tối đa 1000 ký tự.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-bold">URL Ảnh Banner</label>
+                <input type="url" name="banner_image" class="form-control @error('banner_image') is-invalid @enderror"
+                       value="{{ old('banner_image', $location->banner_image) }}"
+                       placeholder="https://example.com/banner.jpg">
+                @error('banner_image') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                @if($location->banner_image)
+                    <div class="mt-2">
+                        <img src="{{ $location->banner_image }}" class="rounded"
+                             style="max-height:80px; object-fit:cover; max-width:300px; border:1px solid #e5e7eb;">
+                        <div class="form-text">Banner hiện tại</div>
+                    </div>
+                @endif
+                <div class="form-text">Kích thước khuyến nghị: 1920×600px.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-bold">Google Maps Embed</label>
+                <textarea name="maps_url" class="form-control" rows="2"
+                          placeholder='<iframe src="https://maps.google.com/..." ...></iframe>'>{{ old('maps_url', $location->maps_url) }}</textarea>
+                <div class="form-text">Dán toàn bộ thẻ &lt;iframe&gt; từ Google Maps.</div>
+            </div>
         </div>
-        
-        <div class="mb-4">
-            <label class="form-label fw-bold">Hotline</label>
-            <input type="text" name="hotline" class="form-control" value="{{ $location->hotline }}" required placeholder="Nhập đường dây nóng...">
+
+        {{-- ── TRẠNG THÁI ── --}}
+        <hr class="my-4">
+        <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                   value="1" {{ old('is_active', $location->is_active) ? 'checked' : '' }}>
+            <label class="form-check-label fw-bold" for="isActive">
+                Hiển thị landing page cơ sở này (công khai)
+            </label>
         </div>
-        
-        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="bi bi-save"></i> Cập Nhật Cơ Sở
-        </button>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-save"></i> Cập Nhật
+            </button>
+            <a href="{{ route('location.landing', $location->slug ?: 'preview') }}"
+               target="_blank" class="btn btn-outline-info d-flex align-items-center gap-2">
+                <i class="bi bi-eye"></i> Xem Landing Page
+            </a>
+            <a href="{{ route('admin.locations.index') }}" class="btn btn-light">Huỷ</a>
+        </div>
     </form>
 </div>
 @endsection

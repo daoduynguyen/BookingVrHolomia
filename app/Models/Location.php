@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Location extends Model
 {
@@ -11,15 +12,56 @@ class Location extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'address',
-        'hotline'
+        'hotline',
+        'description',
+        'banner_image',
+        'opening_hours',
+        'maps_url',
+        'facebook_url',
+        'is_active',
     ];
 
-    // Quan hệ: 1 Cơ sở có nhiều Vé/Game (nhiều nhiều)
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    // -------------------------------------------------------
+    // Boot: tự tạo slug từ name nếu chưa có
+    // -------------------------------------------------------
+    protected static function booted(): void
+    {
+        static::saving(function (Location $location) {
+            if (empty($location->slug)) {
+                $location->slug = Str::slug($location->name);
+            }
+        });
+    }
+
+    // -------------------------------------------------------
+    // Relationships
+    // -------------------------------------------------------
+
+    /** Một cơ sở có nhiều Ticket (nhiều-nhiều) */
     public function tickets()
     {
         return $this->belongsToMany(Ticket::class);
     }
 
-    
+    // -------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------
+
+    /** URL landing page của cơ sở */
+    public function landingUrl(): string
+    {
+        return route('location.landing', $this->slug);
+    }
+
+    /** Scope: chỉ lấy cơ sở đang hoạt động */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Order;    
-use App\Models\Ticket;   
-use App\Models\User;     
-use App\Models\Contact;  
+use App\Models\Order;
+use App\Models\Ticket;
+use App\Models\User;
+use App\Models\AdminLog;
+use App\Models\Contact;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ReplyContactMail;
+use App\Exports\OrdersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
@@ -39,9 +42,9 @@ class AdminController extends Controller
         $pendingOrders = (clone $ordersQuery)->where('status', 'pending')->count();
         $totalTickets = (clone $ticketsQuery)->count();
         $totalUsers = $usersQuery->count();
-        $completedOrders  = (clone $ordersQuery)->where('status', 'completed')->count();
-        $cancelledOrders  = (clone $ordersQuery)->where('status', 'cancelled')->count();
-        $refundedOrders   = (clone $ordersQuery)->where('status', 'refunded')->count();
+        $completedOrders = (clone $ordersQuery)->where('status', 'completed')->count();
+        $cancelledOrders = (clone $ordersQuery)->where('status', 'cancelled')->count();
+        $refundedOrders = (clone $ordersQuery)->where('status', 'refunded')->count();
 
         // 2. DỮ LIỆU BIỂU ĐỒ CỘT & ĐƯỜNG (7 NGÀY QUA)
         $chartStats = (clone $ordersQuery)->where('status', 'paid')
@@ -72,7 +75,7 @@ class AdminController extends Controller
 
         //  4. BẢNG XẾP HẠNG DOANH THU THEO CƠ SỞ (CHỈ SUPER ADMIN CÓ)
         $revenueByLocation = collect(); // Mặc định là rỗng (để Admin cơ sở không bị lỗi biến)
-        
+
         if ($user && $user->role === 'super_admin') {
             $revenueByLocation = Order::where('status', 'paid')
                 ->join('locations', 'orders.location_id', '=', 'locations.id')
@@ -83,10 +86,18 @@ class AdminController extends Controller
         }
 
         return view('admin.dashboard', compact(
-            'totalRevenue', 'pendingOrders', 'totalTickets', 'totalUsers',
-            'completedOrders', 'cancelledOrders', 'refundedOrders',
-            'revenueLabels', 'revenueData', 'pieData',
-            'revenueByLocation','orderCountData'
+            'totalRevenue',
+            'pendingOrders',
+            'totalTickets',
+            'totalUsers',
+            'completedOrders',
+            'cancelledOrders',
+            'refundedOrders',
+            'revenueLabels',
+            'revenueData',
+            'pieData',
+            'revenueByLocation',
+            'orderCountData'
         ));
     }
 
@@ -125,7 +136,7 @@ class AdminController extends Controller
     public function manageOrders()
     {
         $user = \Illuminate\Support\Facades\Auth::user();
-        
+
         // Khởi tạo Query lấy danh sách đơn hàng
         $query = Order::with('user');
 
@@ -138,14 +149,24 @@ class AdminController extends Controller
         $orders = $query->orderBy('created_at', 'desc')->get();
         return view('admin.orders.index', compact('orders'));
     }
-   
+
+    // Xuất Excel đơn hàng
+    public function exportOrders(Request $request)
+    {
+        $filename = 'orders_' . now()->format('Ymd_His') . '.xlsx';
+        return Excel::download(
+            new OrdersExport($request->input('start_date'), $request->input('end_date'), $request->input('location_id')),
+            $filename
+        );
+    }
+
     //Quản lý người dùng
     public function manageUsers()
     {
         // Lấy tất cả user trừ chính Admin đang đăng nhập
         $users = User::where('id', '!=', auth()->id())->get();
         // Lấy danh sách cơ sở để hiện trong form Phân quyền
-        $locations = \App\Models\Location::all(); 
+        $locations = \App\Models\Location::all();
 
         return view('admin.users.index', compact('users', 'locations'));
     }
@@ -154,26 +175,20 @@ class AdminController extends Controller
     public function deleteUser($id)
     {
         $user = User::findOrFail($id);
+        AdminLog::record('delete_user', $user, ['name' => $user->name, 'email' => $user->email]);
         $user->delete();
-
-        return back()->with('success', 'Đã xóa tài khoản người dùng thành công!');
+        return back()->with('success', 'Đã xóa người dùng.');
     }
 
+    // Khi ban user
     public function toggleBan($id)
     {
         $user = User::findOrFail($id);
-
-        // Không cho chặn chính mình hoặc super_admin
-        if ($user->id === auth()->id() || $user->role === 'super_admin') {
-            return back()->with('error', 'Không thể chặn tài khoản này!');
-        }
-
         $user->is_banned = !$user->is_banned;
         $user->save();
-
-        $msg = $user->is_banned ? 'Đã chặn tài khoản ' . $user->name : 'Đã mở khóa tài khoản ' . $user->name;
-        return back()->with('success', $msg);
-    } 
+        AdminLog::record($user->is_banned ? 'ban_user' : 'unban_user', $user, ['name' => $user->name]);
+        return back()->with('success', $user->is_banned ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.');
+    }
 
     //Tin nhắn liên hệ 
     public function listContacts()
@@ -193,7 +208,7 @@ class AdminController extends Controller
 
         return back()->with('success', 'Đã xóa tin nhắn liên hệ thành công!');
     }
-   
+
     //Phản hồi 
     public function replyContact(Request $request, $id)
     {
@@ -213,7 +228,7 @@ class AdminController extends Controller
     public function updateUserRole(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         // Cập nhật Role
         $user->role = $request->role;
 
@@ -240,17 +255,17 @@ class AdminController extends Controller
     public function storeUser(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
-            'role'     => 'required'
+            'role' => 'required'
         ]);
 
         User::create([
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'password'    => \Illuminate\Support\Facades\Hash::make($request->password),
-            'role'        => $request->role,
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => $request->role,
             'location_id' => $request->role === 'branch_admin' ? $request->location_id : null,
         ]);
 

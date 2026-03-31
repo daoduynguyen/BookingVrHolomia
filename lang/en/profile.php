@@ -14,6 +14,7 @@ return [
     'my_orders'         => 'My Orders',
     'wishlist'          => 'Wishlist',
     'change_password'   => 'Change Password',
+    'settings'          => 'Settings',
     'logout'            => 'Logout',
     'member_tier'       => 'Member Tier',
     'points'            => 'Points',

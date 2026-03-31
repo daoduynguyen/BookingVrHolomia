@@ -404,67 +404,135 @@
                                 <i class="bi bi-shield-lock-fill me-2"></i> Bảo mật
                             </h4>
 
-                            {{-- Đổi mật khẩu --}}
-                            <h6 class="fw-bold mb-3">Đổi mật khẩu</h6>
+                            {{-- Mật khẩu và Xác thực --}}
+                            <div class="card border-0 shadow-sm mb-4" style="border-radius:14px; background:var(--bg-subtle);">
+                                <div class="card-body p-4 p-md-5">
+                                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                                        <div>
+                                            <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-key-fill text-warning me-2"></i> Đổi mật khẩu</h5>
+                                            <p class="text-muted small mb-0">Thay đổi mật khẩu đăng nhập để bảo vệ tài khoản tốt hơn.</p>
+                                        </div>
+                                        @if(Auth::user()->provider_name)
+                                            <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill shadow-sm border border-danger border-opacity-25">
+                                                <i class="bi bi-google me-1"></i> Đăng nhập Google
+                                            </span>
+                                        @endif
+                                    </div>
 
-                            @if(Auth::user()->provider_name)
-                                {{-- User đăng nhập bằng Google → không có mật khẩu --}}
-                                <div class="alert alert-info border-0 rounded-3 d-flex align-items-center mb-4" style="background:rgba(30,136,229,0.1); color:var(--text-body);">
-                                    <i class="bi bi-info-circle-fill me-2 text-primary fs-5"></i>
-                                    <div>
-                                        Bạn đang dùng tài khoản <strong>{{ ucfirst(Auth::user()->provider_name) }}</strong>. Việc đổi mật khẩu không áp dụng với phương thức này.
+                                    @if(Auth::user()->provider_name)
+                                        <div class="alert alert-warning border border-warning border-opacity-50 rounded-3 d-flex align-items-center p-4">
+                                            <i class="bi bi-exclamation-triangle-fill fs-1 text-warning me-4"></i>
+                                            <div>
+                                                <h6 class="fw-bold mb-1">Tài khoản liên kết Mạng Xã Hội</h6>
+                                                <p class="mb-0 text-dark small">Bạn đang đăng nhập bằng nền tảng <b>{{ ucfirst(Auth::user()->provider_name) }}</b>. 
+                                                Hệ thống không quản lý mật khẩu của phương thức này. Để đặt mật khẩu riêng cho Holomia, bạn cần Hủy liên kết ở tab <b>Tài khoản</b> ở phía dưới.</p>
+                                            </div>
+                                        </div>
+                                    @else
+                                        @if($errors->has('current_password'))
+                                            <div class="alert alert-danger border-0 rounded-3 mb-4 d-flex align-items-center p-3 shadow-sm">
+                                                <i class="bi bi-shield-exclamation fs-3 me-3 text-danger"></i> 
+                                                <div>
+                                                    <strong>Lỗi xác thực:</strong><br/>
+                                                    {{ $errors->first('current_password') }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <form action="{{ route('settings.password') }}" method="POST">
+                                            @csrf
+                                            <div class="row g-4">
+                                                <div class="col-12">
+                                                    <label class="form-label text-uppercase small fw-bold text-muted">Mật khẩu hiện tại</label>
+                                                    <div class="input-group input-group-lg shadow-sm">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                                                        <input type="password" name="current_password" class="form-control border-start-0 ps-0 @error('current_password') is-invalid @enderror" placeholder="Nhập mật khẩu cũ của bạn">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-uppercase small fw-bold text-muted">Mật khẩu mới</label>
+                                                    <div class="input-group input-group-lg shadow-sm">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-key text-primary"></i></span>
+                                                        <input type="password" name="new_password" class="form-control border-start-0 ps-0 @error('new_password') is-invalid @enderror" placeholder="Tối thiểu 6 ký tự">
+                                                    </div>
+                                                    @error('new_password')<small class="text-danger mt-1 d-block">{{ $message }}</small>@enderror
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label text-uppercase small fw-bold text-muted">Xác nhận mật khẩu mới</label>
+                                                    <div class="input-group input-group-lg shadow-sm">
+                                                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-check2-all text-success"></i></span>
+                                                        <input type="password" name="new_password_confirmation" class="form-control border-start-0 ps-0" placeholder="Nhập lại mật khẩu mới">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4 pt-3 border-top text-end">
+                                                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow">
+                                                    <i class="bi bi-check-circle-fill me-2"></i> Lưu mật khẩu mới
+                                                </button>
+                                            </div>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Quản lý Phiên Đăng Nhập (Sessions) --}}
+                            <div class="card border-0 shadow-sm mb-4" style="border-radius:14px; background:var(--bg-subtle);">
+                                <div class="card-body p-4 p-md-5">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                                        <div>
+                                            <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-pc-display-horizontal text-primary me-2"></i> Lịch sử và Thiết bị</h5>
+                                            <p class="text-muted small mb-0">Kiểm tra các thiết bị đang truy cập vào tài khoản của bạn.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Thiết bị giả lập hiện tại --}}
+                                    <div class="d-flex align-items-center mb-4 p-3 rounded-4 shadow-sm" style="background:#ffffff; border:1px solid var(--border);">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <i class="bi bi-laptop fs-4"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0 fw-bold text-dark">Ứng dụng Web / Máy tính</h6>
+                                            <small class="text-success fw-bold d-flex align-items-center gap-1 mt-1">
+                                                <span class="spinner-grow spinner-grow-sm text-success" style="width: 10px; height: 10px;"></span> 
+                                                Thiết bị hiện tại đang dùng
+                                            </small>
+                                        </div>
+                                        <div class="text-end d-none d-sm-block">
+                                            <small class="text-muted d-block">IP: {{ request()->ip() }}</small>
+                                            <small class="text-muted border border-secondary rounded-1 px-1" style="font-size:0.7rem;">Chỉ bạn thấy</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center mb-4 p-3 rounded-4 shadow-sm opacity-75" style="background:#ffffff; border:1px solid var(--border);">
+                                        <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <i class="bi bi-phone fs-4"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0 fw-bold text-dark text-decoration-line-through">Thiết bị di động không rõ</h6>
+                                            <small class="text-muted fw-bold mt-1 d-block"><i class="bi bi-clock-history"></i> Đăng nhập lần cuối: 2 ngày trước</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-danger border border-danger border-opacity-25 rounded-3 mt-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="bi bi-exclamation-square-fill fs-3 text-danger me-3"></i>
+                                            <div>
+                                                <h6 class="fw-bold text-danger mb-1">Cảnh báo An Toàn</h6>
+                                                <p class="small text-danger mb-3">Nếu bạn phát hiện thiết bị lạ lạ hoặc tài khoản có nguy cơ bị xâm nhập, hãy tiến hành Đăng xuất khỏi toàn bộ các thiết bị (bao gồm thiết bị này) ngay lập tức!</p>
+                                                
+                                                <form action="{{ route('settings.logout_all') }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-danger btn-sm px-4 py-2 rounded-pill fw-bold shadow-sm"
+                                                            onclick="return confirm('Toàn bộ thiết bị (kể cả máy tính này) sẽ bị đăng xuất. Bạn cần đăng nhập lại bằng mật khẩu. Bạn có chắc chắn?')">
+                                                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất tất cả thiết bị
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            @else
-                                @if($errors->has('current_password'))
-                                    <div class="alert alert-danger border-0 rounded-3 mb-3">
-                                        <i class="bi bi-exclamation-circle me-2"></i> {{ $errors->first('current_password') }}
-                                    </div>
-                                @endif
-                                <form action="{{ route('settings.password') }}" method="POST" class="mb-5" style="max-width:480px">
-                                    @csrf
-                                    <div class="mb-3">
-                                        <label class="form-label text-uppercase small fw-bold">Mật khẩu hiện tại</label>
-                                        <input type="password" name="current_password"
-                                               class="form-control @error('current_password') is-invalid @enderror"
-                                               placeholder="••••••">
-                                        @error('current_password')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label text-uppercase small fw-bold">Mật khẩu mới</label>
-                                        <input type="password" name="new_password"
-                                               class="form-control @error('new_password') is-invalid @enderror"
-                                               placeholder="••••••">
-                                        @error('new_password')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="form-label text-uppercase small fw-bold">Xác nhận mật khẩu mới</label>
-                                        <input type="password" name="new_password_confirmation"
-                                               class="form-control"
-                                               placeholder="••••••">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold rounded-3">
-                                        <i class="bi bi-arrow-repeat me-2"></i> Cập nhật mật khẩu
-                                    </button>
-                                </form>
-                            @endif
-
-                            <hr>
-
-                            {{-- Đăng xuất tất cả thiết bị --}}
-                            <h6 class="fw-bold mb-2 mt-4">Đăng xuất tất cả thiết bị</h6>
-                            <p class="text-muted small mb-3">Nếu bạn đang đăng nhập trên thiết bị khác bị mất hoặc bị đánh cắp, hãy đăng xuất tất cả ngay.</p>
-                            <form action="{{ route('settings.logout_all') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-warning px-4 py-2 fw-bold rounded-3"
-                                    onclick="return confirm('Bạn sẽ bị đăng xuất ngay lập tức trên tất cả thiết bị. Tiếp tục?')">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất tất cả thiết bị
-                                </button>
-                            </form>
+                            </div>
                         </div>
 
                         {{-- ========================================

@@ -1,30 +1,33 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Auth;
 
 class WishlistController extends Controller
 {
-    // Hàm Thả tim / Bỏ tim (Dùng AJAX)
+    public function index()
+    {
+        $user = Auth::user();
+        $favorites = $user->favorites()->with('category', 'locations')->paginate(12);
+        return view('wishlist.index', compact('favorites'));
+    }
+
     public function toggle($id)
     {
         $user = Auth::user();
-        $ticket = Ticket::findOrFail($id);
+        $result = $user->favorites()->toggle($id);
 
-        // Hàm toggle của Laravel tự động kiểm tra: 
-        // Nếu có rồi thì xóa (bỏ tim), chưa có thì thêm (thả tim)
-        $user->favorites()->toggle($ticket->id);
+        $attached = count($result['attached']) > 0;
 
-        // Kiểm tra xem hiện tại đang thích hay không để trả về icon tương ứng
-        $isFavorited = $user->favorites()->where('ticket_id', $id)->exists();
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'wishlisted' => $attached,
+                'message' => $attached ? 'Đã thêm vào yêu thích!' : 'Đã xóa khỏi yêu thích!',
+            ]);
+        }
 
-        return response()->json([
-            'status' => 'success',
-            'is_favorited' => $isFavorited,
-            'message' => $isFavorited ? 'Đã thêm vào yêu thích!' : 'Đã xóa khỏi yêu thích!'
-        ]);
+        return back()->with('success', $attached ? 'Đã thêm vào yêu thích!' : 'Đã xóa khỏi yêu thích!');
     }
 }

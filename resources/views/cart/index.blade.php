@@ -20,6 +20,16 @@
     <div class="container py-5">
         <h2 class="text-primary fw-bold mb-4 text-uppercase"><i class="bi bi-cart3"></i> Giỏ hàng của bạn</h2>
         
+        @if(session()->has('cart_created_at') && count($cart) > 0)
+<div id="slot-warning" class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+    <i class="bi bi-clock-fill fs-5"></i>
+    <div>
+        Slot trong giỏ hàng được giữ trong
+        <strong id="countdown-timer">10:00</strong> —
+        vui lòng hoàn tất thanh toán sớm!
+    </div>
+</div>
+@endif
         {{-- HIỂN THỊ LỖI NẾU CÓ --}}
         @if(session('error'))
             <div class="alert alert-danger bg-danger bg-opacity-25 text-white border-0 mb-4">
@@ -53,7 +63,7 @@
                                     @foreach($cart as $id => $item)
                                         @php 
                                             // Tính toán cho từng item
-        $subtotal = $item['price'] * $item['quantity'];
+        $subtotal = ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
         $itemDiscount = $item['discount'] ?? 0;
         $itemFinalPrice = $subtotal - $itemDiscount;
 
@@ -63,24 +73,34 @@
                                         @endphp
 
                                         <tr data-id="{{ $id }}">
+                                            @php
+                                                $realTicketId = $item['id'] ?? $item['ticket_id'] ?? explode('_', $id)[0];
+                                            @endphp
                                             {{-- 1. Tên, Ảnh & Giờ chơi --}}
                                             <td>
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <img src="{{ Str::startsWith($item['image'], 'http') ? $item['image'] : asset($item['image']) }}" 
-                                                         class="rounded" width="60" height="60" style="object-fit: cover;">
-                                                    <div>
-                                                        <h6 class="mb-0 fw-bold">{{ $item['name'] }}</h6>
-                                                        <div class="small text-muted mt-1">
-                                                            <i class="bi bi-calendar3"></i> {{ \Carbon\Carbon::parse($item['booking_date'])->format('d/m/Y') }}
-                                                            <br>
-                                                            <i class="bi bi-clock"></i> 
-                                                            @php
-        $slot = \App\Models\TimeSlot::find($item['slot_id']);
-                                                            @endphp
-                                                            {{ $slot ? substr($slot->start_time, 0, 5) . ' - ' . substr($slot->end_time, 0, 5) : 'Chưa chọn giờ' }}
+                                                <a href="{{ route('booking.form', $realTicketId) }}?replace_cart_id={{ $id }}" class="text-decoration-none text-dark d-block ticket-cart-link" title="Nhấn để cập nhật ngày giờ chơi">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <img src="{{ Str::startsWith($item['image'], 'http') ? $item['image'] : asset($item['image']) }}" 
+                                                             class="rounded shadow-sm" width="70" height="70" style="object-fit: cover;">
+                                                        <div>
+                                                            <h6 class="mb-0 fw-bold text-primary">{{ $item['name'] }}</h6>
+                                                            <div class="small text-muted mt-1">
+                                                                <i class="bi bi-calendar3"></i> {{ isset($item['booking_date']) ? \Carbon\Carbon::parse($item['booking_date'])->format('d/m/Y') : 'Chưa chọn ngày (Vé Mở)' }}
+                                                                <br>
+                                                                <i class="bi bi-clock"></i> 
+                                                                @php
+                                                                    $slot = isset($item['slot_id']) ? \App\Models\TimeSlot::find($item['slot_id']) : null;
+                                                                @endphp
+                                                                {{ $slot ? substr($slot->start_time, 0, 5) . ' - ' . substr($slot->end_time, 0, 5) : 'Chưa chọn giờ' }}
+                                                            </div>
+                                                            @if(!isset($item['booking_date']) || !isset($item['slot_id']))
+                                                                <div class="text-danger small mt-2 fw-medium d-inline-block px-2 py-1 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded" style="font-size: 0.75rem;">
+                                                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Bấm vào đây để chọn ngày & giờ chơi
+                                                                </div>
+                                                            @endif
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </a>
                                             </td>
 
                                             {{-- 2. Giá gốc 1 vé --}}
@@ -314,5 +334,41 @@
             });
         });
     </script>
+
+    <script>
+    (function() {
+        const cartCreatedAt = {{ session('cart_created_at', 'null') }};
+        if (!cartCreatedAt) return;
+
+        const expireAt = cartCreatedAt + (10 * 60); // 10 phút
+        const warning  = document.getElementById('slot-warning');
+        const timer    = document.getElementById('countdown-timer');
+        if (!warning || !timer) return;
+
+        const interval = setInterval(() => {
+            const remaining = expireAt - Math.floor(Date.now() / 1000);
+
+            if (remaining <= 0) {
+                clearInterval(interval);
+                timer.textContent = '00:00';
+                warning.className = 'alert alert-danger d-flex align-items-center gap-2 mb-4';
+                warning.innerHTML = '<i class="bi bi-exclamation-triangle-fill fs-5"></i>'
+                    + '<div>Phiên đặt vé đã hết hạn. '
+                    + '<a href="{{ route("cart.clear") }}" class="fw-bold">Làm mới giỏ hàng</a> để tiếp tục.</div>';
+                return;
+            }
+
+            const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+            const s = (remaining % 60).toString().padStart(2, '0');
+            timer.textContent = `${m}:${s}`;
+
+            // Dưới 2 phút đổi sang đỏ
+            if (remaining < 120) {
+                warning.className = 'alert alert-danger d-flex align-items-center gap-2 mb-4';
+            }
+        }, 1000);
+    })();
+    </script>
+
 </body>
 </html>
