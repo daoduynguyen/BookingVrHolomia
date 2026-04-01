@@ -11,18 +11,19 @@ class LoyaltyService
 
     // Ngưỡng hạng
     const TIERS = [
-        'bronze' => 0,
-        'silver' => 100,
-        'gold'   => 300,
-        'vip'    => 700,
+        'Thành viên' => 0,
+        'Bạc' => 100,
+        'Vàng' => 300,
+        'Kim Cương' => 700,
+        'VIP' => 1500,
     ];
 
-    // % giảm giá theo hạng
     const TIER_DISCOUNTS = [
-        'bronze' => 0,
-        'silver' => 3,
-        'gold'   => 5,
-        'vip'    => 10,
+        'Thành viên' => 0,
+        'Bạc' => 3,
+        'Vàng' => 5,
+        'Kim Cương' => 8,
+        'VIP' => 10,
     ];
 
     public static function addPoints(User $user, Order $order): void
@@ -35,9 +36,10 @@ class LoyaltyService
 
     public static function calculateTier(int $points): string
     {
-        $tier = 'bronze';
+        $tier = 'Thành viên';
         foreach (self::TIERS as $name => $threshold) {
-            if ($points >= $threshold) $tier = $name;
+            if ($points >= $threshold)
+                $tier = $name;
         }
         return $tier;
     }

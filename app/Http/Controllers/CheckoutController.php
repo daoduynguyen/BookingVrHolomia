@@ -440,7 +440,8 @@ class CheckoutController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', __('messages.system_error') . $e->getMessage());
+            Log::error('finalPayment error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->with('error', __('messages.system_error'));
         }
     }
 

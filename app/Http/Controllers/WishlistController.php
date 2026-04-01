@@ -24,6 +24,7 @@ class WishlistController extends Controller
             return response()->json([
                 'success' => true,
                 'wishlisted' => $attached,
+                'is_favorited' => $attached, // alias cho các view dùng tên cũ
                 'message' => $attached ? 'Đã thêm vào yêu thích!' : 'Đã xóa khỏi yêu thích!',
             ]);
         }

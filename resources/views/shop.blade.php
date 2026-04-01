@@ -40,12 +40,12 @@
 
     {{-- Mini Hero Banner --}}
     <div class="container-fluid p-0 mb-5">
-        <div class="position-relative d-flex align-items-center justify-content-center" 
-             style="height: 300px; margin-bottom: 60px;
+        <div class="position-relative d-flex align-items-center justify-content-center"
+            style="height: 300px; margin-bottom: 60px;
                     background: url('https://images.unsplash.com/photo-1593508512255-86ab42a8e620?q=80&w=2000&auto=format&fit=crop') center/bottom no-repeat fixed; background-size: cover;">
-            
+
             <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
-            
+
             <div class="container position-relative text-center text-white" style="z-index: 1;">
                 <h1 class="display-4 fw-bold text-uppercase mb-2 text-shadow" style="letter-spacing: 2px;">
                     <i class="bi bi-shop text-info"></i> {{ __('shop.shop_title') }}
@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- THANH TÌM KIẾM NỔI -->
     @include('partials.search_bar')
 
@@ -68,9 +68,7 @@
 
                         <div class="position-relative">
                             <img src="{{ $ticket->image_url ?? 'https://via.placeholder.com/640x480' }}"
-                                class="card-img-top"
-                                alt="{{ $ticket->name }}"
-                                style="height: 240px; object-fit: cover;">
+                                class="card-img-top" alt="{{ $ticket->name }}" style="height: 240px; object-fit: cover;">
 
                             {{-- Tem BẢO TRÌ nằm chéo đè lên ảnh --}}
                             @if($ticket->status == 'maintenance')
@@ -78,7 +76,8 @@
                             @endif
 
                             {{-- Badge rating góc trên phải --}}
-                            <div class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
+                            <div
+                                class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
                                 <i class="bi bi-star-fill text-dark"></i> {{ $ticket->avg_rating }}
                             </div>
 
@@ -97,36 +96,44 @@
                         <div class="card-body d-flex flex-column p-4">
                             {{-- Danh mục + lượt chơi --}}
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
+                                <span
+                                    class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
                                 <small class="text-muted fw-bold" style="font-size: 0.8rem;">
-                                    <i class="bi bi-person-check-fill text-secondary"></i> {{ number_format($ticket->play_count) }} {{ __('shop.views') ?? 'lượt' }}
+                                    <i class="bi bi-person-check-fill text-secondary"></i>
+                                    {{ number_format($ticket->play_count) }} {{ __('shop.views') ?? 'lượt' }}
                                 </small>
                             </div>
 
-                            <h5 class="card-title fw-bold mb-2 text-truncate" title="{{ $ticket->name }}" style="font-size: 1.2rem;">
+                            <h5 class="card-title fw-bold mb-2 text-truncate" title="{{ $ticket->name }}"
+                                style="font-size: 1.2rem;">
                                 {{ $ticket->name }}
                             </h5>
 
                             <p class="small text-muted mb-4 fw-medium">
-                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $ticket->locations->pluck('name')->join(', ') ?: __('shop.multiple_branches') }}
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                {{ $ticket->locations->pluck('name')->join(', ') ?: __('shop.multiple_branches') }}
                             </p>
 
                             <div class="mt-auto pt-3 border-top border-light mb-4">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted fw-medium">{{ __('shop.price_from') ?? 'Giá vé từ:' }}</span>
+                                    <span
+                                        class="small text-muted fw-medium">{{ __('shop.price_from') ?? 'Giá vé từ:' }}</span>
                                     <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                                 </div>
                             </div>
 
                             @if($ticket->status == 'maintenance')
-                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm" disabled>{{ __('shop.maintenance') }}</button>
+                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm"
+                                    disabled>{{ __('shop.maintenance') }}</button>
                             @else
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('ticket.show', $ticket->id) }}"
                                         class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
                                         {{ __('shop.book_now') }}
                                     </a>
-                                    <a href="{{ route('cart.add', $ticket->id) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="{{ __('shop.add_to_cart') ?? 'Thêm vào giỏ' }}">
+                                    <a href="{{ route('cart.add', $ticket->id) }}"
+                                        class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm"
+                                        title="{{ __('shop.add_to_cart') ?? 'Thêm vào giỏ' }}">
                                         <i class="bi bi-cart-plus fs-5"></i>
                                     </a>
                                 </div>
@@ -182,13 +189,13 @@
                         _token: '{{ csrf_token() }}'
                     },
 
-                      beforeSend: function () {
+                    beforeSend: function () {
                         btn.prop('disabled', true).css('opacity', '0.6');
                     },
                     complete: function () {
                         btn.prop('disabled', false).css('opacity', '1');
                     },
-                    
+
                     success: function (response) {
                         if (response.is_favorited) {
                             // Đổi thành tim đỏ
@@ -207,10 +214,32 @@
                         } else {
                             // Đổi về tim rỗng
                             icon.removeClass('bi-heart-fill').addClass('bi-heart');
+
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                background: '#212529',
+                                color: '#fff'
+                            });
+                            Toast.fire({ icon: 'info', title: '{{ __("shop.removed_from_favorite") ?? "Đã xóa khỏi yêu thích" }}' });
                         }
                     },
-                    error: function () {
-                        alert('Có lỗi xảy ra, vui lòng thử lại!');
+                    error: function (xhr) {
+                        if (xhr.status === 401 || xhr.status === 419) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Phiên đăng nhập hết hạn',
+                                text: 'Vui lòng đăng nhập lại.',
+                                confirmButtonText: 'Đăng nhập',
+                                confirmButtonColor: '#0dcaf0',
+                                background: '#212529',
+                                color: '#fff'
+                            }).then((r) => { if (r.isConfirmed) window.location.href = "{{ route('login') }}"; });
+                        } else {
+                            alert('Có lỗi xảy ra, vui lòng thử lại!');
+                        }
                     }
                 });
             });

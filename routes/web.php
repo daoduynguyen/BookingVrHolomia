@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LocationLandingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TicketController;
-use App\Http\Controllers\LocationSelectorController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProfileController;
@@ -22,6 +21,56 @@ use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\Admin\AdminSettingsController;
+
+Route::domain('{subdomain}.holomia.test')->group(function () {
+    // Trang chủ + chi tiết vé
+    Route::get('/', [App\Http\Controllers\BranchController::class, 'index'])->name('branch.home');
+    Route::get('/tro-choi/{id}', [App\Http\Controllers\BranchController::class, 'detail'])->name('branch.detail');
+
+    Route::get('/gioi-thieu', [App\Http\Controllers\BranchController::class, 'about'])->name('branch.about');
+    Route::get('/lien-he', [App\Http\Controllers\BranchController::class, 'contact'])->name('branch.contact');
+    Route::post('/lien-he', [App\Http\Controllers\BranchController::class, 'contactSend'])->name('branch.contact.send')->middleware('throttle:5,1');
+
+    // Đăng nhập / Đăng ký
+    Route::get('/dang-nhap', [App\Http\Controllers\BranchController::class, 'showLogin'])->name('branch.login');
+    Route::post('/dang-nhap', [App\Http\Controllers\BranchController::class, 'login'])->name('branch.login.post');
+    Route::get('/dang-ky', [App\Http\Controllers\BranchController::class, 'showRegister'])->name('branch.register');
+    Route::post('/dang-ky', [App\Http\Controllers\BranchController::class, 'register'])->name('branch.register.post');
+    Route::post('/dang-xuat', [App\Http\Controllers\BranchController::class, 'logout'])->name('branch.logout');
+
+    // Đặt vé (booking form)
+    Route::get('/dat-ve/{id}', [App\Http\Controllers\BranchController::class, 'bookingForm'])->name('branch.booking.form');
+    Route::post('/them-gio-hang', [App\Http\Controllers\BranchController::class, 'addToCart'])->name('branch.cart.add');
+
+    // Giỏ hàng + Thanh toán
+    Route::get('/gio-hang', [App\Http\Controllers\BranchController::class, 'cart'])->name('branch.cart');
+    Route::get('/gio-hang/xoa/{id}', [App\Http\Controllers\BranchController::class, 'removeCart'])->name('branch.cart.remove');
+    Route::get('/gio-hang/xoa-het', [App\Http\Controllers\BranchController::class, 'emptyCart'])->name('branch.cart.empty');
+    Route::patch('/gio-hang/cap-nhat', [App\Http\Controllers\BranchController::class, 'updateCart'])->name('branch.cart.update');
+    Route::post('/thanh-toan', [App\Http\Controllers\BranchController::class, 'checkout'])->name('branch.checkout');
+    Route::get('/thanh-toan/chuyen-khoan/{id}', [App\Http\Controllers\BranchController::class, 'bankingPaymentPage'])->name('branch.payment.banking');
+
+    // Các route công khai cần subdomain
+    Route::get('/slots', [App\Http\Controllers\BranchController::class, 'getSlots'])->name('branch.slots');
+    Route::get('/api/order-status/{id}', [App\Http\Controllers\CheckoutController::class, 'orderStatus']);
+
+    Route::get('/yeu-thich', [App\Http\Controllers\BranchController::class, 'wishlist'])->name('branch.wishlist')->middleware('auth');
+    Route::get('/cai-dat', [App\Http\Controllers\BranchController::class, 'settings'])->name('branch.settings')->middleware('auth');
+
+    Route::get('/danh-sach-ve', [App\Http\Controllers\BranchController::class, 'shop'])->name('branch.shop');
+
+    Route::get('/co-so/{slug}', [LocationLandingController::class, 'show'])->name('location.landing');
+    Route::get('/he-thong-co-so', [LocationLandingController::class, 'index'])->name('location.index');
+
+    // Tài khoản (cần đăng nhập)
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/tai-khoan', [App\Http\Controllers\BranchController::class, 'profile'])->name('branch.profile');
+        Route::post('/tai-khoan/cap-nhat', [App\Http\Controllers\BranchController::class, 'updateProfile'])->name('branch.profile.update');
+        Route::post('/tai-khoan/avatar', [App\Http\Controllers\BranchController::class, 'updateAvatar'])->name('branch.profile.avatar');
+        Route::get('/tai-khoan/don-hang/{orderId}', [App\Http\Controllers\BranchController::class, 'orderDetail'])->name('branch.profile.order.detail');
+    });
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +158,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
             return view('admin.audit_log', compact('logs'));
         })->name('audit_log');
 
+       Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('settings.index');
+Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('settings.update');
     });
 });
 
@@ -122,33 +173,17 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
 Route::get('/lang/{locale}', [ProfileController::class, 'switchLanguage'])->name('lang.switch');
 
 // Trang chủ & Sản phẩm — dùng TicketController (client), KHÔNG phải AdminTicketController
-Route::get('/', [TicketController::class, 'index'])->name('home')
-    ->middleware('require.location');
+Route::get('/', [TicketController::class, 'index'])->name('home');
 Route::get('/tro-choi/{id}', [TicketController::class, 'show'])->name('ticket.show');
 Route::get('/gioi-thieu', [TicketController::class, 'about'])->name('about');
-Route::get('/danh-sach-ve', [TicketController::class, 'shop'])
-    ->name('ticket.shop')
-    ->middleware('require.location');
+Route::get('/danh-sach-ve', [TicketController::class, 'shop'])->name('ticket.shop');
 
-// Chọn cơ sở
-Route::get('/chon-co-so', [LocationSelectorController::class, 'select'])->name('location.select');
-Route::post('/chon-co-so', [LocationSelectorController::class, 'store'])->name('location.store');
-Route::get('/doi-co-so', [LocationSelectorController::class, 'reset'])->name('location.reset');
 
-// Trang tổng hợp tất cả chi nhánh (sitemap)
-Route::get('/he-thong-co-so', [LocationLandingController::class, 'index'])
-    ->name('location.all');
 
-// Landing page của từng cơ sở theo slug
-// Ví dụ: holomia.vn/co-so/ha-noi  |  holomia.vn/co-so/ho-chi-minh
-Route::get('/co-so/{slug}', [LocationLandingController::class, 'show'])
-    ->name('location.landing')
-    ->where('slug', '[a-z0-9\-]+');   // chỉ cho phép slug hợp lệ
-
-// Giỏ hàng
+// Giỏ hàng — dùng DELETE thay GET để tránh prefetch/crawler xóa nhầm
 Route::get('/gio-hang', [CartController::class, 'index'])->name('cart.index');
-Route::get('/gio-hang/xoa/{id}', [CartController::class, 'remove'])->name('cart.remove');
-Route::get('/gio-hang/xoa-het', [CartController::class, 'clear'])->name('cart.clear');
+Route::delete('/gio-hang/xoa/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::delete('/gio-hang/xoa-het', [CartController::class, 'clear'])->name('cart.clear');
 Route::patch('/gio-hang/cap-nhat', [CartController::class, 'update'])->name('cart.update');
 Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 
@@ -205,11 +240,14 @@ Route::middleware('guest')->group(function () {
 | 4. THANH TOÁN (Guest + Auth)
 |--------------------------------------------------------------------------
 */
+
+// finalPayment yêu cầu đăng nhập để tránh đơn hàng không có chủ sở hữu
 Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
-    ->name('payment.final');
+    ->name('payment.final')
+    ->middleware('auth');
 
 Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('payment.banking');
-Route::get('/checkout/banking/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('checkout.banking');
+// Route checkout.banking đã được hợp nhất vào payment.banking ở trên (tránh trùng lặp)
 Route::get('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
 Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('check.coupon');
 

@@ -22,16 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Set locale middleware for language switching
         $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
 
-        // Load location info check for shop if needed
-        $middleware->appendToGroup('web', \App\Http\Middleware\SetLocation::class);
 
         // Đăng ký alias để dùng trong route nếu cần
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdminRole::class,
             'sepay.ip' => \App\Http\Middleware\VerifySepayIp::class,
             'check.banned' => \App\Http\Middleware\CheckBanned::class,
-            'require.location' => \App\Http\Middleware\RequireLocation::class,
-            'set.location' => \App\Http\Middleware\SetLocation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

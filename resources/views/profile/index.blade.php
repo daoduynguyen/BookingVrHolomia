@@ -22,6 +22,12 @@
             overflow: hidden;
         }
 
+        /* Sticky wrapper để sidebar luôn hiển thị khi scroll */
+        .profile-sidebar-sticky {
+            position: sticky;
+            top: 20px;
+        }
+
         .profile-sidebar-card::before {
             content: '';
             position: absolute;
@@ -175,7 +181,8 @@
 
             {{-- CỘT TRÁI: SIDEBAR (col-lg-4) --}}
             <div class="col-lg-4">
-                <div class="profile-sidebar-card p-0 h-100 d-flex flex-column">
+                <div class="profile-sidebar-sticky">
+                <div class="profile-sidebar-card p-0 d-flex flex-column">
                     {{-- Avatar & Info --}}
                     <div class="profile-avatar-section">
                         <div class="position-relative d-inline-block">
@@ -199,7 +206,7 @@
                     </div>
 
                     {{-- Menu --}}
-                    <div class="nav flex-column nav-pills px-1 flex-grow-1 justify-content-evenly py-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <div class="nav flex-column nav-pills px-1 py-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                         <button class="nav-link active" id="v-pills-profile-tab"
                             data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab">
                             <i class="bi bi-person-gear"></i> {{ __('profile.my_profile') }}
@@ -235,6 +242,7 @@
                         </form>
                     </div>
                 </div>
+                </div>{{-- end sticky wrapper --}}
             </div>
 
             {{-- CỘT PHẢI: NỘI DUNG (col-lg-8) --}}

@@ -1,4 +1,4 @@
-<div class="search-bar-wrapper">
+<div class="search-bar-wrapper position-relative" style="z-index: 10;">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">

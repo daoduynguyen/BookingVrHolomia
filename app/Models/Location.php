@@ -21,15 +21,15 @@ class Location extends Model
         'maps_url',
         'facebook_url',
         'is_active',
+        'color',
+        'logo_url',
+        'banner_url',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
 
-    // -------------------------------------------------------
-    // Boot: tự tạo slug từ name nếu chưa có
-    // -------------------------------------------------------
     protected static function booted(): void
     {
         static::saving(function (Location $location) {

@@ -50,7 +50,7 @@
                     {{-- 3. CƠ SỞ (Checkbox) --}}
                     <div class="col-md-3 mb-4">
                         <label class="form-label text-dark fw-bold">Cơ sở</label>
-                        <div class="d-flex flex-column gap-2 p-3 bg-white border border-light rounded-3">
+                        <div class="d-flex flex-column gap-3 p-3 bg-white border border-light rounded-3" style="max-height: 160px; overflow-y: auto; padding-right: 8px;">
                             @foreach($locations as $loc)
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="location_ids[]" value="{{ $loc->id }}"

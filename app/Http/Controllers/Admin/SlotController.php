@@ -131,38 +131,54 @@ class SlotController extends Controller
         return back()->with('success', 'Đã xóa ca chơi!');
     }
 
-    // 4. Hàm tạo lịch tự động hàng loạt (Hỗ trợ nhiều ngày)
+    // 4. Hàm tạo lịch tự động hàng loạt (Hỗ trợ nhiều ngày) - ĐÃ TỐI ƯU HÓA
     public function generate(Request $request)
     {
+        set_time_limit(0); // Cho phép chạy lâu hơn cho tác vụ nặng
+
         $request->validate([
             'start_date' => 'required|date',
-            'end_date'   => 'required|date|after_or_equal:start_date', // Ngày kết thúc phải sau hoặc bằng ngày bắt đầu
+            'end_date'   => 'required|date|after_or_equal:start_date',
             'ticket_id'  => 'nullable|exists:tickets,id' 
         ]);
 
-        // Lấy danh sách trò chơi
+        // 1. Lấy danh sách trò chơi (Eager Loading locations để tránh N+1)
+        $ticketQuery = Ticket::with('locations');
         if ($request->ticket_id) {
-            $tickets = Ticket::where('id', $request->ticket_id)->get();
+            $tickets = $ticketQuery->where('id', $request->ticket_id)->get();
         } else {
-            $tickets = Ticket::all();
+            $tickets = $ticketQuery->get();
         }
 
+        $ticketIds = $tickets->pluck('id')->toArray();
+
+        // 2. Lấy toàn bộ khung giờ hiện tại trong khoảng thời gian để đối chiếu (Bulk Query)
+        // Lưu dưới dạng HashMap để kiểm tra tồn tại với độ phức tạp O(1)
+        $existingSlots = TimeSlot::whereIn('ticket_id', $ticketIds)
+            ->whereBetween('date', [$request->start_date, $request->end_date])
+            ->get(['ticket_id', 'date', 'start_time'])
+            ->mapWithKeys(fn($item) => [
+                $item->ticket_id . ':' . $item->date . ':' . $item->start_time => true
+            ])
+            ->toArray();
+
+        $newSlots = [];
         $count = 0; 
         
-        // Dùng CarbonPeriod để lặp qua mảng các ngày từ start_date đến end_date
+        // Dùng CarbonPeriod để lặp qua mảng các ngày
         $period = \Carbon\CarbonPeriod::create($request->start_date, $request->end_date);
 
         $dailyStart = Carbon::parse($request->input('start_time', '08:00'))->format('H:i:00');
         $dailyEnd   = Carbon::parse($request->input('end_time', '21:00'))->format('H:i:00');
 
         foreach ($period as $dateObj) {
-            $currentDate = $dateObj->format('Y-m-d'); // Lấy ngày hiện tại trong vòng lặp
+            $currentDate = $dateObj->format('Y-m-d');
 
             foreach ($tickets as $ticket) {
                 $locationId = $ticket->locations->first()->id ?? 1;
                 $baseDuration = (int)$ticket->duration > 0 ? (int)$ticket->duration : 60;
 
-             // Làm tròn lên số tận 0 hoặc 5 TIẾP THEO (không giữ nguyên nếu đã là bội 5)
+                // Làm tròn lên số tận 0 hoặc 5 TIẾP THEO
                 $duration = (int)(floor(($baseDuration) / 5) + 1) * 5;
                 $currentTimeStr = $dailyStart;
 
@@ -170,31 +186,43 @@ class SlotController extends Controller
                     $slotStartCarbon = Carbon::parse($currentTimeStr);
                     $slotEndCarbon = (clone $slotStartCarbon)->addMinutes($duration);
 
-                    // Không dính ca qua ngày hôm sau hoặc qua giờ kết thúc
-                    if ($slotEndCarbon->format('H:i:00') > $dailyEnd || $slotEndCarbon->format('H:i:00') < $dailyStart) {
-                        break;
-                    }
-
                     $startTime = $slotStartCarbon->format('H:i:00');
                     $endTime = $slotEndCarbon->format('H:i:00');
 
-                    $slot = TimeSlot::firstOrCreate([
-                        'ticket_id'  => $ticket->id,
-                        'date'       => $currentDate,
-                        'start_time' => $startTime,
-                    ], [
-                        'location_id'=> $locationId,
-                        'end_time'   => $endTime,
-                        'capacity'   => 15,
-                        'status'     => 'open'
-                    ]);
+                    // Không dính ca qua ngày hôm sau hoặc qua giờ kết thúc
+                    if ($endTime > $dailyEnd || $endTime < $dailyStart) {
+                        break;
+                    }
 
-                    if ($slot->wasRecentlyCreated) {
+                    // KIỂM TRA TRÙNG LẶP TRONG BỘ NHỚ (O(1)) thay vì truy vấn DB từng lượt
+                    $key = $ticket->id . ':' . $currentDate . ':' . $startTime;
+                    if (!isset($existingSlots[$key])) {
+                        $newSlots[] = [
+                            'ticket_id'   => $ticket->id,
+                            'location_id' => $locationId,
+                            'date'        => $currentDate,
+                            'start_time'  => $startTime,
+                            'end_time'    => $endTime,
+                            'capacity'    => 15,
+                            'status'      => 'open',
+                            'created_at'  => now(),
+                            'updated_at'  => now()
+                        ];
                         $count++;
+                        
+                        // Đánh dấu vào Map để tránh trùng lặp trong chính danh sách đang tạo
+                        $existingSlots[$key] = true;
                     }
 
                     $currentTimeStr = $endTime;
                 }
+            }
+        }
+
+        // 3. Thực hiện Bulk Insert theo từng cụm (chunks) để đảm bảo hiệu năng
+        if (!empty($newSlots)) {
+            foreach (array_chunk($newSlots, 500) as $chunk) {
+                TimeSlot::insert($chunk);
             }
         }
 

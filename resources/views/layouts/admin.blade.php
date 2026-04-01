@@ -99,6 +99,7 @@
         /* 5. Menu scroll */
         .sidebar-menu-wrapper {
             flex-grow: 1;
+            min-height: 0;
             overflow-y: auto;
             overflow-x: hidden;
             padding: 0.5rem 0;
@@ -239,6 +240,7 @@
             </div>
 
             {{-- MENU --}}
+            <div class="sidebar-menu-wrapper">
             <li class="nav-item">
                 <a href="{{ route('admin.dashboard') }}"
                     class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -246,9 +248,8 @@
                     <span>Thống kê</span>
                 </a>
             </li>
-
             
-
+            
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.slots.*') ? 'active' : '' }}"
                     href="{{ route('admin.slots.index') }}">
@@ -274,7 +275,7 @@
                     <span>Quản lý vé</span>
                    </a>
                 </li>
-                
+
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('admin.locations.*') ? 'active' : '' }}"
                         href="{{ route('admin.locations.index') }}">
@@ -296,8 +297,13 @@
                         class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                         <i class="bi bi-people"></i>
                         <span>Người dùng</span>
-                    </a>
-                </li>
+                        </a>
+                        <a href="{{ route('admin.settings.index') }}"
+                            class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+                            <i class="bi bi-sliders"></i>
+                            <span>Hệ thống</span>
+                        </a>
+                        </li>
 
                 <li class="nav-item">
                     <a href="{{ route('admin.contacts') }}"
@@ -317,6 +323,7 @@
                     </button>
                 </form>
             </div>
+        </div>
         </div>
         {{-- === END SIDEBAR === --}}
 

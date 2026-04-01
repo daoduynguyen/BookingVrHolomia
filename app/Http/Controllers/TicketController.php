@@ -41,23 +41,8 @@ class TicketController extends Controller
 
         $locationName = "Tất cả vé";
 
-        // ✅ ƯU TIÊN 1: Đọc cơ sở từ session (do khách đã chọn ở màn hình chọn cơ sở)
-        $sessionLocation = Session::get('selected_location');
-
-        if ($sessionLocation && $sessionLocation !== 'all') {
-            $query->whereHas('locations', function ($q) use ($sessionLocation) {
-                $q->where('locations.id', $sessionLocation);
-            });
-
-            $loc = Location::find($sessionLocation);
-            if ($loc) {
-                $locationName = "Vé tại " . $loc->name;
-            }
-        }
-
-        // ✅ ƯU TIÊN 2: Nếu có ?location_id trên URL thì lọc thêm (dùng cho admin preview hoặc link trực tiếp)
-        // Chỉ áp dụng khi session đang là 'all' hoặc chưa chọn
-        elseif ($request->filled('location_id')) {
+        // Lọc theo location_id từ request (không dùng session)
+        if ($request->filled('location_id')) {
             $query->whereHas('locations', function ($q) use ($request) {
                 $q->where('locations.id', $request->location_id);
             });

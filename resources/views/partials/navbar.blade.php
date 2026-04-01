@@ -199,17 +199,6 @@
             <a class="navbar-brand m-0 lh-1" href="{{ route('home') }}" style="padding-bottom: 2px;">
                 <i class="bi bi-vr"></i> HOLOMIA VR
             </a>
-            
-            {{-- ===== BADGE CƠ SỞ ĐANG CHỌN (CHUYỂN XUỐNG DƯỚI) ===== --}}
-            @if(session('selected_location'))
-                <div class="mt-1 d-none d-md-block">
-                    <a href="{{ route('location.reset') }}" class="location-badge d-inline-flex align-items-center" title="Đổi cơ sở" style="padding: 2px 8px; font-size: 0.75rem;">
-                        <i class="bi bi-geo-alt-fill me-1"></i>
-                        {{ session('selected_location') == 'all' ? 'Tất cả cơ sở' : ($currentLocation->name ?? 'Tất cả cơ sở') }}
-                        <i class="bi bi-x-circle ms-1" style="font-size:10px; opacity:0.7;"></i>
-                    </a>
-                </div>
-            @endif
         </div>
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -231,12 +220,6 @@
                     <a class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}"
                         href="{{ route('contact') }}">{{ __('navbar.contact') }}</a>
                 </li>
-<li class="nav-item">
-    <a class="nav-link {{ request()->routeIs('location.all') ? 'active' : '' }}" href="{{ route('location.all') }}">
-        <i class="bi bi-geo-alt"></i> Cơ sở
-    </a>
-</li>
- 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {{ request()->routeIs('ticket.*') ? 'active' : '' }}"
                         href="{{ route('ticket.shop') }}" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
@@ -248,39 +231,26 @@
                                 <i class="bi bi-grid-fill me-2 text-info"></i> {{ __('navbar.view_all') }}
                             </a>
                         </li>
-                        @if(!session('selected_location') || session('selected_location') == 'all')
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <h6 class="dropdown-header">{{ __('navbar.choose_branch') }}</h6>
-                            </li>
-                            @if(isset($globalLocations) && count($globalLocations) > 0)
-                                @foreach($globalLocations as $loc)
-                                    <li>
-                                    <a class="dropdown-item {{ (isset($selectedLocationId) && $selectedLocationId == $loc->id) ? 'text-info' : '' }}"
-                                            href="#"
-                                            onclick="event.preventDefault(); document.getElementById('loc-form-{{ $loc->id }}').submit();">
-                                            <i class="bi bi-geo-alt-fill me-2" style="color:#f87171;"></i>
-                                            {{ $loc->name }}
-                                            @if(isset($selectedLocationId) && $selectedLocationId == $loc->id)
-                                                <i class="bi bi-check-circle-fill ms-1" style="font-size:11px;"></i>
-                                            @endif
-                                        </a>
-                                        <form id="loc-form-{{ $loc->id }}" action="{{ route('location.store') }}" method="POST" class="d-none">
-                                            @csrf
-                                            <input type="hidden" name="location" value="{{ $loc->id }}">
-                                        </form>
-                                    </li>
-                                @endforeach
-                            @else
-                                <li><span class="dropdown-item text-muted">{{ __('navbar.updating') }}</span></li>
-                            @endif
-                        @endif
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('location.reset') }}">
-                                <i class="bi bi-arrow-repeat me-2" style="color:#38bdf8;"></i> Đổi cơ sở khác
-                            </a>
+                            <h6 class="dropdown-header">{{ __('navbar.choose_branch') }}</h6>
                         </li>
+                        @if(isset($globalLocations) && count($globalLocations) > 0)
+                            @foreach($globalLocations as $loc)
+                                <li>
+                                    <a class="dropdown-item {{ request('location_id') == $loc->id ? 'text-info' : '' }}"
+                                        href="{{ route('ticket.shop', ['location_id' => $loc->id]) }}">
+                                        <i class="bi bi-geo-alt-fill me-2" style="color:#f87171;"></i>
+                                        {{ $loc->name }}
+                                        @if(request('location_id') == $loc->id)
+                                            <i class="bi bi-check-circle-fill ms-1" style="font-size:11px;"></i>
+                                        @endif
+                                    </a>
+                                </li>
+                            @endforeach
+                        @else
+                            <li><span class="dropdown-item text-muted">{{ __('navbar.updating') }}</span></li>
+                        @endif
                     </ul>
                 </li>
             </ul>

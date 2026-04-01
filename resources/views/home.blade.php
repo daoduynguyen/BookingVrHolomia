@@ -22,31 +22,35 @@
 
     @include('partials.navbar')
 
-    <div class="container-fluid p-0 mb-5">
-        <div class="position-relative d-flex align-items-center justify-content-center"
-             style="height: 600px; margin-bottom: 60px;
-                    background: url('https://images.unsplash.com/photo-1614726365723-49cfae9686ae?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat fixed;">
+    <div class="container-fluid p-0 mb-5 position-relative" style="height: 600px; background: url('https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?q=80&w=2000&auto=format&fit=crop') center right/cover no-repeat;">
+        
+        <!-- Background overlay: Lớp phủ xám sáng bên trái, mờ dần sang phải -->
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(90deg, #e9ecef 0%, rgba(233, 236, 239, 0.9) 35%, rgba(233, 236, 239, 0) 100%); z-index: 1;"></div>
 
-            <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
+        <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2;">
+            <!-- Cột trái: Chữ -->
+            <div class="col-lg-6 position-relative text-dark d-flex align-items-center" style="height: 100%;">
+                <div class="px-5 w-100" style="padding-left: 8% !important;">
+                    <div class="mb-3 animate-bounce">
+                        <i class="bi bi-headset-vr display-4 text-primary"></i>
+                    </div>
 
-            <div class="container position-relative text-center text-white" style="z-index: 1;">
-                <div class="mb-3 animate-bounce">
-                    <i class="bi bi-headset-vr display-1 text-info text-shadow"></i>
+                    <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 3px; color: #212529;">
+                        Holomia <br><span class="text-primary">VR World</span>
+                    </h1>
+
+                    <p class="lead fs-4 mb-5 text-secondary" style="max-width: 500px; font-weight: 500;">
+                        {{ __('home.hero_tagline') }}
+                    </p>
+
+                    <a href="#featured-games" class="btn btn-primary rounded-pill px-4 py-3 fw-bold text-white border-0" style="box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
+                        <i class="bi bi-controller me-2"></i> {{ __('home.explore_now') }}
+                    </a>
                 </div>
-
-                <h1 class="display-2 fw-bold text-uppercase mb-3 text-shadow" style="letter-spacing: 3px;">
-                    Holomia <span class="text-info">VR World</span>
-                </h1>
-
-                <p class="lead fs-3 mb-5 text-light opacity-75">
-                    {{ __('home.hero_tagline') }}
-                </p>
-
-                <a href="#featured-games" class="text-white text-decoration-none opacity-75 hover-opacity-100">
-                    <small>{{ __('home.explore_now') }}</small><br>
-                    <i class="bi bi-chevron-down fs-4 animate-down"></i>
-                </a>
             </div>
+
+            <!-- Cột phải: Để trống để lộ ảnh nền rực rỡ -->
+            <div class="col-lg-6"></div>
         </div>
     </div>
 
