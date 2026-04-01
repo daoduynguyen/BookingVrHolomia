@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.tokenizer", "php82Extensions.xml", "php82Extensions.ctype", "php82Extensions.json", "php82Extensions.bcmath", "php82Extensions.gd", "composer"]
+aptPkgs = ["php8.2-gd", "php8.2-mysql", "php8.2-mbstring", "php8.2-xml", "php8.2-bcmath", "php8.2-curl", "php8.2-zip"]
 
 [phases.build]
-cmds = ["composer install --no-dev --optimize-autoloader", "php artisan key:generate --force", "php artisan config:cache", "php artisan route:cache"]
+cmds = ["composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd"]
 
 [start]
 cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
