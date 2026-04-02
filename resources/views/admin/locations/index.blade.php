@@ -73,10 +73,10 @@
                             <div class="bg-light rounded-3 px-3 py-2 mb-3">
                                 <div class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:1px;">
                                     Landing page</div>
-                                <a href="http://{{ $location->slug }}.holomia.test" target="_blank"
+                                <a href="{{ $location->landingUrl() }}" target="_blank"
                                     class="text-primary fw-bold text-decoration-none" style="font-size:13px;">
                                     <i class="bi bi-box-arrow-up-right me-1"></i>
-                                    {{ $location->slug }}.holomia.test
+                                    {{ $location->slug }}.{{ env('APP_DOMAIN', 'holomia.test') }}
                                 </a>
                             </div>
                         @endif
@@ -95,7 +95,7 @@
                                 class="btn btn-primary btn-sm rounded-pill px-3 fw-bold flex-grow-1">
                                 <i class="bi bi-pencil me-1"></i> Chỉnh sửa
                             </a>
-                            <a href="http://{{ $location->slug }}.holomia.test" target="_blank"
+                            <a href="{{ $location->landingUrl() }}" target="_blank"
                                 class="btn btn-outline-info btn-sm rounded-pill px-3">
                                 <i class="bi bi-eye"></i>
                             </a>

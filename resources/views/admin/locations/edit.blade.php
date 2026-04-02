@@ -13,8 +13,8 @@
                 @if($location->slug)
                     <small class="text-muted">
                         Landing page:
-                        <a href="http://{{ $location->slug }}.holomia.test" target="_blank" class="text-primary fw-bold">
-                            {{ $location->slug }}.holomia.test <i class="bi bi-box-arrow-up-right"></i>
+                        <a href="{{ $location->landingUrl() }}" target="_blank" class="text-primary fw-bold">
+                            {{ $location->slug }}.{{ env('APP_DOMAIN', 'holomia.test') }} <i class="bi bi-box-arrow-up-right"></i>
                         </a>
                     </small>
                 @endif
@@ -55,7 +55,7 @@
                                 <input type="text" name="slug" class="form-control @error('slug') is-invalid @enderror"
                                        value="{{ old('slug', $location->slug) }}"
                                        placeholder="royalcity">
-                                <span class="input-group-text text-muted bg-light" style="font-size:13px;">.holomia.test</span>
+                                <span class="input-group-text text-muted bg-light" style="font-size:13px;">.{{ env('APP_DOMAIN', 'holomia.test') }}</span>
                             </div>
                             @error('slug')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             <div class="form-text">Chỉ dùng chữ thường, số và dấu gạch ngang. VD: <code>royalcity</code></div>
@@ -100,20 +100,20 @@
                             <div class="form-text">Tối đa 1000 ký tự. Hiển thị trên trang landing page.</div>
                         </div>
                         <div class="col-12">
-                <label class="form-label fw-bold">Ảnh Banner</label>
-                @if($location->banner_image)
-                    <img src="{{ $location->banner_image }}" class="d-block mb-2 rounded" style="max-height:80px; object-fit:cover; max-width:100%;">
-                @endif
-                <input type="file" name="banner_image" class="form-control" accept="image/*">
-                <div class="form-text">Để trống nếu không muốn thay đổi ảnh hiện tại.</div>
-            </div>
-            <div class="col-12">
-                <label class="form-label fw-bold">Google Maps URL</label>
-                <input type="text" name="maps_url" class="form-control"
-                       value="{{ old('maps_url', $location->maps_url) }}"
-                       placeholder="https://maps.google.com/maps?q=...">
-                <div class="form-text">Dán link Google Maps thường vào đây, hệ thống tự chuyển thành bản đồ nhúng.</div>
-            </div>
+                            <label class="form-label fw-bold">Ảnh Banner</label>
+                            @if($location->banner_image)
+                                <img src="{{ $location->banner_image }}" class="d-block mb-2 rounded" style="max-height:80px; object-fit:cover; max-width:100%;">
+                            @endif
+                            <input type="file" name="banner_image" class="form-control" accept="image/*">
+                            <div class="form-text">Để trống nếu không muốn thay đổi ảnh hiện tại.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Google Maps URL</label>
+                            <input type="text" name="maps_url" class="form-control"
+                                   value="{{ old('maps_url', $location->maps_url) }}"
+                                   placeholder="https://maps.google.com/maps?q=...">
+                            <div class="form-text">Dán link Google Maps thường vào đây, hệ thống tự chuyển thành bản đồ nhúng.</div>
+                        </div>
                     </div>
                 </div>
 
@@ -182,17 +182,13 @@
                         <h6 class="fw-bold text-primary text-uppercase mb-3" style="letter-spacing:1px;">
                             <i class="bi bi-link-45deg me-2"></i>Link chi nhánh
                         </h6>
-                        <div class="bg-light rounded-3 px-3 py-2 mb-2">
-                            <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Local</div>
-                            <a href="http://{{ $location->slug }}.holomia.test" target="_blank"
+                        <div class="bg-light rounded-3 px-3 py-2">
+                            <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Landing Page</div>
+                            <a href="{{ $location->landingUrl() }}" target="_blank"
                                class="text-primary fw-bold text-decoration-none" style="font-size:13px; word-break:break-all;">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>
-                                {{ $location->slug }}.holomia.test
+                                {{ $location->slug }}.{{ env('APP_DOMAIN', 'holomia.test') }}
                             </a>
-                        </div>
-                        <div class="bg-light rounded-3 px-3 py-2">
-                            <div class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Production</div>
-                            <span class="text-secondary" style="font-size:13px;">{{ $location->slug }}.holomia.com</span>
                         </div>
                     </div>
                 @endif
@@ -206,7 +202,7 @@
                 <i class="bi bi-save me-1"></i> Cập nhật chi nhánh
             </button>
             @if($location->slug)
-                <a href="http://{{ $location->slug }}.holomia.test" target="_blank"
+                <a href="{{ $location->landingUrl() }}" target="_blank"
                    class="btn btn-outline-info rounded-pill px-4 fw-bold">
                     <i class="bi bi-eye me-1"></i> Xem landing page
                 </a>
@@ -217,7 +213,6 @@
     </form>
 
     <script>
-        // Sync color picker → text input → preview
         document.getElementById('colorPicker').addEventListener('input', function() {
             document.getElementById('colorHex').value = this.value;
             document.getElementById('colorPreview').style.background = this.value;
