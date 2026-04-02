@@ -23,7 +23,7 @@ use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Admin\AdminSettingsController;
 
-Route::domain('{subdomain}.holomia.test')->group(function () {
+Route::domain('{subdomain}.' . env('APP_DOMAIN', 'holomia.test'))->group(function () {
     // Trang chủ + chi tiết vé
     Route::get('/', [App\Http\Controllers\BranchController::class, 'index'])->name('branch.home');
     Route::get('/tro-choi/{id}', [App\Http\Controllers\BranchController::class, 'detail'])->name('branch.detail');
@@ -158,9 +158,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
             return view('admin.audit_log', compact('logs'));
         })->name('audit_log');
 
-       Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('settings.index');
-Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('settings.update');
-    });
+      Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('admin.settings.index');
+Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('admin.settings.update');
 });
 
 /*
