@@ -158,8 +158,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
             return view('admin.audit_log', compact('logs'));
         })->name('audit_log');
 
-      Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('admin.settings.index');
-      Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('admin.settings.update');
+        
+Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('settings.index');
+Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('settings.update');
+     
 });
 });
 /*
