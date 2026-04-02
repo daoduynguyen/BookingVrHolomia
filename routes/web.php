@@ -159,9 +159,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
         })->name('audit_log');
 
       Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('admin.settings.index');
-Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('admin.settings.update');
+      Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('admin.settings.update');
 });
-
+});
 /*
 |--------------------------------------------------------------------------
 | 2. CÁC ROUTE KHÁCH HÀNG (Client)
