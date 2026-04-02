@@ -55,9 +55,10 @@ class Location extends Model
 
     /** URL landing page của cơ sở */
     public function landingUrl(): string
-    {
-        return route('location.landing', $this->slug);
-    }
+{
+    $domain = env('APP_DOMAIN', 'holomia.test');
+    return 'https://' . $this->slug . '.' . $domain;
+}
 
     /** Scope: chỉ lấy cơ sở đang hoạt động */
     public function scopeActive($query)
