@@ -54,9 +54,10 @@ class Location extends Model
     // -------------------------------------------------------
 
     /** URL landing page của cơ sở */
-    public function landingUrl(): string
+   public function landingUrl(): string
 {
-    return rtrim(config('app.url'), '/') . '/chi-nhanh/' . $this->slug;
+    $baseUrl = rtrim(config('app.url'), '/');
+    return $baseUrl . '/chi-nhanh/' . $this->slug;
 }
     /** Scope: chỉ lấy cơ sở đang hoạt động */
     public function scopeActive($query)
