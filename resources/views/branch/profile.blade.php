@@ -457,11 +457,70 @@
                                 <i class="bi bi-gear-fill me-2"></i> Cài đặt tài khoản
                             </h4>
 
-                            {{-- ĐỔI MẬT KHẨU --}}
+                            {{-- GIAO DIỆN --}}
                             <div class="card border-0 bg-light rounded-3 p-4 mb-4">
-                                <h6 class="fw-bold mb-3"><i class="bi bi-lock me-2 text-primary"></i>Đổi mật khẩu</h6>
-                                <form action="{{ route('branch.profile.update', ['subdomain' => $subdomain]) }}" method="POST">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-palette me-2 text-primary"></i>Giao diện</h6>
+                                <form action="{{ route('settings.ui') }}" method="POST">
                                     @csrf
+                                    <input type="hidden" name="redirect_back" value="{{ url()->current() }}">
+
+                                    {{-- CHỦ ĐỀ --}}
+                                    <label class="form-label small fw-bold text-uppercase text-muted mb-2">Chủ đề</label>
+                                    @php $ui = Auth::user()->ui_settings ?? []; @endphp
+                                    <input type="hidden" name="theme" id="inp-theme-branch" value="{{ $ui['theme'] ?? 'light' }}">
+                                    <div class="row g-2 mb-3">
+                                        @foreach([['light','Sáng','#f8f9fa','#dee2e6'],['dark','Tối','#1a1d20','#343a40'],['auto','Tự động','#6c757d','#adb5bd']] as [$val,$label,$c1,$c2])
+                                        <div class="col-4">
+                                            <div class="theme-card {{ ($ui['theme'] ?? 'light') == $val ? 'selected' : '' }}" onclick="selectThemeBranch('{{ $val }}', this)">
+                                                <div class="theme-preview" style="background:{{ $c1 }};">
+                                                    <div class="theme-preview-bar" style="background:{{ $c2 }};"></div>
+                                                    <div class="theme-preview-bar" style="background:{{ $c2 }}; opacity:.5;"></div>
+                                                </div>
+                                                <small class="fw-semibold">{{ $label }}</small>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- MÀU CHỦ ĐẠO --}}
+                                    <label class="form-label small fw-bold text-uppercase text-muted mb-2">Màu chủ đạo</label>
+                                    <input type="hidden" name="primary_color" id="inp-color-branch" value="{{ $ui['primary_color'] ?? '#1e88e5' }}">
+                                    <div class="d-flex gap-2 flex-wrap mb-3">
+                                        @foreach(['#1e88e5','#7c3aed','#059669','#d97706','#dc2626','#db2777','#0891b2'] as $c)
+                                        <div class="color-swatch {{ ($ui['primary_color'] ?? '#1e88e5') == $c ? 'selected' : '' }}"
+                                             style="background:{{ $c }};"
+                                             onclick="selectColorBranch('{{ $c }}', this)"></div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- FONT --}}
+                                    <label class="form-label small fw-bold text-uppercase text-muted mb-2">Font chữ</label>
+                                    <input type="hidden" name="font" id="inp-font-branch" value="{{ $ui['font'] ?? 'Be Vietnam Pro' }}">
+                                    <div class="row g-2 mb-3">
+                                        @foreach([['Be Vietnam Pro','Gọn, hiện đại'],['Roboto','Phổ biến, dễ đọc'],['Merriweather','Thanh lịch, serif'],['Nunito','Tròn, thân thiện']] as [$f,$desc])
+                                        <div class="col-6">
+                                            <div class="font-card {{ ($ui['font'] ?? 'Be Vietnam Pro') == $f ? 'selected' : '' }}" onclick="selectFontBranch('{{ $f }}', this)" style="font-family:'{{ $f }}'">
+                                                <span>Aa — {{ $f }}</span>
+                                                <small>{{ $desc }}</small>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary fw-bold px-4">Lưu giao diện</button>
+                                </form>
+                            </div>
+
+                            {{-- BẢO MẬT - ĐỔI MẬT KHẨU --}}
+                            <div class="card border-0 bg-light rounded-3 p-4 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-lock me-2 text-primary"></i>Bảo mật</h6>
+                                <form action="{{ route('settings.password') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="redirect_back" value="{{ url()->current() }}">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-semibold">Mật khẩu hiện tại</label>
+                                        <input type="password" name="current_password" class="form-control" placeholder="Nhập mật khẩu hiện tại...">
+                                    </div>
                                     <div class="mb-3">
                                         <label class="form-label small fw-semibold">Mật khẩu mới</label>
                                         <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu mới...">
@@ -471,6 +530,67 @@
                                         <input type="password" name="password_confirmation" class="form-control" placeholder="Nhập lại mật khẩu...">
                                     </div>
                                     <button type="submit" class="btn btn-primary fw-bold px-4">Lưu mật khẩu</button>
+                                </form>
+                            </div>
+
+                            {{-- NGÔN NGỮ --}}
+                            <div class="card border-0 bg-light rounded-3 p-4 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-translate me-2 text-primary"></i>Ngôn ngữ & Vùng</h6>
+                                <form action="{{ route('settings.language') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="redirect_back" value="{{ url()->current() }}">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-semibold">Ngôn ngữ hiển thị</label>
+                                        <select name="language" class="form-select">
+                                            @php $langs = config('i18n.supported', []); $curLang = Auth::user()->language ?? app()->getLocale(); @endphp
+                                            @foreach($langs as $code => $info)
+                                                <option value="{{ $code }}" {{ $curLang == $code ? 'selected' : '' }}>
+                                                    {{ $info['flag'] ?? '' }} {{ $info['name'] ?? $code }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary fw-bold px-4">Lưu ngôn ngữ</button>
+                                </form>
+                            </div>
+
+                            {{-- THÔNG BÁO --}}
+                            <div class="card border-0 bg-light rounded-3 p-4 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-bell me-2 text-primary"></i>Thông báo</h6>
+                                <form action="{{ route('settings.notifications') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="redirect_back" value="{{ url()->current() }}">
+                                    @php $notif = Auth::user()->notification_settings ?? []; @endphp
+                                    @foreach([['email_booking','Email xác nhận đặt vé'],['email_promo','Email khuyến mãi'],['email_reminder','Email nhắc lịch chơi']] as [$key,$label])
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                                        <span class="small fw-semibold">{{ $label }}</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" name="{{ $key }}" value="1"
+                                                   {{ ($notif[$key] ?? true) ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                    <button type="submit" class="btn btn-primary fw-bold px-4 mt-3">Lưu thông báo</button>
+                                </form>
+                            </div>
+
+                            {{-- QUYỀN RIÊNG TƯ --}}
+                            <div class="card border-0 bg-light rounded-3 p-4 mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-shield-check me-2 text-primary"></i>Quyền riêng tư</h6>
+                                <form action="{{ route('settings.privacy') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="redirect_back" value="{{ url()->current() }}">
+                                    @php $priv = Auth::user()->privacy_settings ?? []; @endphp
+                                    @foreach([['show_profile','Hiển thị hồ sơ công khai'],['show_activity','Hiển thị lịch sử hoạt động'],['allow_review_visible','Hiển thị đánh giá của tôi']] as [$key,$label])
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-light">
+                                        <span class="small fw-semibold">{{ $label }}</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" name="{{ $key }}" value="1"
+                                                   {{ ($priv[$key] ?? true) ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                    <button type="submit" class="btn btn-primary fw-bold px-4 mt-3">Lưu quyền riêng tư</button>
                                 </form>
                             </div>
 
@@ -486,6 +606,26 @@
                         </div>
 
                         <script>
+                            function selectThemeBranch(val, el) {
+                                document.getElementById('inp-theme-branch').value = val;
+                                document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+                                el.classList.add('selected');
+                                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                                const isDark = val === 'dark' || (val === 'auto' && prefersDark);
+                                document.body.classList.toggle('dark-mode', isDark);
+                            }
+                            function selectColorBranch(hex, el) {
+                                document.getElementById('inp-color-branch').value = hex;
+                                document.querySelectorAll('.color-swatch').forEach(c => c.classList.remove('selected'));
+                                el.classList.add('selected');
+                                document.documentElement.style.setProperty('--primary', hex);
+                            }
+                            function selectFontBranch(val, el) {
+                                document.getElementById('inp-font-branch').value = val;
+                                document.querySelectorAll('.font-card').forEach(c => c.classList.remove('selected'));
+                                el.classList.add('selected');
+                                document.body.style.fontFamily = `'${val}', sans-serif`;
+                            }
                             function copyBranchCode(code) {
                                 if (!code) return;
                                 navigator.clipboard.writeText(code);

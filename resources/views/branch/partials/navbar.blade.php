@@ -150,16 +150,12 @@
         text-decoration: none;
     }
 
-    .holomia-navbar .btn-user:hover {
-        background: rgba(56, 189, 248, 0.2);
-        border-color:
-            {{ $location->color ?? '#38bdf8' }}
-        ;
-        color:
-            {{ $location->color ?? '#38bdf8' }}
-        ;
-        box-shadow: 0 0 16px rgba(56, 189, 248, 0.28);
-    }
+   .holomia-navbar .btn-user:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #ffffff;
+    box-shadow: none;
+}
 
     /* User dropdown */
     .holomia-navbar .dropdown-menu-user {

@@ -158,9 +158,18 @@
                         </div>
 
                         <div class="card-body d-flex flex-column p-4">
-                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3"
-                                style="width: fit-content;">{{ $ticket->category->name }}</span>
-                            <h5 class="card-title fw-bold mb-3 ticket-name">{{ $ticket->name }}</h5>
+                           <div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
+    <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+        <i class="bi bi-person-check-fill text-secondary"></i>
+        {{ number_format($ticket->play_count) }} lượt
+    </small>
+</div>
+<h5 class="card-title fw-bold mb-2 ticket-name">{{ $ticket->name }}</h5>
+<p class="small text-muted mb-3 fw-medium">
+    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+    {{ $location->name }}
+</p>
 
                             <div
                                 class="mt-auto pt-3 border-top border-light mb-4 d-flex justify-content-between align-items-center">

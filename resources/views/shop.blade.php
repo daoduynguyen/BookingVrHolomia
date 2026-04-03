@@ -136,6 +136,11 @@
                                         title="{{ __('shop.add_to_cart') ?? 'Thêm vào giỏ' }}">
                                         <i class="bi bi-cart-plus fs-5"></i>
                                     </a>
+                                    <a href="{{ route('ticket.detail', $ticket->id) }}"
+    class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm"
+    title="Xem chi tiết">
+    <i class="bi bi-eye fs-5"></i>
+</a>
                                 </div>
                             @endif
                         </div>
