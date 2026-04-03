@@ -54,11 +54,10 @@ class Location extends Model
     // -------------------------------------------------------
 
     /** URL landing page của cơ sở */
-   public function landingUrl(): string
-{
-    $domain = env('APP_DOMAIN', 'holomia.test');
-    return 'https://' . $this->slug . '.' . $domain;
-}
+    public function landingUrl(): string
+    {
+        return rtrim(env('APP_URL'), '/') . '/chi-nhanh/' . $this->slug;
+    }
     /** Scope: chỉ lấy cơ sở đang hoạt động */
     public function scopeActive($query)
     {

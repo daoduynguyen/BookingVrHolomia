@@ -23,7 +23,7 @@ use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Admin\AdminSettingsController;
 
-Route::domain('{subdomain}.' . env('APP_DOMAIN', 'holomia.test'))->group(function () {
+Route::prefix('chi-nhanh/{subdomain}')->group(function () {
     // Trang chủ + chi tiết vé
     Route::get('/', [App\Http\Controllers\BranchController::class, 'index'])->name('branch.home');
     Route::get('/tro-choi/{id}', [App\Http\Controllers\BranchController::class, 'detail'])->name('branch.detail');
