@@ -76,7 +76,7 @@
                                 <a href="{{ $location->landingUrl() }}" target="_blank"
                                     class="text-primary fw-bold text-decoration-none" style="font-size:13px;">
                                     <i class="bi bi-box-arrow-up-right me-1"></i>
-                                    {{ $location->slug }}.{{ env('APP_DOMAIN', 'holomia.test') }}
+                                    {{ $location->landingUrl() }}
                                 </a>
                             </div>
                         @endif

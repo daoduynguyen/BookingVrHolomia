@@ -14,8 +14,8 @@
                     <small class="text-muted">
                         Landing page:
                         <a href="{{ $location->landingUrl() }}" target="_blank" class="text-primary fw-bold">
-                            {{ $location->slug }}.{{ env('APP_DOMAIN', 'holomia.test') }} <i class="bi bi-box-arrow-up-right"></i>
-                        </a>
+    {{ $location->landingUrl() }}
+</a>
                     </small>
                 @endif
             </div>
@@ -55,7 +55,7 @@
                                 <input type="text" name="slug" class="form-control @error('slug') is-invalid @enderror"
                                        value="{{ old('slug', $location->slug) }}"
                                        placeholder="royalcity">
-                                <span class="input-group-text text-muted bg-light" style="font-size:13px;">.{{ env('APP_DOMAIN', 'holomia.test') }}</span>
+                                <span class="input-group-text">.holomia.shop/chi-nhanh/</span>
                             </div>
                             @error('slug')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             <div class="form-text">Chỉ dùng chữ thường, số và dấu gạch ngang. VD: <code>royalcity</code></div>
@@ -187,7 +187,7 @@
                             <a href="{{ $location->landingUrl() }}" target="_blank"
                                class="text-primary fw-bold text-decoration-none" style="font-size:13px; word-break:break-all;">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>
-                                {{ $location->slug }}.{{ env('APP_DOMAIN', 'holomia.test') }}
+                                {{ $location->landingUrl() }}
                             </a>
                         </div>
                     </div>
