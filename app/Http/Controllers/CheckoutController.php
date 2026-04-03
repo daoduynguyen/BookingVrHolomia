@@ -439,10 +439,10 @@ class CheckoutController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('finalPayment error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return back()->with('error', __('messages.system_error'));
-        }
+    DB::rollBack();
+    Log::error('finalPayment error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+    return back()->with('error', $e->getMessage()); // TẠM THỜI để xem lỗi thật
+}
     }
 
     // Các hàm phụ trợ
