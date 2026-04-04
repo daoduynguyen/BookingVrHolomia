@@ -58,6 +58,8 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
 
     Route::get('/yeu-thich', [App\Http\Controllers\BranchController::class, 'wishlist'])->name('branch.wishlist')->middleware('auth');
     Route::get('/cai-dat', [App\Http\Controllers\BranchController::class, 'settings'])->name('branch.settings')->middleware('auth');
+    Route::post('/cai-dat/cap-nhat-ui', [App\Http\Controllers\BranchController::class, 'updateUISettings'])->name('branch.settings.ui')->middleware('auth');
+    Route::post('/cai-dat/doi-mat-khau', [App\Http\Controllers\BranchController::class, 'updatePassword'])->name('branch.settings.password')->middleware('auth');
 
     Route::get('/danh-sach-ve', [App\Http\Controllers\BranchController::class, 'shop'])->name('branch.shop');
 

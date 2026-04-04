@@ -383,6 +383,10 @@ class BranchController extends Controller
         }
 
         // 3. VÍ HOLOMIA + COD → Thông báo thành công
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            return redirect()->route('branch.profile', ['subdomain' => $subdomain])
+                ->with('cod_success', true);
+        }
         return redirect()->route('branch.home', ['subdomain' => $subdomain])
             ->with('success', 'Đặt vé thành công! Mã đơn hàng của bạn là DH' . $order->id);
     }
@@ -444,8 +448,8 @@ class BranchController extends Controller
 
     public function orderDetail($subdomain, $orderId)
     {
-        $order = Order::with(['details.ticket', 'location', 'slot'])->findOrFail($orderId);
-        $html = view('partials.order_detail_content', compact('order'))->render();
+        $order = Order::with(['orderItems.ticket', 'orderItems.review', 'location', 'slot'])->findOrFail($orderId);
+        $html = view('profile.order_invoice', compact('order'))->render();
         return response()->json(['html' => $html]);
     }
 
@@ -544,7 +548,50 @@ class BranchController extends Controller
     public function settings($subdomain)
     {
         $location = $this->getLocation($subdomain);
-        return redirect()->route('branch.profile', ['subdomain' => $subdomain]);
+        $user = Auth::user();
+        return view('branch.settings', compact('location', 'subdomain', 'user'));
+    }
+
+    public function updateUISettings(Request $request, $subdomain)
+    {
+        $request->validate([
+            'theme'         => 'required|in:light,dark,auto',
+            'font'          => 'required|string|max:60',
+            'font_size'     => 'required|integer|min:12|max:32',
+            'primary_color' => 'required|regex:/^#[0-9a-fA-F]{6}$/',
+        ]);
+
+        Auth::user()->update([
+            'ui_settings' => array_merge(Auth::user()->ui_settings ?? [], [
+                'theme'         => $request->theme,
+                'font'          => $request->font,
+                'font_size'     => (int) $request->font_size,
+                'primary_color' => $request->primary_color,
+            ])
+        ]);
+
+        return back()->with('success', 'Đã lưu cài đặt giao diện!');
+    }
+
+    public function updatePassword(Request $request, $subdomain)
+    {
+        $user = Auth::user();
+        if ($user->provider_name) {
+            return back()->withErrors(['current_password' => 'Tài khoản của bạn sử dụng đăng nhập qua mạng xã hội, không thể đổi mật khẩu tại đây.']);
+        }
+
+        $request->validate([
+            'current_password'          => 'required',
+            'new_password'              => 'required|min:6|confirmed',
+            'new_password_confirmation' => 'required',
+        ]);
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
+        }
+
+        $user->update(['password' => \Illuminate\Support\Facades\Hash::make($request->new_password)]);
+        return back()->with('success', 'Đổi mật khẩu thành công!');
     }
     public function shop($subdomain)
     {

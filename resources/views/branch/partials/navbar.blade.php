@@ -272,7 +272,7 @@
 
 
                         <li>
-                            <a class="dropdown-item" href="{{ route('settings.index') }}">
+                            <a class="dropdown-item" href="{{ route('branch.settings', ['subdomain' => $subdomain]) }}">
                                 <i class="bi bi-gear me-2"></i> {{ __('profile.settings') ?? 'Cài đặt' }}
                             </a>
                         </li>

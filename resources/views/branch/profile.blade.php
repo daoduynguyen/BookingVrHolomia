@@ -195,7 +195,7 @@
                             data-bs-target="#v-pills-wishlist" type="button" role="tab">
                             <i class="bi bi-heart"></i> {{ __('profile.wishlist') ?? 'Yêu thích' }}
                         </button>
-                        <a href="{{ route('settings.index') }}" class="nav-link" style="text-decoration:none">
+                        <a href="{{ route('branch.settings', ['subdomain' => $subdomain]) }}" class="nav-link" style="text-decoration:none">
                             <i class="bi bi-gear"></i> {{ __('profile.settings') ?? 'Cài đặt' }}
                         </a>
                         <hr style="border-color: rgba(255,255,255,0.12); margin: 4px 8px;">
@@ -693,6 +693,19 @@
             });
         });
     </script>
+    
+    @if(session('cod_success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }}',
+            text: '{{ __("profile.order_success_desc") ?? "Đơn hàng Payment tại quầy đã được xác nhận." }}',
+            background: '#fff',
+            color: '#1f2937'
+        });
+    </script>
+    @endif
+    
     @include('branch.partials.footer')
 </body>
 </html>
