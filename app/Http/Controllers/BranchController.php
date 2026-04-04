@@ -234,6 +234,33 @@ class BranchController extends Controller
             ->with('success', 'Đã thêm vé vào giỏ hàng!');
     }
 
+    // ==================== THÊM NHANH VÀO GIỎ ====================
+    public function quickAddToCart($subdomain, $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+        $cart = session()->get('branch_cart_' . $subdomain, []);
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity']++;
+        } else {
+            $cart[$id] = [
+                'id' => $ticket->id,
+                'name' => $ticket->name,
+                'ticket_type' => null,
+                'image' => $ticket->image ?? $ticket->image_url,
+                'quantity' => 1,
+                'price' => $ticket->price,
+                'booking_date' => \Carbon\Carbon::tomorrow()->format('Y-m-d'),
+                'customer_name' => Auth::user()->name ?? 'Khách hàng',
+                'customer_phone' => Auth::user()->phone ?? '',
+            ];
+        }
+
+        session()->put('branch_cart_' . $subdomain, $cart);
+        return redirect()->route('branch.cart', ['subdomain' => $subdomain])
+            ->with('success', 'Đã thêm vé vào giỏ hàng!');
+    }
+
     // ==================== GIỎ HÀNG ====================
     public function cart($subdomain)
     {
@@ -273,9 +300,13 @@ class BranchController extends Controller
         return response()->json(['success' => false], 400);
     }
 
-    public function emptyCart($subdomain)
+    public function emptyCart(Request $request, $subdomain)
     {
         session()->forget('branch_cart_' . $subdomain);
+        if ($request->query('redirect') === 'home') {
+            return redirect()->route('branch.home', ['subdomain' => $subdomain])
+                ->with('error', 'Lệnh đặt chỗ hết hạn, chỗ đã được phục hồi giữ chỗ.');
+        }
         return redirect()->route('branch.cart', ['subdomain' => $subdomain])
             ->with('success', 'Đã làm trống giỏ hàng.');
     }
@@ -302,7 +333,7 @@ class BranchController extends Controller
 
         // Tạo đơn hàng
         $order = Order::create([
-            'user_id' => $user->id ?? null,
+           'user_id' => Auth::id() ?? null,
             'customer_name' => $firstItem['customer_name'],
             'customer_phone' => $firstItem['customer_phone'],
             'customer_email' => $firstItem['customer_email'] ?? ($user->email ?? ''),

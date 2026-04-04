@@ -76,17 +76,35 @@
             gap: 10px;
         }
 
+        .nav-pills .nav-link i {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.5);
+            transition: all 0.22s;
+            width: 20px;
+            text-align: center;
+        }
+
         .nav-pills .nav-link:hover {
             background: rgba(255, 255, 255, 0.1) !important;
             color: #ffffff !important;
             transform: translateX(4px);
         }
 
+        .nav-pills .nav-link:hover i {
+            color: #38bdf8 !important;
+        }
+
         .nav-pills .nav-link.active {
-            background: rgba(255, 255, 255, 0.15) !important;
+            background: linear-gradient(90deg, rgba(56,189,248,0.28) 0%, rgba(56,189,248,0.08) 100%) !important;
             color: #ffffff !important;
             font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(56,189,248,0.3) !important;
+            box-shadow: 0 4px 14px rgba(56,189,248,0.15);
+        }
+
+        .nav-pills .nav-link.active i {
+            color: #38bdf8 !important;
+            filter: drop-shadow(0 0 5px rgba(56,189,248,0.7));
         }
 
         .btn-logout-profile {
@@ -167,20 +185,19 @@
                         </button>
                         <button class="nav-link" id="v-pills-orders-tab" data-bs-toggle="pill"
                             data-bs-target="#v-pills-orders" type="button" role="tab">
-                            <i class="bi bi-box-seam"></i> Đơn hàng tại chi nhánh
+                            <i class="bi bi-box-seam"></i> {{ __('profile.my_orders') ?? 'Đơn hàng của tôi' }}
                         </button>
                         <button class="nav-link" id="v-pills-voucher-tab" data-bs-toggle="pill"
                             data-bs-target="#v-pills-voucher" type="button" role="tab">
-                            <i class="bi bi-ticket-perforated"></i> Mã giảm giá
+                            <i class="bi bi-ticket-perforated"></i> {{ __('profile.vouchers') ?? 'Kho Voucher' }}
                         </button>
                         <button class="nav-link" id="v-pills-wishlist-tab" data-bs-toggle="pill"
                             data-bs-target="#v-pills-wishlist" type="button" role="tab">
-                            <i class="bi bi-heart"></i> Yêu thích
+                            <i class="bi bi-heart"></i> {{ __('profile.wishlist') ?? 'Yêu thích' }}
                         </button>
-                        <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill"
-                            data-bs-target="#v-pills-settings" type="button" role="tab">
-                            <i class="bi bi-gear"></i> Cài đặt
-                        </button>
+                        <a href="{{ route('settings.index') }}" class="nav-link" style="text-decoration:none">
+                            <i class="bi bi-gear"></i> {{ __('profile.settings') ?? 'Cài đặt' }}
+                        </a>
                         <hr style="border-color: rgba(255,255,255,0.12); margin: 4px 8px;">
                         <form action="{{ route('branch.logout', ['subdomain' => $subdomain]) }}" method="POST">
                             @csrf

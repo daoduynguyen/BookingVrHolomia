@@ -61,10 +61,12 @@ class CartController extends Controller
     }
 
     // 4. Xóa sạch giỏ hàng
-    public function clear()
+    public function clear(\Illuminate\Http\Request $request)
     {
-        session()->forget('cart');
-        session()->forget('cart_created_at');
+        session()->forget(['cart', 'coupon', 'coupon_code', 'cart_created_at']);
+        if ($request->query('redirect') === 'home') {
+            return redirect()->route('home')->with('error', 'Lệnh đặt chỗ hết hạn, chỗ đã được phục hồi giữ chỗ.');
+        }
         return redirect()->route('ticket.shop')->with('success', 'Đã xóa sạch giỏ hàng!');
     }
 

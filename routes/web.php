@@ -42,6 +42,7 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
     // Đặt vé (booking form)
     Route::get('/dat-ve/{id}', [App\Http\Controllers\BranchController::class, 'bookingForm'])->name('branch.booking.form');
     Route::post('/them-gio-hang', [App\Http\Controllers\BranchController::class, 'addToCart'])->name('branch.cart.add');
+    Route::get('/them-gio-hang-nhanh/{id}', [App\Http\Controllers\BranchController::class, 'quickAddToCart'])->name('branch.cart.add.quick');
 
     // Giỏ hàng + Thanh toán
     Route::get('/gio-hang', [App\Http\Controllers\BranchController::class, 'cart'])->name('branch.cart');
@@ -244,8 +245,7 @@ Route::middleware('guest')->group(function () {
 
 // finalPayment yêu cầu đăng nhập để tránh đơn hàng không có chủ sở hữu
 Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
-    ->name('payment.final')
-    ->middleware('auth');
+    ->name('payment.final');
 
 Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('payment.banking');
 // Route checkout.banking đã được hợp nhất vào payment.banking ở trên (tránh trùng lặp)

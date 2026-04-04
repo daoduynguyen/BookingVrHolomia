@@ -281,8 +281,9 @@
                 timer.textContent = '00:00';
                 warning.className = 'alert alert-danger d-flex align-items-center gap-2 mb-4';
                 warning.innerHTML = '<i class="bi bi-exclamation-triangle-fill fs-5"></i>'
-                    + '<div>Phiên đặt vé đã hết hạn. '
-                    + '<a href="{{ route("branch.cart.empty", ["subdomain" => $subdomain]) }}" class="fw-bold">Làm mới giỏ hàng</a> để tiếp tục.</div>';
+                    + '<div>Đã hết 10 phút đếm ngược. Hệ thống đang tự động làm mới trang để phục hồi chỗ.</div>';
+                document.body.insertAdjacentHTML('beforeend', '<form id="form-clear-cart" action="{{ route('branch.cart.empty', ['subdomain' => $subdomain, 'redirect' => 'home']) }}" method="GET" style="display:none"></form>');
+                document.getElementById('form-clear-cart').submit();
                 return;
             }
 

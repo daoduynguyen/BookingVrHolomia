@@ -359,9 +359,11 @@
                 timer.textContent = '00:00';
                 warning.className = 'alert alert-danger d-flex align-items-center gap-2 mb-4';
                 warning.innerHTML = '<i class="bi bi-exclamation-triangle-fill fs-5"></i>'
-                    + '<div>Phiên đặt vé đã hết hạn. '
-                    + '<button type="button" class="btn btn-link fw-bold p-0 border-0" onclick="document.getElementById(\'form-clear-cart\').submit()">Làm mới giỏ hàng</button> để tiếp tục.</div>';
-                document.body.insertAdjacentHTML('beforeend', '<form id="form-clear-cart" action="{{ route('cart.clear') }}" method="POST" style="display:none"><input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="DELETE"></form>');
+                    + '<div>Đã hết 10 phút đếm ngược. Hệ thống đang tự động làm mới trang để phục hồi chỗ.</div>';
+                document.body.insertAdjacentHTML('beforeend', '<form id="form-clear-cart" action="{{ route('cart.clear', ['redirect'=>'home']) }}" method="POST" style="display:none"><input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="DELETE"></form>');
+                
+                // TỰ ĐỘNG SUBMIT KHI HẾT GIỜ (đáp ứng requirement)
+                document.getElementById('form-clear-cart').submit();
                 return;
             }
 

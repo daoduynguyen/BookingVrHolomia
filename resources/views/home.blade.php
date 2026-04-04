@@ -130,11 +130,14 @@
                                     <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm" disabled>{{ __('home.maintenance') ?? 'Bảo trì' }}</button>
                                 @else
                                     <div class="d-flex gap-2">
-                                        <a href="{{ route('ticket.show', $ticket->id) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
+                                        <a href="{{ route('booking.form', $ticket->id) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm d-flex align-items-center justify-content-center">
                                             {{ __('home.book_now') }}
                                         </a>
-                                        <a href="{{ route('cart.add', $ticket->id) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="{{ __('home.add_to_cart') ?? 'Thêm vào giỏ' }}">
+                                        <a href="{{ route('cart.add', $ticket->id) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="{{ __('home.add_to_cart') ?? 'Thêm vào giỏ' }}">
                                             <i class="bi bi-cart-plus fs-5"></i>
+                                        </a>
+                                        <a href="{{ route('ticket.show', $ticket->id) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Xem chi tiết">
+                                            <i class="bi bi-eye fs-5"></i>
                                         </a>
                                     </div>
                                 @endif

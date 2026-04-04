@@ -113,34 +113,36 @@
                         </div>
 
                         <div class="card-body d-flex flex-column p-4">
-                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3"
-                                style="width: fit-content;">{{ $ticket->category->name }}</span>
-                            <h5 class="card-title fw-bold mb-3 text-truncate">{{ $ticket->name }}</h5>
-
-                            <div
-                                class="mt-auto pt-3 border-top border-light mb-4 d-flex justify-content-between align-items-center">
-                                <span class="small text-muted fw-medium">{{ __('home.price_from') }}</span>
-                                <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
-                            </div>
-
-                            @if($ticket->status == 'maintenance')
-                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>BẢO TRÌ</button>
-                            @else
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
-                                        class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
-                                        ĐẶT VÉ NGAY
-                                    </a>
-                                    <a href="{{ route('branch.cart', ['subdomain' => $subdomain]) }}"
-                                        class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="Giỏ hàng">
-                                        <i class="bi bi-cart3"></i>
-                                    </a>
-                                    <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
-                                        class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="Xem chi tiết">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
+                                    <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+                                        <i class="bi bi-person-check-fill text-secondary"></i>
+                                        {{ number_format($ticket->play_count) }} lượt
+                                    </small>
                                 </div>
-                            @endif
+                                
+                                <h5 class="card-title fw-bold mb-3 text-truncate">{{ $ticket->name }}</h5>
+
+                                <div class="mt-auto pt-3 border-top border-light mb-4 d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted fw-medium">{{ __('home.price_from') }}</span>
+                                    <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
+                                </div>
+
+                                @if($ticket->status == 'maintenance')
+                                    <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>BẢO TRÌ</button>
+                                @else
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm d-flex align-items-center justify-content-center">
+                                            ĐẶT VÉ NGAY
+                                        </a>
+                                        <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Thêm vào giỏ">
+                                            <i class="bi bi-cart-plus fs-5"></i>
+                                        </a>
+                                        <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Xem chi tiết">
+                                            <i class="bi bi-eye fs-5"></i>
+                                        </a>
+                                    </div>
+                                @endif
                         </div>
                     </div>
                 </div>
@@ -166,7 +168,7 @@
             let icon = btn.find('i');
             let id = btn.data('id');
             $.ajax({
-                url: '/wishlist/toggle/' + id,
+                url: '{{ url("/wishlist/toggle") }}/' + id,
                 method: 'POST',
                 data: { _token: '{{ csrf_token() }}' },
                 beforeSend: function () { btn.prop('disabled', true).css('opacity', '0.6'); },

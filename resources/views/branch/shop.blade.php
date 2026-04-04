@@ -182,17 +182,14 @@
                             @else
 
                                 <div class="d-flex gap-2">
-                                    <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
-                                        class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
+                                    <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm d-flex align-items-center justify-content-center">
                                         ĐẶT VÉ NGAY
                                     </a>
-                                    <a href="{{ route('branch.cart', ['subdomain' => $subdomain]) }}"
-                                        class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="Giỏ hàng">
-                                        <i class="bi bi-cart3"></i>
+                                    <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Thêm vào giỏ">
+                                        <i class="bi bi-cart-plus fs-5"></i>
                                     </a>
-                                    <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
-                                        class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm" title="Xem chi tiết">
-                                        <i class="bi bi-eye"></i>
+                                    <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Xem chi tiết">
+                                        <i class="bi bi-eye fs-5"></i>
                                     </a>
                                 </div>
                             @endif
@@ -254,7 +251,7 @@
             let icon = btn.find('i');
             let id = btn.data('id');
             $.ajax({
-                url: '/wishlist/toggle/' + id,
+                url: '{{ url("/wishlist/toggle") }}/' + id,
                 method: 'POST',
                 data: { _token: '{{ csrf_token() }}' },
                 beforeSend: function () { btn.prop('disabled', true).css('opacity', '0.6'); },
