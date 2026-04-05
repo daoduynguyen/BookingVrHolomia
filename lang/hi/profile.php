@@ -60,7 +60,7 @@ return [
     'status_paid'       => 'भुगतान हो गया',
     'status_cancelled'  => 'रद्द किया गया',
     'status_refunded'   => 'वापस किया गया',
-    'status_expired'    => 'समाप्त हो गया',,
+    'status_expired'    => 'समाप्त हो गया',
     'order_success_desc' => 'काउंटर पर भुगतान का ऑर्डर पुष्टि हो गया।',
     'payment_success' => 'भुगतान सफल!',
     'payment_success_desc' => 'वॉलेट से कटौती और ऑर्डर की पुष्टि हो गई।',
