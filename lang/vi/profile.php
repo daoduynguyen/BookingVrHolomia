@@ -102,5 +102,8 @@ return [
     'refund_confirm_text' => 'Bạn có chắc chắn muốn hoàn trả vé này không? Tiền sẽ được hoàn về số dư ví của bạn.',
     'yes_refund'        => 'Có, hoàn vé!',
     'no_cancel'         => 'Không, thoát',
-    'success'           => 'Thành công!',
+    'success'                => 'Thành công!',
+    'order_success_desc'     => 'Đơn hàng thanh toán tại quầy đã được xác nhận.',
+    'payment_success'        => 'Thanh toán thành công!',
+    'payment_success_desc'   => 'Đã trừ ví và xác nhận đơn hàng của bạn.',
 ];

@@ -60,5 +60,8 @@ return [
     'status_paid'       => '已付款',
     'status_cancelled'  => '已取消',
     'status_refunded'   => '已退款',
-    'status_expired'    => '已过期',
+    'status_expired'    => '已过期',,
+    'order_success_desc' => '您的前台付款订单已确认。',
+    'payment_success' => '支付成功！',
+    'payment_success_desc' => '已从钱包扣款并确认您的订单。',
 ];

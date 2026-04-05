@@ -60,5 +60,8 @@ return [
     'status_paid'       => '支払済み',
     'status_cancelled'  => 'キャンセル済み',
     'status_refunded'   => '返金済み',
-    'status_expired'    => '期限切れ',
+    'status_expired'    => '期限切れ',,
+    'order_success_desc' => '店頭決済のご注文が確認されました。',
+    'payment_success' => 'お支払い完了！',
+    'payment_success_desc' => 'ウォレットから引き落とし、ご注文を確認しました。',
 ];

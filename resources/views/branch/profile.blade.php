@@ -708,8 +708,8 @@
     <script>
         Swal.fire({
             icon: 'success',
-            title: 'Thanh toán thành công!',
-            text: 'Đã trừ ví và xác nhận đơn hàng của bạn.',
+            title: '{{ __("profile.payment_success") }}',
+            text: '{{ __("profile.payment_success_desc") }}',
             background: '#fff',
             color: '#1f2937'
         });

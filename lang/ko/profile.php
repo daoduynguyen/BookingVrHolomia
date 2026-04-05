@@ -60,5 +60,8 @@ return [
     'status_paid'       => '결제 완료',
     'status_cancelled'  => '취소됨',
     'status_refunded'   => '환불됨',
-    'status_expired'    => '만료됨',
+    'status_expired'    => '만료됨',,
+    'order_success_desc' => '카운터 결제 주문이 확인되었습니다.',
+    'payment_success' => '결제 완료!',
+    'payment_success_desc' => '지갑에서 차감되었으며 주문이 확인되었습니다.',
 ];

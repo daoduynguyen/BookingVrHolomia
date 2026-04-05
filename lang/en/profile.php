@@ -102,5 +102,8 @@ return [
     'refund_confirm_text' => 'Are you sure you want to refund this ticket? The amount will be refunded to your wallet balance.',
     'yes_refund'        => 'Yes, refund!',
     'no_cancel'         => 'No, cancel',
-    'success'           => 'Success!',
+    'success'                => 'Success!',
+    'order_success_desc'     => 'Your counter payment order has been confirmed.',
+    'payment_success'        => 'Payment successful!',
+    'payment_success_desc'   => 'Your wallet has been charged and order confirmed.',
 ];
