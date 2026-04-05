@@ -64,7 +64,7 @@ return [
     'order_success_desc' => '카운터 결제 주문이 확인되었습니다.',
     'payment_success' => '결제 완료!',
     'payment_success_desc' => '지갑에서 차감되었으며 주문이 확인되었습니다.',
-],
+
     'pay_at_counter_simple' => '카운터에서 결제 및 티켓을 수령해 주세요.',
     'order_id_label' => '주문 번호:',
     'total_label' => '총 금액:',

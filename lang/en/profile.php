@@ -106,7 +106,7 @@ return [
     'order_success_desc'     => 'Your counter payment order has been confirmed.',
     'payment_success'        => 'Payment successful!',
     'payment_success_desc'   => 'Your wallet has been charged and order confirmed.',
-],
+
     'pay_at_counter_simple' => 'Please visit the counter to pay and collect your ticket.',
     'order_id_label' => 'Order ID:',
     'total_label' => 'Total:',

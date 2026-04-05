@@ -64,7 +64,7 @@ return [
     'order_success_desc' => '您的前台付款订单已确认。',
     'payment_success' => '支付成功！',
     'payment_success_desc' => '已从钱包扣款并确认您的订单。',
-],
+
     'pay_at_counter_simple' => '请到前台付款并领取票券。',
     'order_id_label' => '订单号:',
     'total_label' => '总金额:',

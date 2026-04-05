@@ -64,7 +64,7 @@ return [
     'order_success_desc' => '店頭決済のご注文が確認されました。',
     'payment_success' => 'お支払い完了！',
     'payment_success_desc' => 'ウォレットから引き落とし、ご注文を確認しました。',
-],
+
     'pay_at_counter_simple' => 'カウンターにてお支払いとチケット受け取りをお願いします。',
     'order_id_label' => '注文番号:',
     'total_label' => '合計金額:',
