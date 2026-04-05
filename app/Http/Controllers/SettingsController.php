@@ -59,10 +59,10 @@ class SettingsController extends Controller
 
         $request->validate([
             'current_password'          => 'required',
-            'new_password'              => 'required|min:6|confirmed',
+            'new_password'              => 'required|min:8|confirmed',
             'new_password_confirmation' => 'required',
         ], [
-            'new_password.min'       => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.min'       => 'Mật khẩu mới phải có ít nhất 8 ký tự.',
             'new_password.confirmed' => 'Mật khẩu nhập lại không khớp.',
         ]);
 

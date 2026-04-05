@@ -231,6 +231,18 @@ class CheckoutController extends Controller
             // Dùng array_unique để loại bỏ mã trùng nếu 2 vé xài chung 1 mã
             $couponCodeString = !empty($appliedCoupons) ? implode(', ', array_unique($appliedCoupons)) : null;
 
+            // Khóa mã giảm giá để ngăn chặn việc dùng chung 1 mã quá lượt (Race Condition)
+            if (!empty($appliedCoupons)) {
+                $uniqueCoupons = array_unique($appliedCoupons);
+                $lockedCoupons = \App\Models\Coupon::whereIn('code', $uniqueCoupons)->lockForUpdate()->get()->keyBy('code');
+                foreach ($uniqueCoupons as $code) {
+                    if (!isset($lockedCoupons[$code]) || $lockedCoupons[$code]->quantity <= 0) {
+                        DB::rollBack();
+                        return back()->with('error', __('messages.coupon_used_up') . " ($code)");
+                    }
+                }
+            }
+
             // Thông tin khách (Lấy từ item đầu tiên trong giỏ)
             $firstItem = reset($cart);
             $info = $firstItem['customer_info'] ?? [];
@@ -309,7 +321,7 @@ class CheckoutController extends Controller
                     . "💳 *Trạng thái:* " . ($order->status == 'paid' ? '✅ Đã thanh toán' : '⏳ Chờ thanh toán');
 
                 // Bắn Request lên API của Telegram thông qua Background Job
-                SendTelegramNotification::dispatch($message);
+                SendTelegramNotification::dispatch($message)->afterCommit();
             } catch (\Exception $e) {
                 // Ghi log
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
@@ -439,10 +451,10 @@ class CheckoutController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-    DB::rollBack();
-    Log::error('finalPayment error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-    return back()->with('error', $e->getMessage()); // TẠM THỜI để xem lỗi thật
-}
+            DB::rollBack();
+            Log::error('finalPayment error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->with('error', __('messages.payment_error') ?? 'Đã có lỗi xảy ra trong quá trình thanh toán, vui lòng thử lại!');
+        }
     }
 
     // Các hàm phụ trợ
@@ -460,10 +472,11 @@ class CheckoutController extends Controller
                 abort(403);
         }
 
-        $bankBin = \App\Models\Setting::where('key', 'bank_bin')->value('value') ?? '970436';
-        $bankAccount = \App\Models\Setting::where('key', 'bank_account')->value('value') ?? '';
-        $bankName = \App\Models\Setting::where('key', 'bank_name')->value('value') ?? 'Ngân hàng';
-        $bankOwner = \App\Models\Setting::where('key', 'bank_owner')->value('value') ?? 'HOLOMIA VR';
+        $settings = \App\Models\Setting::whereIn('key', ['bank_bin', 'bank_account', 'bank_name', 'bank_owner'])->pluck('value', 'key');
+        $bankBin = $settings['bank_bin'] ?? '970436';
+        $bankAccount = $settings['bank_account'] ?? '';
+        $bankName = $settings['bank_name'] ?? 'Ngân hàng';
+        $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
 
         $refCode = 'DH' . $order->id;
         $amount = $order->total_amount;
@@ -601,12 +614,15 @@ class CheckoutController extends Controller
             }
 
             //  LOGIC TRỪ ĐIỂM KHI HOÀN VÉ
-            $pointsToDeduct = floor($order->total_amount / LoyaltyService::POINTS_PER_VND);
+            $shouldDeductPoints = in_array($order->payment_method, ['cod', 'wallet']) || $order->status === 'paid';
+            if ($shouldDeductPoints) {
+                $pointsToDeduct = floor($order->total_amount / LoyaltyService::POINTS_PER_VND);
 
-            // Trừ điểm nhưng không để bị âm điểm
-            $user->points = max(0, $user->points - $pointsToDeduct);
-            $user->tier = LoyaltyService::calculateTier($user->points);
-            $user->save();
+                // Trừ điểm nhưng không để bị âm điểm
+                $user->points = max(0, $user->points - $pointsToDeduct);
+                $user->tier = LoyaltyService::calculateTier($user->points);
+                $user->save();
+            }
             // Đổi trạng thái đơn hàng
             $order->status = 'refunded';
             $order->save();
@@ -620,7 +636,7 @@ class CheckoutController extends Controller
                     . "💰 *Tiền đã hoàn:* " . number_format($order->total_amount) . " VNĐ\n"
                     . "🔄 *Trạng thái:* Đã nhả lại Slot trống";
 
-                SendTelegramNotification::dispatch($message);
+                SendTelegramNotification::dispatch($message)->afterCommit();
             } catch (\Exception $e) {
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
             }
@@ -653,29 +669,7 @@ class CheckoutController extends Controller
 
         return redirect()->route('profile.index')->with('success', __('messages.refund_success'));
     }
-    // HÀM TỰ ĐỘNG CẬP NHẬT HẠNG THÀNH VIÊN THEO MỐC MỚI
-    public function updateUserTier($user)
-    {
-        $points = $user->points;
-        $newTier = 'Thành viên'; // Mặc định khi chưa đủ 1500 điểm
 
-        // Xét từ cao xuống thấp
-        if ($points >= 8000) {
-            $newTier = 'VIP';
-        } elseif ($points >= 5000) {
-            $newTier = 'Kim Cương';
-        } elseif ($points >= 3000) {
-            $newTier = 'Vàng';
-        } elseif ($points >= 1500) {
-            $newTier = 'Bạc';
-        }
-
-        // Cập nhật nếu có sự thay đổi hạng
-        if ($user->tier !== $newTier) {
-            $user->tier = $newTier;
-            $user->save();
-        }
-    }
 
     // Các hàm cho Route API & Thành công
     public function checkOrderStatus($id)

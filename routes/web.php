@@ -245,9 +245,7 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-// finalPayment yêu cầu đăng nhập để tránh đơn hàng không có chủ sở hữu
-Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
-    ->name('payment.final');
+// payment.final đã được chuyển xuống middleware auth ở dưới
 
 Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'bankingPaymentPage'])->name('payment.banking');
 // Route checkout.banking đã được hợp nhất vào payment.banking ở trên (tránh trùng lặp)
@@ -260,6 +258,10 @@ Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon']
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+
+    // Thanh toán chốt đơn
+    Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
+        ->name('payment.final');
 
     // Email verification
     Route::get('/email/verify', function () {
@@ -282,7 +284,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/vi/kiem-tra-nap', [WalletController::class, 'checkTopupStatus'])->name('wallet.check');
 
     // Hoàn tiền
-    Route::get('/order/refund/{id}', [CheckoutController::class, 'refundOrder'])->name('order.refund');
+    Route::post('/order/refund/{id}', [CheckoutController::class, 'refundOrder'])->name('order.refund');
 
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

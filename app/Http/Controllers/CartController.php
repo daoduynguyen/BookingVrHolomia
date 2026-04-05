@@ -73,17 +73,20 @@ class CartController extends Controller
     // 5. Cập nhật số lượng (AJAX)
     public function update(Request $request)
     {
-        if ($request->id && $request->quantity) {
+        if ($request->id && $request->has('quantity')) {
             $cart = session()->get('cart', []);
 
             // 1. CHỈ cập nhật nếu sản phẩm có thật
             if (isset($cart[$request->id])) {
+                // Đảm bảo số lượng là số nguyên dương và giới hạn tối đa
+                $qty = max(1, min(20, (int) $request->quantity));
+
                 // Cập nhật số lượng mới
-                $cart[$request->id]['quantity'] = $request->quantity;
+                $cart[$request->id]['quantity'] = $qty;
 
                 // Tính lại tiền Tạm tính (Subtotal) của riêng dòng vé này
                 $price = $cart[$request->id]['price'] ?? 0;
-                $subTotal = $price * $request->quantity;
+                $subTotal = $price * $qty;
 
                 // 2. TÍNH LẠI MÃ GIẢM GIÁ (Dành riêng cho vé này)
                 $discountAmount = 0;

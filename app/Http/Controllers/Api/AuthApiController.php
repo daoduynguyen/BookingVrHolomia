@@ -19,14 +19,14 @@ class AuthApiController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
         ], [
             'name.required' => 'Vui lòng nhập họ tên',
             'email.required' => 'Vui lòng nhập email',
             'email.unique' => 'Email này đã được đăng ký',
             'password.required' => 'Vui lòng nhập mật khẩu',
-            'password.min' => 'Mật khẩu phải từ 6 ký tự',
+            'password.min' => 'Mật khẩu phải từ 8 ký tự',
             'password.confirmed' => 'Mật khẩu nhập lại không khớp',
         ]);
 
@@ -148,7 +148,7 @@ class AuthApiController extends Controller
     {
         $request->validate([
             'current_password' => 'required',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed',
         ]);
 
         $user = $request->user();

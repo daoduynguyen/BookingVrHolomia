@@ -25,33 +25,41 @@ class WalletController extends Controller
 
         // Lưu pending transaction
         $tx = WalletTransaction::create([
-            'user_id'        => $user->id,
-            'type'           => 'topup',
-            'amount'         => $amount,
+            'user_id' => $user->id,
+            'type' => 'topup',
+            'amount' => $amount,
             'balance_before' => $user->balance,
-            'balance_after'  => $user->balance,
-            'description'    => 'Nạp tiền vào ví Holomia',
+            'balance_after' => $user->balance,
+            'description' => 'Nạp tiền vào ví Holomia',
             'reference_code' => $refCode,
-            'status'         => 'pending',
+            'status' => 'pending',
         ]);
 
         // Thông tin ngân hàng từ settings
-        $bankBin     = Setting::where('key', 'bank_bin')->value('value')     ?? '970436';
-        $bankAccount = Setting::where('key', 'bank_account')->value('value') ?? '1234567890';
-        $bankName    = Setting::where('key', 'bank_name')->value('value')    ?? 'Vietcombank';
-        $bankOwner   = Setting::where('key', 'bank_owner')->value('value')   ?? 'HOLOMIA VR';
+        $settings = Setting::whereIn('key', ['bank_bin', 'bank_account', 'bank_name', 'bank_owner'])->pluck('value', 'key');
+        $bankBin = $settings['bank_bin'] ?? '970436';
+        $bankAccount = $settings['bank_account'] ?? '1234567890';
+        $bankName = $settings['bank_name'] ?? 'Vietcombank';
+        $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
 
         // QR VietQR chuẩn
         $qrUrl = "https://img.vietqr.io/image/{$bankBin}-{$bankAccount}-compact2.png"
-               . "?amount={$amount}&addInfo=" . urlencode($refCode)
-               . "&accountName=" . urlencode($bankOwner);
+            . "?amount={$amount}&addInfo=" . urlencode($refCode)
+            . "&accountName=" . urlencode($bankOwner);
 
         $transactions = WalletTransaction::where('user_id', $user->id)
             ->latest()->take(10)->get();
 
         return view('wallet.topup', compact(
-            'user', 'amount', 'refCode', 'qrUrl',
-            'bankName', 'bankAccount', 'bankOwner', 'tx', 'transactions'
+            'user',
+            'amount',
+            'refCode',
+            'qrUrl',
+            'bankName',
+            'bankAccount',
+            'bankOwner',
+            'tx',
+            'transactions'
         ));
     }
 
@@ -70,8 +78,8 @@ class WalletController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $content     = $request->input('content', '');       // Nội dung CK
-        $amount      = (float) $request->input('transferAmount', 0);
+        $content = $request->input('content', '');       // Nội dung CK
+        $amount = (float) $request->input('transferAmount', 0);
         $transferType = $request->input('transferType', ''); // in/out
 
         if ($transferType !== 'in' || $amount <= 0) {
@@ -85,7 +93,7 @@ class WalletController extends Controller
 
         // ---- TRƯỜNG HỢP 2: Thanh toán đơn hàng (nội dung chứa DH<order_id>) ----
         if (preg_match('/DH(\d+)/i', $content, $m)) {
-            $this->handleOrderPayment((int)$m[1], $amount);
+            $this->handleOrderPayment((int) $m[1], $amount);
         }
 
         return response()->json(['success' => true]);
@@ -94,19 +102,13 @@ class WalletController extends Controller
     // Xử lý nạp ví
     private function handleTopup(string $content, float $amount): void
     {
-        // Tìm pending transaction theo reference_code
-        $tx = WalletTransaction::where('reference_code', 'LIKE', '%' . strtoupper(substr($content, 0, 20)) . '%')
-            ->where('type', 'topup')
-            ->where('status', 'pending')
-            ->first();
-
-        // Nếu không tìm được tx chính xác, thử match NAP<id>
-        if (!$tx && preg_match('/NAP(\d+)/i', $content, $m)) {
-            $tx = WalletTransaction::where('user_id', $m[1])
+        $tx = null;
+        if (preg_match('/(NAP\d+)/i', $content, $m)) {
+            $refCode = strtoupper($m[1]);
+            // Tìm pending transaction theo reference_code
+            $tx = WalletTransaction::where('reference_code', 'LIKE', '%' . $refCode . '%')
                 ->where('type', 'topup')
                 ->where('status', 'pending')
-                ->where('amount', $amount)
-                ->latest()
                 ->first();
         }
 
@@ -117,17 +119,18 @@ class WalletController extends Controller
 
         DB::transaction(function () use ($tx, $amount) {
             $user = User::lockForUpdate()->find($tx->user_id);
-            if (!$user) return;
+            if (!$user)
+                return;
 
             $before = (float) $user->balance;
             $user->increment('balance', $amount);
             $after = $before + $amount;
 
             $tx->update([
-                'status'         => 'completed',
-                'amount'         => $amount,
+                'status' => 'completed',
+                'amount' => $amount,
                 'balance_before' => $before,
-                'balance_after'  => $after,
+                'balance_after' => $after,
             ]);
 
             Log::info("Nạp ví thành công: User #{$user->id} +{$amount}đ → Số dư: {$after}đ");
@@ -168,11 +171,7 @@ class WalletController extends Controller
             if ($order->user_id) {
                 $user = User::find($order->user_id);
                 if ($user) {
-                    $points = floor($order->total_amount / 1000);
-                    $user->increment('points', $points);
-                    // Xét thăng hạng sau khi cộng điểm
-                    $user->refresh();
-                    app(\App\Http\Controllers\CheckoutController::class)->updateUserTier($user);
+                    \App\Services\LoyaltyService::addPoints($user, $order);
                 }
             }
 
@@ -205,8 +204,8 @@ class WalletController extends Controller
         }
 
         return response()->json([
-            'status'  => $tx->status,
-            'amount'  => $tx->amount,
+            'status' => $tx->status,
+            'amount' => $tx->amount,
             'balance' => Auth::user()->fresh()->balance,
         ]);
     }

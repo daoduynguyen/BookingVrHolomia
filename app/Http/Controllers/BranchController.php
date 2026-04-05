@@ -75,11 +75,11 @@ class BranchController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed',
         ], [
             'name.required' => 'Vui lòng nhập họ tên',
             'email.unique' => 'Email này đã được đăng ký',
-            'password.min' => 'Mật khẩu phải từ 6 ký tự',
+            'password.min' => 'Mật khẩu phải từ 8 ký tự',
             'password.confirmed' => 'Mật khẩu nhập lại không khớp',
         ]);
 
@@ -383,12 +383,13 @@ class BranchController extends Controller
         }
 
         // 3. VÍ HOLOMIA + COD → Thông báo thành công
-        if (\Illuminate\Support\Facades\Auth::check()) {
-            return redirect()->route('branch.profile', ['subdomain' => $subdomain])
-                ->with('cod_success', true);
-        }
-        return redirect()->route('branch.home', ['subdomain' => $subdomain])
-            ->with('success', 'Đặt vé thành công! Mã đơn hàng của bạn là DH' . $order->id);
+        $redirectRoute = \Illuminate\Support\Facades\Auth::check() ? 'branch.profile' : 'branch.home';
+        return redirect()->route($redirectRoute, ['subdomain' => $subdomain])
+            ->with([
+                'order_success' => true,
+                'order_id' => $order->id,
+                'total_amount' => $order->total_amount
+            ]);
     }
 
     // ==================== PROFILE ====================
@@ -493,10 +494,11 @@ class BranchController extends Controller
                 abort(403);
         }
 
-        $bankBin = \App\Models\Setting::where('key', 'bank_bin')->value('value') ?? '970436';
-        $bankAccount = \App\Models\Setting::where('key', 'bank_account')->value('value') ?? '';
-        $bankName = \App\Models\Setting::where('key', 'bank_name')->value('value') ?? 'Ngân hàng';
-        $bankOwner = \App\Models\Setting::where('key', 'bank_owner')->value('value') ?? 'HOLOMIA VR';
+        $settings = \App\Models\Setting::whereIn('key', ['bank_bin', 'bank_account', 'bank_name', 'bank_owner'])->pluck('value', 'key');
+        $bankBin = $settings['bank_bin'] ?? '970436';
+        $bankAccount = $settings['bank_account'] ?? '';
+        $bankName = $settings['bank_name'] ?? 'Ngân hàng';
+        $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
 
         $refCode = 'DH' . $order->id;
         $amount = $order->total_amount;
@@ -582,7 +584,7 @@ class BranchController extends Controller
 
         $request->validate([
             'current_password'          => 'required',
-            'new_password'              => 'required|min:6|confirmed',
+            'new_password'              => 'required|min:8|confirmed',
             'new_password_confirmation' => 'required',
         ]);
 

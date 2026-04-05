@@ -251,15 +251,17 @@ class OrderApiController extends Controller
 
             // Nếu banking: trả thêm thông tin để app hiển thị trang QR chuyển khoản
             if ($request->payment_method === 'banking') {
-                $bankBin = \App\Models\Setting::where('key', 'bank_bin')->value('value') ?? '970436';
-                $bankAccount = \App\Models\Setting::where('key', 'bank_account')->value('value') ?? '';
-                $bankOwner = \App\Models\Setting::where('key', 'bank_owner')->value('value') ?? 'HOLOMIA VR';
+                $settings = \App\Models\Setting::whereIn('key', ['bank_bin', 'bank_account', 'bank_name', 'bank_owner'])->pluck('value', 'key');
+                $bankBin = $settings['bank_bin'] ?? '970436';
+                $bankAccount = $settings['bank_account'] ?? '';
+                $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
+                $bankName = $settings['bank_name'] ?? 'Vietcombank';
                 $refCode = 'DH' . $order->id;
 
                 $responseData['banking'] = [
                     'ref_code' => $refCode,
                     'amount' => $finalTotal,
-                    'bank_name' => \App\Models\Setting::where('key', 'bank_name')->value('value') ?? 'Vietcombank',
+                    'bank_name' => $bankName,
                     'bank_account' => $bankAccount,
                     'bank_owner' => $bankOwner,
                     'qr_url' => "https://img.vietqr.io/image/{$bankBin}-{$bankAccount}-compact2.png"

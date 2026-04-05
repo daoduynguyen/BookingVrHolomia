@@ -913,8 +913,12 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
             color: '#1f2937'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Chuyển hướng tới route xử lý
-                window.location.href = '/order/refund/' + orderId;
+                let form = document.createElement('form');
+                form.action = '/order/refund/' + orderId;
+                form.method = 'POST';
+                form.innerHTML = '@csrf';
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     }
