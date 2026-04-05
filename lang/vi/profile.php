@@ -106,4 +106,10 @@ return [
     'order_success_desc'     => 'Đơn hàng thanh toán tại quầy đã được xác nhận.',
     'payment_success'        => 'Thanh toán thành công!',
     'payment_success_desc'   => 'Đã trừ ví và xác nhận đơn hàng của bạn.',
+],
+    'pay_at_counter_simple' => 'Vui lòng đến quầy để thanh toán và nhận vé.',
+    'order_id_label' => 'Mã đơn:',
+    'total_label' => 'Tổng tiền:',
+    'deducted_label' => 'Đã trừ ví:',
+    'see_you_soon' => 'Vé đã xác nhận. Hẹn gặp bạn tại cơ sở!',
 ];

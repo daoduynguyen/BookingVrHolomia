@@ -728,28 +728,28 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                             if (codTabTrigger) { new bootstrap.Tab(codTabTrigger).show(); }
 
                             Swal.fire({
-                                icon: 'info',
-                                title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }}',
+                                icon: 'success',
+                                title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }} 🎉',
                                 html: `
                                     <div class="text-start small">
                                         <div class="alert alert-warning border-0 rounded-3 mb-3 py-2" style="font-size:0.85rem;">
                                             <i class="bi bi-shop me-2"></i>
                                             <strong>{{ __("profile.pay_at_counter") ?? "Thanh toán tại quầy" }}</strong><br>
-                                            {!! __("profile.pay_at_counter_desc") ?? 'Vui lòng đến quầy thanh toán <strong>trước 15 phút</strong> so với giờ chơi.<br>Đơn hàng sẽ ở trạng thái <strong>"Chờ xử lý"</strong> cho đến khi nhân viên xác nhận.' !!}
+                                            {!! __("profile.pay_at_counter_desc") ?? 'Vui lòng đến quầy thanh toán <strong>trước 15 phút</strong> so với giờ chơi.' !!}
                                         </div>
                                         <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                                            <span class="text-muted">Mã đơn:</span>
-                                            <span class="fw-bold text-dark">{{ session('order_id') }}</span>
+                                            <span class="text-muted">{{ __("profile.order_id_label") ?? "Mã đơn:" }}</span>
+                                            <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-muted">Tổng tiền:</span>
-                                            <span class="fw-bold text-warning fs-6">{{ number_format(session('total_amount')) }}đ</span>
+                                            <span class="text-muted">{{ __("profile.total_label") ?? "Tổng tiền:" }}</span>
+                                            <span class="fw-bold text-success fs-6">{{ number_format(session('total_amount')) }}đ</span>
                                         </div>
                                     </div>
                                 `,
                                 confirmButtonText: '{{ __("profile.understood") ?? "Đã hiểu" }}',
-                                confirmButtonColor: '#ffc107',
-                                width: '400px',
+                                confirmButtonColor: '#0dcaf0',
+                                width: '420px',
                                 allowOutsideClick: false,
                             });
             @endif
@@ -1008,17 +1008,97 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
 </style>
 
 <script>
-    // Hàm mở modal đánh giá
+    // Hàm mở modal đánh giá — dùng SweetAlert2 để tránh xung đột với Swal hóa đơn
     function openReviewModal(ticketId, orderItemId, ticketName) {
-        document.getElementById('reviewTicketId').value = ticketId;
-        document.getElementById('reviewOrderItemId').value = orderItemId;
-        document.getElementById('reviewTicketName').innerText = ticketName;
-        
-        // Reset form
-        document.getElementById('reviewForm').reset();
-        
-        var myModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-        myModal.show();
+        Swal.fire({
+            title: '<i class="bi bi-star-fill text-warning me-2"></i>{{ __("profile.review_title") ?? "Đánh giá trò chơi" }}',
+            html: `
+                <div class="text-center mb-3">
+                    <h6 class="text-primary fw-bold mb-3" id="swal-reviewTicketName">${ticketName}</h6>
+                    <div class="rating-stars fs-2" style="cursor:pointer;display:inline-flex;flex-direction:row-reverse;">
+                        <input type="radio" name="swal_rating" id="sstar5" value="5" class="d-none">
+                        <label for="sstar5" class="bi bi-star-fill text-warning px-1 star-label" data-value="5"></label>
+                        <input type="radio" name="swal_rating" id="sstar4" value="4" class="d-none">
+                        <label for="sstar4" class="bi bi-star-fill text-warning px-1 star-label" data-value="4"></label>
+                        <input type="radio" name="swal_rating" id="sstar3" value="3" class="d-none" checked>
+                        <label for="sstar3" class="bi bi-star-fill text-warning px-1 star-label" data-value="3"></label>
+                        <input type="radio" name="swal_rating" id="sstar2" value="2" class="d-none">
+                        <label for="sstar2" class="bi bi-star-fill text-warning px-1 star-label" data-value="2"></label>
+                        <input type="radio" name="swal_rating" id="sstar1" value="1" class="d-none">
+                        <label for="sstar1" class="bi bi-star-fill text-warning px-1 star-label" data-value="1"></label>
+                    </div>
+                </div>
+                <div class="text-start">
+                    <label class="form-label text-secondary small text-uppercase fw-bold">{{ __("profile.review_comment_label") ?? "Nhận xét (Tùy chọn)" }}</label>
+                    <textarea class="form-control" id="swal-reviewComment" rows="3" placeholder="{{ __('profile.review_comment_placeholder') ?? 'Chia sẻ trải nghiệm của bạn...' }}"></textarea>
+                </div>
+            `,
+            background: '#fff',
+            color: '#1f2937',
+            showCancelButton: true,
+            confirmButtonText: '{{ __("profile.submit_review") ?? "Gửi đánh giá" }}',
+            confirmButtonColor: '#0dcaf0',
+            cancelButtonText: '{{ __("profile.cancel") ?? "Hủy" }}',
+            cancelButtonColor: '#6c757d',
+            width: '450px',
+            didOpen: () => {
+                // Áp dụng lại CSS sao cho Swal popup
+                const style = document.createElement('style');
+                style.textContent = `.rating-stars label{color:#6c757d!important;transition:color .2s}.rating-stars label:hover,.rating-stars label:hover~label,.rating-stars input:checked~label{color:#ffc107!important}`;
+                Swal.getPopup().appendChild(style);
+            },
+            preConfirm: () => {
+                const rating = Swal.getPopup().querySelector('input[name="swal_rating"]:checked')?.value;
+                const comment = document.getElementById('swal-reviewComment')?.value ?? '';
+                if (!rating) {
+                    Swal.showValidationMessage('{{ __("profile.review_rating_required") ?? "Vui lòng chọn số sao!" }}');
+                    return false;
+                }
+                return { rating, comment };
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+            const { rating, comment } = result.value;
+
+            $.ajax({
+                url: '{{ route("reviews.store") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    ticket_id: ticketId,
+                    order_item_id: orderItemId,
+                    rating: rating,
+                    comment: comment
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Thay nút đánh giá thành sao
+                        let starsHtml = '<div class="mt-1" style="font-size:0.75rem;">';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += `<i class="bi bi-star-fill text-warning ${i > parseInt(rating) ? 'opacity-25' : ''}"></i> `;
+                        }
+                        starsHtml += '</div>';
+                        let btn = document.getElementById('review-btn-' + orderItemId);
+                        if (btn) btn.outerHTML = starsHtml;
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __("profile.success") ?? "Thành công!" }}',
+                            text: response.message,
+                            background: '#fff',
+                            color: '#1f2937',
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = '{{ __("profile.review_error") ?? "Có lỗi xảy ra, vui lòng thử lại." }}';
+                    if (xhr.responseJSON && xhr.responseJSON.message) errorMsg = xhr.responseJSON.message;
+                    Swal.fire({ icon: 'error', title: '{{ __("profile.error") ?? "Lỗi" }}', text: errorMsg, background: '#fff', color: '#1f2937' });
+                }
+            });
+        });
     }
 
     // Hàm submit đánh giá bằng AJAX

@@ -213,44 +213,6 @@
             <div class="col-lg-8">
                 <div class="card profile-card rounded-4 p-4 p-md-5 shadow-sm border-0 h-100">
                     <div class="tab-content" id="v-pills-tabContent">
-                        {{-- Thông báo thành công sau thanh toán --}}
-                        @if(session('cod_success'))
-                            <div class="alert border-0 mb-4 rounded-3 p-4" style="background: linear-gradient(135deg,#e8f5e9,#f1f8e9); border-left: 4px solid #43a047 !important;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div style="width:48px;height:48px;background:#43a047;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <i class="bi bi-check-lg text-white fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold fs-6 text-success">Đặt vé thành công! 🎉</div>
-                                        <div class="text-muted small mt-1">
-                                            Mã đơn: <strong>{{ session('order_id') }}</strong> —
-                                            Tổng tiền: <strong class="text-success">{{ number_format(session('total_amount')) }}đ</strong>
-                                        </div>
-                                        <div class="text-muted small">Vui lòng đến quầy để thanh toán và nhận vé.</div>
-                                    </div>
-                                </div>
-                            </div>
-                        @elseif(session('payment_success'))
-                            <div class="alert border-0 mb-4 rounded-3 p-4" style="background: linear-gradient(135deg,#e3f2fd,#e8eaf6); border-left: 4px solid #1976d2 !important;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div style="width:48px;height:48px;background:#1976d2;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <i class="bi bi-wallet2 text-white fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold fs-6 text-primary">Thanh toán thành công! 🎮</div>
-                                        <div class="text-muted small mt-1">
-                                            Mã đơn: <strong>{{ session('order_id') }}</strong> —
-                                            Đã trừ: <strong class="text-primary">{{ number_format(session('total_amount')) }}đ</strong> từ ví
-                                        </div>
-                                        <div class="text-muted small">Vé đã được xác nhận. Hẹn gặp bạn tại cơ sở!</div>
-                                    </div>
-                                </div>
-                            </div>
-                        @elseif(session('success'))
-                            <div class="alert alert-success border-0 shadow-sm mb-4 rounded-3 d-flex align-items-center">
-                                <i class="bi bi-check-circle-fill me-2 fs-5"></i> {{ session('success') }}
-                            </div>
-                        @endif
 
                         {{-- TAB HỒ SƠ --}}
                         <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel">
@@ -698,20 +660,68 @@
     <script>
         Swal.fire({
             icon: 'success',
-            title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }}',
-            text: '{{ __("profile.order_success_desc") ?? "Đơn hàng thanh toán tại quầy đã được xác nhận." }}',
+            title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }} 🎉',
+            html: `
+                <div class="text-start small">
+                    <div class="alert alert-warning border-0 rounded-3 mb-3 py-2" style="font-size:0.85rem;">
+                        <i class="bi bi-shop me-2"></i>
+                        <strong>{{ __("profile.pay_at_counter") ?? "Thanh toán tại quầy" }}</strong><br>
+                        {{ __("profile.pay_at_counter_simple") ?? "Vui lòng đến quầy để thanh toán và nhận vé." }}
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                        <span class="text-muted">{{ __("profile.order_id_label") ?? "Mã đơn:" }}</span>
+                        <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">{{ __("profile.total_label") ?? "Tổng tiền:" }}</span>
+                        <span class="fw-bold text-success">{{ number_format(session('total_amount')) }}đ</span>
+                    </div>
+                </div>
+            `,
             background: '#fff',
-            color: '#1f2937'
+            color: '#1f2937',
+            confirmButtonText: '{{ __("profile.understood") ?? "Đã hiểu" }}',
+            confirmButtonColor: '#0dcaf0',
+            width: '420px',
         });
     </script>
     @elseif(session('payment_success'))
     <script>
         Swal.fire({
             icon: 'success',
-            title: '{{ __("profile.payment_success") }}',
-            text: '{{ __("profile.payment_success_desc") }}',
+            title: '{{ __("profile.payment_success") }} 🎮',
+            html: `
+                <div class="text-start small">
+                    <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                        <span class="text-muted">{{ __("profile.order_id_label") ?? "Mã đơn:" }}</span>
+                        <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">{{ __("profile.deducted_label") ?? "Đã trừ ví:" }}</span>
+                        <span class="fw-bold text-primary">{{ number_format(session('total_amount')) }}đ</span>
+                    </div>
+                    <div class="text-muted text-center mt-2" style="font-size:0.8rem;">
+                        🎯 {{ __("profile.see_you_soon") ?? "Vé đã xác nhận. Hẹn gặp bạn tại cơ sở!" }}
+                    </div>
+                </div>
+            `,
             background: '#fff',
-            color: '#1f2937'
+            color: '#1f2937',
+            confirmButtonText: '{{ __("profile.understood") ?? "Đã hiểu" }}',
+            confirmButtonColor: '#0dcaf0',
+            width: '420px',
+        });
+    </script>
+    @elseif(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: '{{ __("profile.success") ?? "Thành công!" }}',
+            text: '{{ session("success") }}',
+            background: '#fff',
+            color: '#1f2937',
+            timer: 3000,
+            showConfirmButton: false
         });
     </script>
     @endif
