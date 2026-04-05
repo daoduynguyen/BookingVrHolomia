@@ -1,13 +1,21 @@
+@php
+    $locale     = app()->getLocale();
+    $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
+@endphp
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ $langConfig['html_lang'] }}">
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ $ticket->name }} - Chi tiết</title>
-    <meta name="description" content="Trải nghiệm {{ $ticket->name }} tại Holomia VR. {{ Str::limit(strip_tags($ticket->description), 120) }}">
+    <title>{{ $ticket->name }} - {{ __('detail.page_title_suffix') }}</title>
+    <meta name="description" content="{{ __('detail.meta_description', ['name' => $ticket->name, 'desc' => Str::limit(strip_tags($ticket->description), 120)]) }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <style>
+        body { font-family: {{ $langConfig['font_family'] }}; }
+    </style>
 </head>
 
 <body class="bg-light text-dark ticket-detail-page">
@@ -19,14 +27,13 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}"
-                            class="text-secondary text-decoration-none">Trang chủ</a></li>
+                            class="text-secondary text-decoration-none">{{ __('detail.breadcrumb_home') }}</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('ticket.shop') }}"
-                            class="text-secondary text-decoration-none">Tất cả vé</a></li>
+                            class="text-secondary text-decoration-none">{{ __('detail.breadcrumb_all_tickets') }}</a></li>
                     <li class="breadcrumb-item active text-info" aria-current="page">{{ $ticket->name }}</li>
                 </ol>
             </nav>
-            <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Quay
-                lại</a>
+            <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> {{ __('detail.back_btn') }}</a>
         </div>
 
         <div class="row gx-lg-5">
@@ -74,21 +81,21 @@
                     @endif
 
                     <div class="content-box">
-                        <h5 class="section-title text-primary"><i class="bi bi-file-text-fill me-2"></i> Mô tả trò chơi
+                        <h5 class="section-title text-primary"><i class="bi bi-file-text-fill me-2"></i> {{ __('detail.description_title') }}
                         </h5>
                         <p class="text-muted" style="text-align: justify; line-height: 1.7;">
                             {{ $ticket->description }}
                         </p>
 
                         <div class="mt-5">
-                            <h5 class="section-title text-primary"><i class="bi bi-controller me-2"></i> Luật chơi</h5>
+                            <h5 class="section-title text-primary"><i class="bi bi-controller me-2"></i> {{ __('detail.rules_title') }}</h5>
                             <div class="bg-white p-3 rounded border border-light shadow-sm">
                                 <div class="text-dark">
                                     <ul class="mb-0 ps-3 mt-2">
-                                        <li>Người chơi cần đeo kính VR và cầm chắc 2 tay cầm điều khiển.</li>
-                                        <li>Không di chuyển ra khỏi "Vòng tròn an toàn" được vẽ trên sàn.</li>
-                                        <li>Trong game, thanh máu sẽ giảm nếu bạn bị tấn công.</li>
-                                        <li>Giơ tay trái lên cao để nạp đạn (Reload) hoặc đổi vũ khí.</li>
+                                        <li>{{ __('detail.rule_1') }}</li>
+                                        <li>{{ __('detail.rule_2') }}</li>
+                                        <li>{{ __('detail.rule_3') }}</li>
+                                        <li>{{ __('detail.rule_4') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -96,15 +103,14 @@
 
                         <div class="mt-5">
                             <h5 class="section-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                Lưu ý quan trọng</h5>
+                                {{ __('detail.notes_title') }}</h5>
                             <div
                                 class="bg-danger bg-opacity-10 p-3 rounded border border-danger border-opacity-25 text-dark">
                                 <ul class="mb-0 ps-3">
-                                    <li class="mb-2">Vui lòng có mặt trước <strong>15 phút</strong> để nhân viên hướng
-                                        dẫn thiết bị.</li>
-                                    <li class="mb-2">Không dành cho phụ nữ mang thai, người có tiền sử bệnh tim.</li>
-                                    <li class="mb-2">Trẻ em dưới 12 tuổi cần có người giám hộ đi cùng.</li>
-                                    <li>Nếu cảm thấy chóng mặt, hãy giơ tay để nhân viên hỗ trợ ngay lập tức.</li>
+                                    <li class="mb-2">{!! __('detail.note_1') !!}</li>
+                                    <li class="mb-2">{{ __('detail.note_2') }}</li>
+                                    <li class="mb-2">{{ __('detail.note_3') }}</li>
+                                    <li>{{ __('detail.note_4') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -130,7 +136,7 @@
 
                         {{-- SHARE DROPDOWN --}}
                         <div id="share-panel" class="d-none shadow rounded-4 border bg-white p-3 mx-auto" style="max-width:320px; z-index:100;">
-                            <p class="fw-bold text-dark mb-3 text-start small">Chia sẻ với bạn bè</p>
+                            <p class="fw-bold text-dark mb-3 text-start small">{{ __('detail.share_title') }}</p>
                             <div class="d-flex justify-content-around mb-2">
                                 {{-- Facebook --}}
                                 <a href="#" class="share-btn text-center text-decoration-none" data-platform="facebook">
@@ -169,14 +175,14 @@
                                 <input type="text" id="share-link-input" class="form-control form-control-sm bg-light border-light"
                                     value="{{ url()->current() }}" readonly style="font-size:12px;">
                                 <button id="btn-copy-link" class="btn btn-primary btn-sm px-3 fw-bold" style="white-space:nowrap;">
-                                    <i class="bi bi-clipboard me-1"></i>Sao chép
+                                    <i class="bi bi-clipboard me-1"></i>{{ __('detail.copy_btn') }}
                                 </button>
                             </div>
                         </div>
 
                         <div class="d-flex align-items-center justify-content-center gap-3 text-muted">
                             <span class="d-flex align-items-center gap-1">
-                                <i class="bi bi-geo-alt-fill text-danger"></i> {{ $ticket->locations->pluck('name')->join(', ') ?: 'Nhiều cơ sở' }}
+                                <i class="bi bi-geo-alt-fill text-danger"></i> {{ $ticket->locations->pluck('name')->join(', ') ?: __('detail.multiple_locations') }}
                             </span>
                             <span class="opacity-25">|</span>
                             <span
@@ -192,7 +198,7 @@
                                 class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100">
                                 <h5 class="fw-bold mb-1 text-dark">{{ $ticket->duration }}p</h5>
                                 <small class="text-muted"
-                                    style="font-size: 0.75rem; text-transform: uppercase;">Thời lượng</small>
+                                    style="font-size: 0.75rem; text-transform: uppercase;">{{ __('detail.stat_duration') }}</small>
                             </div>
                         </div>
                         <div class="col-4">
@@ -201,7 +207,7 @@
                                 <h5 class="fw-bold mb-1 text-primary">{{ $ticket->avg_rating }} <i
                                         class="bi bi-star-fill fs-6"></i></h5>
                                 <small class="text-muted"
-                                    style="font-size: 0.75rem; text-transform: uppercase;">Đánh giá</small>
+                                    style="font-size: 0.75rem; text-transform: uppercase;">{{ __('detail.stat_rating') }}</small>
                             </div>
                         </div>
                         <div class="col-4">
@@ -209,7 +215,7 @@
                                 class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100">
                                 <h5 class="fw-bold mb-1 text-dark">{{ number_format($ticket->play_count) }}</h5>
                                 <small class="text-muted"
-                                    style="font-size: 0.75rem; text-transform: uppercase;">Lượt chơi</small>
+                                    style="font-size: 0.75rem; text-transform: uppercase;">{{ __('detail.stat_play_count') }}</small>
                             </div>
                         </div>
                     </div>
@@ -219,7 +225,7 @@
                         <div class="card-body p-4">
                             <h5
                                 class="text-center text-uppercase fw-bold text-primary mb-4 ls-1 border-bottom border-light pb-3">
-                                <i class="bi bi-ticket-perforated me-2"></i> Chọn loại vé
+                                <i class="bi bi-ticket-perforated me-2"></i> {{ __('detail.select_ticket_title') }}
                             </h5>
 
                             {{-- HIỂN THỊ DANH SÁCH LOẠI VÉ TỪ DATABASE --}}
@@ -236,7 +242,7 @@
                                     </div>
                                 @endforeach
                             @else
-                                <div class="text-muted text-center fst-italic mb-3">Vé này đang cập nhật bảng giá.</div>
+                                <div class="text-muted text-center fst-italic mb-3">{{ __('detail.price_updating') }}</div>
                             @endif
 
                             {{-- Logic Button --}}
@@ -244,7 +250,7 @@
                                 <button
                                     class="btn btn-secondary w-100 btn-lg fw-bold text-uppercase py-3 rounded-pill opacity-75"
                                     disabled>
-                                    <i class="bi bi-cone-striped me-2"></i> ĐANG BẢO TRÌ
+                                    <i class="bi bi-cone-striped me-2"></i> {{ __('detail.maintenance_btn') }}
                                 </button>
                             @else
                                 <form action="{{ route('booking.form', $ticket->id) }}" method="GET" id="booking-form">
@@ -252,14 +258,13 @@
                                         value="{{ isset($ticket->ticket_types[0]['name']) ? $ticket->ticket_types[0]['name'] : '' }}">
                                    <button type="submit" class="btn w-100 btn-lg fw-bold text-uppercase py-3 shadow-sm rounded-pill"
                                             style="background: linear-gradient(135deg, #2563eb, #0dcaf0); border: none; color: #fff; letter-spacing: 1px;">
-                                            ĐẶT VÉ NGAY <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                                            {{ __('detail.book_now_btn') }} <i class="bi bi-arrow-right-circle-fill ms-2"></i>
                                    </button>
                                 </form>
                             @endif
 
                             <div class="mt-3 text-center small text-muted fst-italic">
-                                <i class="bi bi-shield-check me-1 text-success"></i> Cam kết hoàn tiền 100% nếu lỗi
-                                thiết bị
+                                <i class="bi bi-shield-check me-1 text-success"></i> {{ __('detail.refund_note') }}
                             </div>
                         </div>
                     </div>

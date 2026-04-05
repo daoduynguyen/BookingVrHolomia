@@ -74,8 +74,17 @@ public function updateStatus(Request $request, $id) {
     $order->status = $newStatus;
     $order->save();
 
-    // Gửi email khi chuyển sang "Hoàn thành"
+    // Gửi email + tăng play_count khi chuyển sang "Hoàn thành"
     if ($newStatus === 'completed' && $oldStatus !== 'completed') {
+        // Tăng play_count cho từng vé trong đơn
+        foreach ($order->details as $item) {
+            $ticket = \App\Models\Ticket::find($item->ticket_id);
+            if ($ticket) {
+                $ticket->increment('play_count', $item->quantity ?? 1);
+            }
+        }
+
+        // Gửi email thông báo hoàn thành
         $email = $order->user->email ?? $order->customer_email ?? null;
         if ($email) {
             try {

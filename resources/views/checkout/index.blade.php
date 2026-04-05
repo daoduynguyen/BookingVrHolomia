@@ -1,12 +1,20 @@
+@php
+    $locale     = app()->getLocale();
+    $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
+@endphp
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ $langConfig['html_lang'] }}">
 
 <head>
     <meta charset="UTF-8">
-    <title>Thông tin đặt vé - Holomia VR</title>
+    <title>{{ __('checkout.page_title') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <style>
+        body { font-family: {{ $langConfig['font_family'] }}; }
+    </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 

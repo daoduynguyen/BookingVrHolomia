@@ -65,11 +65,11 @@
                             <span>{{ number_format($item->price * $item->quantity) }}</span>
                             
                             {{-- Button đánh giá --}}
-                            @if(in_array($order->status, ['paid', 'expired']))
+                            @if(in_array($order->status, ['paid', 'expired', 'completed']))
                                 @if($item->review)
                                     <div class="mt-1" style="font-size: 0.75rem;">
                                         @for($i = 1; $i <= 5; $i++)
-                                            <i class="bi bi-star-fill text-primary {{ $i > $item->review->rating ? 'opacity-25' : '' }}"></i>
+                                            <i class="bi bi-star-fill text-warning {{ $i > $item->review->rating ? 'opacity-25' : '' }}"></i>
                                         @endfor
                                     </div>
                                 @else
