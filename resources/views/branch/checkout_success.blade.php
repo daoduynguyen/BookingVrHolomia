@@ -93,7 +93,7 @@
                     </h6>
                     <div class="order-info-row">
                         <span class="text-muted">Mã đơn</span>
-                        <strong class="text-primary">#{{ $order->id }}</strong>
+                        <strong class="text-primary">{{ $order->id }}</strong>
                     </div>
                     <div class="order-info-row">
                         <span class="text-muted">Khách hàng</span>

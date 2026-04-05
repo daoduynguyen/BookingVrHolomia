@@ -23,7 +23,7 @@
                 <tbody>
                     @foreach($orders as $order)
                     <tr>
-                        <td class="fw-bold">#{{ $order->id }}</td>
+                        <td class="fw-bold">{{ $order->id }}</td>
                         <td>{{ $order->user->name ?? 'Khách vãng lai' }}</td>
                         <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                         <td class="text-info fw-bold">{{ number_format($order->total_amount) }}đ</td>

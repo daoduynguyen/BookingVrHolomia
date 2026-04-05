@@ -17,7 +17,7 @@
         <div style="padding: 30px 25px;">
             <p style="font-size: 16px; margin-bottom: 5px;">Xin chào <strong style="color: #0dcaf0;">{{ $order->customer_name }}</strong>,</p>
             <p style="color: #aaaaaa; line-height: 1.7; margin-top: 8px;">
-                Đơn vé <strong style="color: #ffffff;">#{{ $order->id }}</strong> của bạn đã được đánh dấu
+                Đơn vé <strong style="color: #ffffff;">{{ $order->id }}</strong> của bạn đã được đánh dấu
                 <span style="color: #198754; font-weight: bold;">✅ Hoàn thành</span>.
                 Hy vọng bạn đã có những giây phút trải nghiệm thực tế ảo thật tuyệt vời tại Holomia VR!
             </p>
@@ -29,7 +29,7 @@
                 <table style="width: 100%; border-collapse: collapse; color: #ffffff;">
                     <tr style="border-bottom: 1px solid #333;">
                         <td style="padding: 10px 0; color: #888888; font-size: 14px;">Mã đơn hàng</td>
-                        <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #ffc107;">#{{ $order->id }}</td>
+                        <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #ffc107;">{{ $order->id }}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #333;">
                         <td style="padding: 10px 0; color: #888888; font-size: 14px;">Ngày trải nghiệm</td>

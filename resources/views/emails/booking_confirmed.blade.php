@@ -23,7 +23,7 @@
                 
                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode(route('ticket.scan', $order->id)) }}" alt="QR Code Check-in" style="border: 5px solid #ffffff; border-radius: 5px;">
                 
-                <h3 style="color: #0dcaf0; margin: 15px 0 0 0; font-size: 20px;">#{{ $order->id }}</h3>
+                <h3 style="color: #0dcaf0; margin: 15px 0 0 0; font-size: 20px;">{{ $order->id }}</h3>
             </div>
 
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #ffffff;">

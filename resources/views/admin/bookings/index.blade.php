@@ -79,7 +79,7 @@
                             <tbody>
                                 @forelse($bookings as $booking)
                                     <tr class="border-bottom border-light">
-                                        <td class="fw-bold text-primary ps-4">#{{ $booking->id }}</td>
+                                        <td class="fw-bold text-primary ps-4">{{ $booking->id }}</td>
                                         <td>
                                             <div class="fw-bold text-dark">
                                                 {{ $booking->user->name ?? $booking->customer_name ?? 'Khách vãng lai' }}
@@ -131,7 +131,7 @@
                                         </td>
                                         <td class="text-end pe-4">
                                             <form action="{{ route('admin.bookings.delete', $booking->id) }}" method="POST" 
-                                                class="form-delete" data-label="Đơn #{{ $booking->id }}">
+                                                class="form-delete" data-label="Đơn {{ $booking->id }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger" title="Xóa đơn hàng">

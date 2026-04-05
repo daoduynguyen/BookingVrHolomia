@@ -528,7 +528,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                         <tbody>
                                             @foreach($user->orders as $order)
                                                 <tr>
-                                                    <td class="text-primary fw-bold">#{{ $order->id }}</td>
+                                                    <td class="text-primary fw-bold">{{ $order->id }}</td>
                                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                                     <td class="fw-bold">{{ number_format($order->total_amount) }}đ</td>
                                                     <td>
@@ -694,7 +694,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                         </div>
                                         <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
                                             <span class="text-muted">{{ __('profile.order_code') ?? 'Mã đơn:' }}</span>
-                                            <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
+                                            <span class="fw-bold text-dark">{{ session('order_id') }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
                                             <span class="text-muted">{{ __('profile.total') ?? 'Tổng tiền:' }}</span>
@@ -739,7 +739,7 @@ $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
                                         </div>
                                         <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
                                             <span class="text-muted">Mã đơn:</span>
-                                            <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
+                                            <span class="fw-bold text-dark">{{ session('order_id') }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span class="text-muted">Tổng tiền:</span>

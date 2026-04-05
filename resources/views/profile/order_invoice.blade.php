@@ -4,7 +4,7 @@
     <div class="text-center mb-3 pb-2 border-bottom border-light border-opacity-25" style="border-style: dashed !important;">
         <h5 class="fw-bold text-uppercase text-primary mb-1 ls-1">HOLOMIA VR</h5>
         <div class="d-flex justify-content-center gap-3 text-dark small">
-            <span>#{{ $order->id }}</span>
+            <span>{{ $order->id }}</span>
             <span>
                 <i class="bi bi-clock"></i> 
                 @php $slot = $order->slot; @endphp

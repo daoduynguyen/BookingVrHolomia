@@ -14,7 +14,7 @@
         <div class="header"><h2>HOLOMIA VR - THÔNG BÁO ĐƠN VÉ</h2></div>
         <div style="padding: 20px;">
             <p>Chào <b>{{ $order->customer_name }}</b>,</p>
-            <p>Đơn vé <b>#{{ $order->id }}</b> vừa được cập nhật:</p>
+            <p>Đơn vé <b>{{ $order->id }}</b> vừa được cập nhật:</p>
             <p style="text-align:center;"><span class="status-badge">{{ $statusName }}</span></p>
             <p><b>Chi tiết:</b> {{ $messageBody }}</p>
             <hr style="border:0; border-top:1px dashed #ccc; margin:20px 0;">

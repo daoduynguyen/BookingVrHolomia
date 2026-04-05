@@ -164,7 +164,7 @@ class AdminController extends Controller
     public function manageUsers()
     {
         // Lấy tất cả user trừ chính Admin đang đăng nhập
-        $users = User::where('id', '!=', auth()->id())->get();
+        $users = User::where('id', '!=', auth()->id())->orderBy('id', 'desc')->get();
         // Lấy danh sách cơ sở để hiện trong form Phân quyền
         $locations = \App\Models\Location::all();
 

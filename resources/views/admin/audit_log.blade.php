@@ -65,7 +65,7 @@
                                         @if($log->model_type)
                                             <span class="text-primary fw-semibold">{{ $log->model_type }}</span>
                                             @if($log->model_id)
-                                                <span class="text-muted"> #{{ $log->model_id }}</span>
+                                                <span class="text-muted"> {{ $log->model_id }}</span>
                                             @endif
                                         @else
                                             <span class="text-muted">—</span>

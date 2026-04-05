@@ -41,7 +41,7 @@
                     <div class="bg-light rounded-3 p-3 mb-3 small">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Mã đơn:</span>
-                            <span class="fw-bold text-primary">#{{ $order->id }}</span>
+                            <span class="fw-bold text-primary">{{ $order->id }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Khách hàng:</span>
@@ -175,7 +175,7 @@
                         icon: 'success',
                         title: 'Thanh toán thành công! 🎉',
                         html: `<div class="text-start small">
-                            <div class="mb-2"><b>Mã đơn:</b> #{{ $order->id }}</div>
+                            <div class="mb-2"><b>Mã đơn:</b> {{ $order->id }}</div>
                             <div class="mb-2"><b>Ngày chơi:</b> {{ \Carbon\Carbon::parse($order->booking_date)->format('d/m/Y') }}</div>
                             @if($order->slot)<div class="mb-2"><b>Khung giờ:</b> {{ substr($order->slot->start_time,0,5) }} - {{ substr($order->slot->end_time,0,5) }}</div>@endif
                             <div class="mb-2"><b>Phương thức:</b> Chuyển khoản ngân hàng</div>
@@ -194,7 +194,7 @@
                 icon: 'success',
                 title: 'Thanh toán thành công! 🎉',
                 html: `<div class="text-start small">
-                    <div class="mb-2"><b>Mã đơn:</b> #{{ $order->id }}</div>
+                    <div class="mb-2"><b>Mã đơn:</b> {{ $order->id }}</div>
                     <div class="mb-2"><b>Ngày chơi:</b> {{ \Carbon\Carbon::parse($order->booking_date)->format('d/m/Y') }}</div>
                     @if($order->slot)<div class="mb-2"><b>Khung giờ:</b> {{ substr($order->slot->start_time,0,5) }} - {{ substr($order->slot->end_time,0,5) }}</div>@endif
                     <div class="mb-2"><b>Phương thức:</b> Chuyển khoản ngân hàng</div>

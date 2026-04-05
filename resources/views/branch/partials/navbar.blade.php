@@ -233,7 +233,7 @@
             </ul>
         </div>
 
-        <div class="d-flex align-items-center gap-3 d-none d-lg-flex">
+        <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0 justify-content-center">
 
             {{-- ===== LANG SWITCHER ===== --}}
             @include('partials.lang_switcher')

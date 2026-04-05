@@ -153,7 +153,7 @@ class ProfileController extends Controller
     // 5. Scan vé (QR)
     public function scanTicket($id)
     {
-        $order = Order::with('orderItems', 'slot')->findOrFail($id);
+        $order = Order::with('orderItems', 'slot', 'location')->findOrFail($id);
 
         // Chỉ admin và chủ đơn mới được xem
         $user = Auth::user();

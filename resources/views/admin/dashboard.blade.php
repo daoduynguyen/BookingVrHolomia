@@ -173,7 +173,7 @@
                                 <tbody>
                                     @forelse($revenueByLocation as $index => $item)
                                         <tr>
-                                            <td class="text-center fw-bold text-primary">#{{ $index + 1 }}</td>
+                                            <td class="text-center fw-bold text-primary">{{ $index + 1 }}</td>
                                             <td class="fw-bold text-dark">{{ $item->name }}</td>
                                             <td class="text-end text-success fw-bold">{{ number_format($item->total) }} đ</td>
                                         </tr>

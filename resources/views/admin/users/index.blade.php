@@ -49,7 +49,7 @@
                         style="{{ $user->is_banned ? 'background:#fff8f8;' : '' }}">
 
                         {{-- ID --}}
-                        <td class="ps-4 fw-bold text-primary">#{{ $user->id }}</td>
+                        <td class="ps-4 fw-bold text-primary">{{ $user->id }}</td>
 
                         {{-- Tên --}}
                         <td>

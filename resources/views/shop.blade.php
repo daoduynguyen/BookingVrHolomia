@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="vi">
+@php
+    $locale     = app()->getLocale();
+    $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
+@endphp
+<!DOCTYPE html>
+<html lang="{{ $langConfig['html_lang'] }}">
 
 <head>
     <meta charset="UTF-8">
@@ -10,6 +15,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style> body { font-family: {{ $langConfig['font_family'] }}; } </style>
     {{-- Thêm SweetAlert2 để thông báo đẹp --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -136,7 +143,7 @@
                                         title="{{ __('shop.add_to_cart') ?? 'Thêm vào giỏ' }}">
                                         <i class="bi bi-cart-plus fs-5"></i>
                                     </a>
-                                    <a href="{{ route('ticket.detail', $ticket->id) }}"
+                                    <a href="{{ route('ticket.show', $ticket->id) }}"
     class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm"
     title="Xem chi tiết">
     <i class="bi bi-eye fs-5"></i>

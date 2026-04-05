@@ -223,7 +223,7 @@
                                     <div>
                                         <div class="fw-bold fs-6 text-success">Đặt vé thành công! 🎉</div>
                                         <div class="text-muted small mt-1">
-                                            Mã đơn: <strong>#{{ session('order_id') }}</strong> —
+                                            Mã đơn: <strong>{{ session('order_id') }}</strong> —
                                             Tổng tiền: <strong class="text-success">{{ number_format(session('total_amount')) }}đ</strong>
                                         </div>
                                         <div class="text-muted small">Vui lòng đến quầy để thanh toán và nhận vé.</div>
@@ -239,7 +239,7 @@
                                     <div>
                                         <div class="fw-bold fs-6 text-primary">Thanh toán thành công! 🎮</div>
                                         <div class="text-muted small mt-1">
-                                            Mã đơn: <strong>#{{ session('order_id') }}</strong> —
+                                            Mã đơn: <strong>{{ session('order_id') }}</strong> —
                                             Đã trừ: <strong class="text-primary">{{ number_format(session('total_amount')) }}đ</strong> từ ví
                                         </div>
                                         <div class="text-muted small">Vé đã được xác nhận. Hẹn gặp bạn tại cơ sở!</div>
@@ -328,7 +328,7 @@
                                         <tbody>
                                             @foreach($orders as $order)
                                                 <tr>
-                                                    <td class="fw-bold" style="color: var(--primary);">#{{ $order->id }}</td>
+                                                    <td class="fw-bold" style="color: var(--primary);">{{ $order->id }}</td>
                                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                                     <td class="fw-bold">{{ number_format($order->total_amount) }}đ</td>
                                                     <td>
@@ -699,7 +699,17 @@
         Swal.fire({
             icon: 'success',
             title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }}',
-            text: '{{ __("profile.order_success_desc") ?? "Đơn hàng Payment tại quầy đã được xác nhận." }}',
+            text: '{{ __("profile.order_success_desc") ?? "Đơn hàng thanh toán tại quầy đã được xác nhận." }}',
+            background: '#fff',
+            color: '#1f2937'
+        });
+    </script>
+    @elseif(session('payment_success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Thanh toán thành công!',
+            text: 'Đã trừ ví và xác nhận đơn hàng của bạn.',
             background: '#fff',
             color: '#1f2937'
         });
