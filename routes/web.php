@@ -136,6 +136,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
         Route::post('/users/{id}/ban', [AdminController::class, 'toggleBan'])->name('users.ban');
         Route::post('/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('users.updateRole');
 
+        Route::get('/users/edit/{id}',   [AdminController::class, 'editUser'])->name('users.edit');
+        Route::put('/users/update/{id}', [AdminController::class, 'updateUser'])->name('users.update');
+
         // Quản lý liên hệ
         Route::get('/contacts', [AdminController::class, 'listContacts'])->name('contacts');
         Route::delete('/contacts/{id}', [AdminController::class, 'deleteContact'])->name('contacts.delete');

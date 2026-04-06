@@ -271,4 +271,41 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users')->with('success', 'Đã thêm tài khoản mới thành công!');
     }
+
+    // Hiển thị form sửa user
+    public function editUser($id)
+    {
+        $user = User::findOrFail($id);
+        $locations = \App\Models\Location::all();
+        return view('admin.users.edit', compact('user', 'locations'));
+    }
+ 
+    // Lưu thay đổi user
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+ 
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:8',
+            'role'     => 'required',
+        ]);
+ 
+        $user->name  = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->role  = $request->role;
+        $user->location_id = $request->role === 'branch_admin' ? $request->location_id : null;
+ 
+        if ($request->filled('password')) {
+            $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+ 
+        $user->save();
+ 
+        AdminLog::record('update_user', $user, ['name' => $user->name, 'email' => $user->email]);
+ 
+        return redirect()->route('admin.users')->with('success', 'Đã cập nhật tài khoản: ' . $user->name);
+    }
 }

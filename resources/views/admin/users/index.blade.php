@@ -123,6 +123,11 @@
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </form>
+                            {{-- Sửa --}}
+<a href="{{ route('admin.users.edit', $user->id) }}" 
+   class="btn btn-sm btn-outline-info me-1" title="Sửa thông tin">
+    <i class="bi bi-pencil-square"></i>
+</a>
                         </td>
                     </tr>
                     @endforeach
