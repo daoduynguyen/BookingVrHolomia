@@ -22,7 +22,10 @@ class SocialLoginController extends Controller
         if (!in_array($provider, $validProviders)) {
             return redirect()->route('login')->withErrors(['oauth' => 'Phương thức đăng nhập không được hỗ trợ.']);
         }
-
+        // Lưu subdomain nếu có (từ trang chi nhánh)
+    if (request()->query('subdomain')) {
+        session(['branch_subdomain_redirect' => request()->query('subdomain')]);
+    }
         return Socialite::driver($provider)->redirect();
     }
 
@@ -45,7 +48,7 @@ class SocialLoginController extends Controller
                 ]);
 
                 Auth::login($user);
-                return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
+                return $this->redirectAfterLogin();
             }
 
             $existingUser = User::where('email', $socialUser->getEmail())->first();
@@ -59,7 +62,7 @@ class SocialLoginController extends Controller
                     // Dùng ?: để không ghi đè nếu user đã upload ảnh thủ công
                 ]);
                 Auth::login($existingUser);
-                return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
+                return $this->redirectAfterLogin();
             }
 
             // ✅ Lưu avatar khi tạo user mới
@@ -74,10 +77,19 @@ class SocialLoginController extends Controller
             ]);
 
             Auth::login($newUser);
-            return redirect()->intended(route('home'))->with('success', 'Tài khoản mới đã được tạo!');
+            return $this->redirectAfterLogin();
 
         } catch (\Exception $e) {
             return redirect()->route('login')->withErrors(['oauth' => 'Lỗi kết nối. Vui lòng thử lại.']);
         }
     }
+    private function redirectAfterLogin()
+{
+    $subdomain = session()->pull('branch_subdomain_redirect');
+    if ($subdomain) {
+        return redirect()->route('branch.home', ['subdomain' => $subdomain])
+            ->with('success', 'Đăng nhập thành công!');
+    }
+    return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
+}
 }

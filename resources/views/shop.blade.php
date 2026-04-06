@@ -121,7 +121,7 @@
                                 {{ $ticket->locations->pluck('name')->join(', ') ?: __('shop.multiple_branches') }}
                             </p>
 
-                            <div class="mt-auto pt-3 border-top border-light mb-4">
+                            <div class="mt-auto pt-3 border-top border-light">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span
                                         class="small text-muted fw-medium">{{ __('shop.price_from') ?? 'Giá vé từ:' }}</span>
@@ -130,10 +130,10 @@
                             </div>
 
                             @if($ticket->status == 'maintenance')
-                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm"
+                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase shadow-sm mt-3"
                                     disabled>{{ __('shop.maintenance') }}</button>
                             @else
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 mt-3">
                                     <a href="{{ route('ticket.show', $ticket->id) }}"
                                         class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
                                         {{ __('shop.book_now') }}

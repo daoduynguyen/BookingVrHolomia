@@ -317,11 +317,11 @@
 
             {{-- Social Logins (Giữ nguyên link redirect về main domain vì Social Login thường cần 1 callback duy nhất) --}}
             <div class="d-flex flex-column gap-3 mb-4">
-                <a href="{{ route('social.redirect', 'google') }}" class="btn btn-social btn-google">
+                <a href="{{ route('social.redirect', 'google') }}?subdomain={{ $subdomain }}" class="btn btn-social btn-google">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
                     Tiếp tục với Google
                 </a>
-                <a href="{{ route('social.redirect', 'facebook') }}" class="btn btn-social btn-facebook">
+                <a href="{{ route('social.redirect', 'facebook') }}?subdomain={{ $subdomain }}" class="btn btn-social btn-facebook">
                     <i class="bi bi-facebook" style="color: #1877F2; font-size: 1.25rem;"></i>
                     Tiếp tục với Facebook
                 </a>

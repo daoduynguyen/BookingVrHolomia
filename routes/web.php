@@ -251,6 +251,9 @@ Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'banking
 // Route checkout.banking đã được hợp nhất vào payment.banking ở trên (tránh trùng lặp)
 Route::get('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
 Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('check.coupon');
+ // Thanh toán chốt đơn
+Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
+        ->name('payment.final');
 
 /*
 |--------------------------------------------------------------------------
@@ -259,10 +262,7 @@ Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon']
 */
 Route::middleware('auth')->group(function () {
 
-    // Thanh toán chốt đơn
-    Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
-        ->name('payment.final');
-
+   
     // Email verification
     Route::get('/email/verify', function () {
         return view('auth.verify_email');

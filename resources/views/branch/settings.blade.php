@@ -219,7 +219,7 @@
                         <p>{{ Auth::user()->name }}</p>
                     </div>
 
-                    <div class="nav flex-column nav-pills px-1 flex-grow-1 justify-content-evenly py-2" id="settings-tab" role="tablist">
+                    <div class="nav flex-column nav-pills px-1 py-2 gap-1" id="settings-tab" role="tablist" style="gap: 4px !important;">
 
                         <button class="nav-link active" id="tab-ui-btn"
                             data-bs-toggle="pill" data-bs-target="#tab-ui" type="button" role="tab">

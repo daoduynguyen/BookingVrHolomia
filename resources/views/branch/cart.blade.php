@@ -94,7 +94,11 @@
                                                                 @php
                                                                     $slot = isset($item['slot_id']) ? \App\Models\TimeSlot::find($item['slot_id']) : null;
                                                                 @endphp
-                                                                {{ $slot ? substr($slot->start_time, 0, 5) . ' - ' . substr($slot->end_time, 0, 5) : 'Chưa chọn giờ' }}
+                                                               @if($slot)
+    {{ substr($slot->start_time, 0, 5) }} - {{ substr($slot->end_time, 0, 5) }}
+@else
+    <span class="text-danger fw-bold">Chưa chọn giờ</span>
+@endif
                                                             </div>
                                                         </div>
                                                     </div>

@@ -229,9 +229,15 @@ class BranchController extends Controller
             ];
         }
 
+        // Nếu đang sửa item cũ (từ giỏ hàng), xóa item cũ đi
+        if ($request->input('replace_cart_id')) {
+            unset($cart[$request->input('replace_cart_id')]);
+        }
+
         session()->put('branch_cart_' . $subdomain, $cart);
         return redirect()->route('branch.cart', ['subdomain' => $subdomain])
             ->with('success', 'Đã thêm vé vào giỏ hàng!');
+    
     }
 
     // ==================== THÊM NHANH VÀO GIỎ ====================
