@@ -36,10 +36,9 @@ class BranchController extends Controller
     public function applyCoupon(Request $request, $subdomain)
 {
     $code     = strtoupper(trim($request->coupon_code));
-    $coupon   = \App\Models\Coupon::where('code', $code)
-                    ->where('is_active', true)
-                    ->where(function($q){ $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()); })
-                    ->first();
+    $coupon = \App\Models\Coupon::where('code', $code)
+                ->where(function($q){ $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()); })
+                ->first();
 
     if (!$coupon) {
         return response()->json(['success' => false, 'message' => 'Mã không hợp lệ hoặc đã hết hạn.']);

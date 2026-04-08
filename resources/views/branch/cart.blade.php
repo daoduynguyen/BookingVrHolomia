@@ -197,7 +197,7 @@
         <button class="btn btn-outline-primary fw-bold" type="button" id="apply-coupon-btn">Áp dụng</button>
     </div>
     <div id="coupon-msg" class="small mt-1"></div>
-</div>
+</div>  
                         <p class="small text-muted mb-4 fst-italic">Vui lòng kiểm tra lại thông tin vé trước khi tiếp tục!</p>
 
                         {{-- Form Submit --}}
@@ -273,6 +273,51 @@
                     }
                 });
             });
+        });
+        // ÁP DỤNG MÃ GIẢM GIÁ
+        $('#apply-coupon-btn').click(function () {
+            var code = $('#coupon-input').val().trim();
+            var msg  = $('#coupon-msg');
+
+            if (!code) {
+                msg.html('<span class="text-danger">Vui lòng nhập mã giảm giá.</span>');
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route('branch.coupon.apply', ['subdomain' => $subdomain]) }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    coupon_code: code
+                },
+                success: function (res) {
+                    if (res.success) {
+                        msg.html('<span class="text-success"><i class="bi bi-check-circle-fill"></i> ' + res.message + '</span>');
+
+                        // Tính lại thành tiền
+                        var total = {{ $total }};
+                        var discount = 0;
+                        if (res.type === 'percent') {
+                            discount = total * res.value / 100;
+                        } else {
+                            discount = res.value;
+                        }
+                        var finalTotal = Math.max(0, total - discount);
+                        $('#grand-total').text(finalTotal.toLocaleString('vi-VN') + 'đ');
+                    } else {
+                        msg.html('<span class="text-danger"><i class="bi bi-x-circle-fill"></i> ' + res.message + '</span>');
+                    }
+                },
+                error: function () {
+                    msg.html('<span class="text-danger">Có lỗi xảy ra, vui lòng thử lại.</span>');
+                }
+            });
+        });
+
+        // Cho phép nhấn Enter trong ô mã
+        $('#coupon-input').keypress(function (e) {
+            if (e.which === 13) $('#apply-coupon-btn').click();
         });
     </script>
 
