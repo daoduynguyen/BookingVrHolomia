@@ -382,6 +382,20 @@ class BranchController extends Controller
             'location_id' => $location->id,
         ]);
 
+        try {
+            $message = "🚨 *CÓ ĐƠN ĐẶT VÉ MỚI (CHI NHÁNH)!* 🚨\n\n"
+                . "📍 *Cơ sở:* " . $location->name . "\n"
+                . "👤 *Khách hàng:* " . $order->customer_name . "\n"
+                . "📞 *SĐT:* " . $order->customer_phone . "\n"
+                . "🕹️ *Số lượng vé:* " . $order->quantity . " vé\n"
+                . "💰 *Tổng tiền:* " . number_format($order->total_amount) . " VNĐ\n"
+                . "💳 *Trạng thái:* " . ($order->status == 'paid' ? '✅ Đã thanh toán' : '⏳ Chờ thanh toán');
+
+            \App\Jobs\SendTelegramNotification::dispatchSync($message);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Lỗi gửi Telegram (Branch): " . $e->getMessage());
+        }
+
         // Tạo chi tiết đơn
         foreach ($cart as $item) {
             \App\Models\OrderItem::create([

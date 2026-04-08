@@ -321,7 +321,7 @@ class CheckoutController extends Controller
                     . "💳 *Trạng thái:* " . ($order->status == 'paid' ? '✅ Đã thanh toán' : '⏳ Chờ thanh toán');
 
                 // Bắn Request lên API của Telegram thông qua Background Job
-                SendTelegramNotification::dispatch($message)->afterCommit();
+                \App\Jobs\SendTelegramNotification::dispatchSync($message);
             } catch (\Exception $e) {
                 // Ghi log
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
@@ -636,7 +636,7 @@ class CheckoutController extends Controller
                     . "💰 *Tiền đã hoàn:* " . number_format($order->total_amount) . " VNĐ\n"
                     . "🔄 *Trạng thái:* Đã nhả lại Slot trống";
 
-                SendTelegramNotification::dispatch($message)->afterCommit();
+                \App\Jobs\SendTelegramNotification::dispatchSync($message);
             } catch (\Exception $e) {
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
             }
