@@ -89,9 +89,21 @@
                     <p class="small text-muted mb-4">Mở app ngân hàng → Quét mã → Chuyển khoản đúng số tiền và nội dung</p>
 
                     <div class="d-flex justify-content-center mb-4">
-                        <div class="p-3 border border-light rounded-3 shadow-sm bg-white">
-                            <img src="{{ $qrUrl }}" alt="QR Thanh toán" width="240" height="240"
-                                 onerror="this.src='https://via.placeholder.com/240?text=QR+Error'">
+                        <div class="p-3 border border-light rounded-3 shadow-sm bg-white" style="width: 270px; height: 270px; display: flex; align-items: center; justify-content: center;">
+                            @if(empty($bankAccount))
+                                <div class="text-center text-danger">
+                                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                                    <div class="mt-2 fw-bold">Chưa cấu hình tài khoản</div>
+                                    <div class="small">Vui lòng liên hệ Admin</div>
+                                </div>
+                            @else
+                                <img src="{{ $qrUrl }}" alt="QR Thanh toán" width="240" height="240"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div style="display: none;" class="text-center text-danger">
+                                    <i class="bi bi-qr-code-scan fs-1"></i>
+                                    <div class="mt-2 fw-bold">Lỗi tải mã QR</div>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
