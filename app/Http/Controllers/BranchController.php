@@ -426,6 +426,30 @@ class BranchController extends Controller
         // Xóa giỏ hàng
         session()->forget('branch_cart_' . $subdomain);
 
+        // Tạo QR Code Vé
+        $qr = app(\App\Services\QrTicketService::class)->generate($order);
+
+        // LOGIC CỘNG ĐIỂM, PLAY_COUNT VÀ GỬI MAIL (Trừ Banking)
+        if ($paymentMethod !== 'banking') {
+            foreach ($cart as $item) {
+                \App\Models\Ticket::where('id', $item['id'])
+                    ->increment('play_count', $item['quantity']);
+            }
+
+            if ($user) {
+                \App\Services\LoyaltyService::addPoints($user, $order);
+            }
+
+            $validEmail = $order->customer_email ?? ($user->email ?? null);
+            if ($validEmail) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($validEmail)->send(new \App\Mail\BookingConfirmedMail($order));
+                } catch (\Exception $mailErr) {
+                    \Illuminate\Support\Facades\Log::warning('Lỗi gửi mail: ' . $mailErr->getMessage());
+                }
+            }
+        }
+
         // 2. CHUYỂN KHOẢN / QR → Nhảy sang trang thanh toán QR
         if ($paymentMethod === 'banking') {
              if (!Auth::check()) {
