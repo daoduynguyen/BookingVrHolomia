@@ -231,72 +231,55 @@
                     </a>
                 </li>
             </ul>
-        </div>
+        
 
-        <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0 justify-content-center">
+        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+                @include('partials.lang_switcher')
 
-            {{-- ===== LANG SWITCHER ===== --}}
-            @include('partials.lang_switcher')
-
-            {{-- ===== GIỎ HÀNG ===== --}}
-            <a href="{{ route('branch.cart', ['subdomain' => $subdomain]) }}"
-                class="nav-link cart-icon-hover position-relative p-0" title="{{ __('navbar.cart') }}">
-                <i class="bi bi-cart3 fs-5"></i>
-                @php $cartCount = session('branch_cart_' . $subdomain) ? count(session('branch_cart_' . $subdomain)) : 0; @endphp
-                @if($cartCount > 0)
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                        style="font-size: 0.62rem; padding: 0.3em 0.5em;">
-                        {{ $cartCount }}
-                    </span>
-                @endif
-            </a>
-
-            {{-- ===== USER MENU ===== --}}
-            @if(Auth::check())
-                <div class="dropdown">
-                    <a href="#" class="btn-user dropdown-toggle" data-bs-toggle="dropdown">
-                        @if(Auth::user()->avatar)
-                            <img src="{{ Auth::user()->avatar }}" class="rounded-circle"
-                                style="width:28px; height:28px; object-fit:cover;">
-                        @else
-                            <i class="bi bi-person-circle fs-5"></i>
-                        @endif
-                        {{ __('navbar.hi') }}, {{ last(explode(' ', Auth::user()->name)) }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-user">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('branch.profile', ['subdomain' => $subdomain]) }}">
-                                <i class="bi bi-person me-2"></i> {{ __('navbar.profile') }}
-                            </a>
-                        </li>
-
-
-                        <li>
-                            <a class="dropdown-item" href="{{ route('branch.settings', ['subdomain' => $subdomain]) }}">
-                                <i class="bi bi-gear me-2"></i> {{ __('profile.settings') ?? 'Cài đặt' }}
-                            </a>
-                        </li>
-                        <li>
-
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <form action="{{ route('branch.logout', ['subdomain' => $subdomain]) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger fw-bold">
-                                    <i class="bi bi-box-arrow-right me-2"></i> {{ __('navbar.logout') }}
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            @else
-                <a href="{{ route('branch.login', ['subdomain' => $subdomain]) }}" class="btn-user text-decoration-none">
-                    <i class="bi bi-person"></i> {{ __('navbar.login') }}
+                <a href="{{ route('branch.cart', ['subdomain' => $subdomain]) }}"
+                    class="nav-link cart-icon-hover position-relative p-0">
+                    <i class="bi bi-cart3 fs-5"></i>
+                    @php $cartCount = session('branch_cart_' . $subdomain) ? count(session('branch_cart_' . $subdomain)) : 0; @endphp
+                    @if($cartCount > 0)
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style="font-size: 0.62rem; padding: 0.3em 0.5em;">
+                            {{ $cartCount }}
+                        </span>
+                    @endif
                 </a>
-            @endif
+
+                @if(Auth::check())
+                    <div class="dropdown">
+                        <a href="#" class="btn-user dropdown-toggle" data-bs-toggle="dropdown">
+                            @if(Auth::user()->avatar)
+                                <img src="{{ Auth::user()->avatar }}" class="rounded-circle"
+                                    style="width:28px; height:28px; object-fit:cover;">
+                            @else
+                                <i class="bi bi-person-circle fs-5"></i>
+                            @endif
+                            {{ __('navbar.hi') }}, {{ last(explode(' ', Auth::user()->name)) }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-user">
+                            <li><a class="dropdown-item" href="{{ route('branch.profile', ['subdomain' => $subdomain]) }}"><i class="bi bi-person me-2"></i> {{ __('navbar.profile') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('branch.settings', ['subdomain' => $subdomain]) }}"><i class="bi bi-gear me-2"></i> Cài đặt</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{{ route('branch.logout', ['subdomain' => $subdomain]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger fw-bold">
+                                        <i class="bi bi-box-arrow-right me-2"></i> {{ __('navbar.logout') }}
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                @else
+                    <a href="{{ route('branch.login', ['subdomain' => $subdomain]) }}" class="btn-user text-decoration-none">
+                        <i class="bi bi-person"></i> {{ __('navbar.login') }}
+                    </a>
+                @endif
+            </div>
         </div>
-    </div>
 </nav>
 
 {{-- ===== GLOBAL UI SETTINGS — chạy trên mọi trang ===== --}}

@@ -396,7 +396,7 @@
                                 <i class="bi bi-heart-fill me-2"></i> Trò chơi yêu thích
                             </h4>
                             @php
-                                $wishlist = auth()->user()->wishlists ?? collect();
+                                $wishlist = auth()->user()->favorites ?? collect();
                             @endphp
                             @if($wishlist->count() > 0)
                                 <div class="row g-3">

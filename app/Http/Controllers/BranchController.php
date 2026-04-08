@@ -33,6 +33,29 @@ class BranchController extends Controller
         return view('branch.index', compact('location', 'tickets', 'subdomain'));
     }
 
+    public function applyCoupon(Request $request, $subdomain)
+{
+    $code     = strtoupper(trim($request->coupon_code));
+    $coupon   = \App\Models\Coupon::where('code', $code)
+                    ->where('is_active', true)
+                    ->where(function($q){ $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()); })
+                    ->first();
+
+    if (!$coupon) {
+        return response()->json(['success' => false, 'message' => 'Mã không hợp lệ hoặc đã hết hạn.']);
+    }
+
+    session()->put('applied_coupon_code_' . $subdomain, $code);
+    session()->put('applied_coupon_id_'   . $subdomain, $coupon->id);
+
+    return response()->json([
+        'success'       => true,
+        'message'       => 'Áp dụng thành công! Giảm ' . ($coupon->type === 'percent' ? $coupon->value.'%' : number_format($coupon->value).'đ'),
+        'type'          => $coupon->type,
+        'value'         => $coupon->value,
+    ]);
+}
+
     // ==================== CHI TIẾT VÉ ====================
     public function detail($subdomain, $id)
     {
@@ -124,7 +147,14 @@ class BranchController extends Controller
         $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
         $surchargeRate = (int) $surchargeStr;
 
-        return view('branch.booking', compact('location', 'ticket', 'subdomain', 'selectedType', 'slots', 'surchargeRate'));
+         $oldCartData = null;
+    $replaceId   = request('replace_cart_id');
+    if ($replaceId) {
+        $cart = session()->get('branch_cart_' . $subdomain, []);
+        $oldCartData = $cart[$replaceId] ?? null;
+    }
+
+        return view('branch.booking', compact('location', 'ticket', 'subdomain', 'selectedType', 'slots', 'surchargeRate', 'oldCartData', 'replaceId'));
     }
 
     // ==================== THÊM GIỎ HÀNG ====================
@@ -385,6 +415,9 @@ class BranchController extends Controller
 
         // 2. CHUYỂN KHOẢN / QR → Nhảy sang trang thanh toán QR
         if ($paymentMethod === 'banking') {
+             if (!Auth::check()) {
+        session(['guest_order_' . $order->id => true]);
+    }
             return redirect()->route('branch.payment.banking', ['subdomain' => $subdomain, 'id' => $order->id]);
         }
 

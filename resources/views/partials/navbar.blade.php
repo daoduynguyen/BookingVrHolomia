@@ -254,9 +254,9 @@
                     </ul>
                 </li>
             </ul>
-        </div>
+        
 
-        <div class="d-flex align-items-center gap-3 d-none d-lg-flex">
+        <div class="d-flex align-items-center gap-3 d-lg-flex">
 
             {{-- ===== LANG SWITCHER ===== --}}
             @include('partials.lang_switcher')

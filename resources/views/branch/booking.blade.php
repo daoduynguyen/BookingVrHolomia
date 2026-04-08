@@ -52,6 +52,8 @@
             @csrf
             <input type="hidden" name="ticket_id" value="{{ $ticket->id ?? '' }}">
 
+            <input type="hidden" name="replace_cart_id" value="{{ $replaceId ?? '' }}"> 
+            
             <div id="price-data" data-base="{{ $ticket->price }}" data-surcharge="{{ $surchargeRate ?? 0 }}"
                 style="display: none;"></div>
 
@@ -62,18 +64,19 @@
                         <h5 class="fw-bold mb-3 border-bottom pb-2">Thông tin cá nhân</h5>
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold">Họ và tên</label>
-                            <input type="text" name="customer_name" class="form-control"
-                                value="{{ Auth::check() ? Auth::user()->name : '' }}" required>
+                           <input type="text" name="customer_name" class="form-control"
+    value="{{ $oldCartData['customer_name'] ?? (Auth::check() ? Auth::user()->name : '') }}" required>
+
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold">Số điện thoại</label>
                             <input type="text" name="customer_phone" class="form-control"
-                                value="{{ Auth::check() ? Auth::user()->phone : '' }}" required>
+    value="{{ $oldCartData['customer_phone'] ?? (Auth::check() ? Auth::user()->phone : '') }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold">Email nhận vé</label>
                             <input type="email" name="customer_email" class="form-control"
-                                value="{{ Auth::check() ? Auth::user()->email : '' }}" required
+    value="{{ $oldCartData['customer_email'] ?? (Auth::check() ? Auth::user()->email : '') }}" required
                                 placeholder="Ví dụ: nguyenvan@gmail.com">
                         </div>
 
@@ -82,7 +85,8 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i>
                                     Ngày chơi</label>
-                                <input type="date" name="booking_date" id="booking_date" class="form-control" required>
+                               <input type="date" name="booking_date" id="booking_date" class="form-control"
+    value="{{ $oldCartData['booking_date'] ?? '' }}" required>
                                 <div id="date-message" class="mt-2 small text-muted">Vui lòng chọn ngày...</div>
                             </div>
 

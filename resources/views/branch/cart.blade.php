@@ -188,6 +188,16 @@
                             <span class="fs-4 fw-bold text-primary" id="grand-total">{{ number_format($total) }}đ</span>
                         </div>
 
+                        {{-- ✅ MÃ GIẢM GIÁ --}}
+<div class="mb-3">
+    <label class="form-label fw-bold small text-muted text-uppercase">Mã giảm giá</label>
+    <div class="input-group">
+        <input type="text" id="coupon-input" class="form-control bg-light border-light"
+               placeholder="Nhập mã voucher..." value="{{ session('applied_coupon_code_'.$subdomain) }}">
+        <button class="btn btn-outline-primary fw-bold" type="button" id="apply-coupon-btn">Áp dụng</button>
+    </div>
+    <div id="coupon-msg" class="small mt-1"></div>
+</div>
                         <p class="small text-muted mb-4 fst-italic">Vui lòng kiểm tra lại thông tin vé trước khi tiếp tục!</p>
 
                         {{-- Form Submit --}}

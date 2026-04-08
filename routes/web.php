@@ -39,6 +39,8 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
     Route::post('/dang-ky', [App\Http\Controllers\BranchController::class, 'register'])->name('branch.register.post');
     Route::post('/dang-xuat', [App\Http\Controllers\BranchController::class, 'logout'])->name('branch.logout');
 
+    //Vocher
+    Route::post('/apply-coupon', [App\Http\Controllers\BranchController::class, 'applyCoupon'])->name('branch.coupon.apply');
     // Đặt vé (booking form)
     Route::get('/dat-ve/{id}', [App\Http\Controllers\BranchController::class, 'bookingForm'])->name('branch.booking.form');
     Route::post('/them-gio-hang', [App\Http\Controllers\BranchController::class, 'addToCart'])->name('branch.cart.add');
