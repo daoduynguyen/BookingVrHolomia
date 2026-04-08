@@ -213,7 +213,7 @@
                         <p class="small text-muted mb-4 fst-italic">Hãy kiểm tra lại thông tin trước khi xác nhận!</p>
 
                         {{-- Form Submit --}}
-                        <form action="{{ route('payment.final') }}" method="POST" id="checkout-form">
+                        <form action="{{ route('payment.final') }}" method="POST" id="checkout-form" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='<i class=\'spinner-border spinner-border-sm me-2\'></i>ĐANG XỬ LÝ...';">
                             @csrf
                             @if($selectedMethod == 'cod')
                                 <button type="button" class="btn btn-warning w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm text-dark" onclick="confirmCOD()">

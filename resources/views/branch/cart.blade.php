@@ -201,7 +201,7 @@
                         <p class="small text-muted mb-4 fst-italic">Vui lòng kiểm tra lại thông tin vé trước khi tiếp tục!</p>
 
                         {{-- Form Submit --}}
-                        <form action="{{ route('branch.checkout', ['subdomain' => $subdomain]) }}" method="POST" id="checkout-form">
+                        <form action="{{ route('branch.checkout', ['subdomain' => $subdomain]) }}" method="POST" id="checkout-form" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='<i class=\'spinner-border spinner-border-sm me-2\'></i>ĐANG XỬ LÝ...';">
                             @csrf
                             <input type="hidden" name="payment_method" value="{{ $selectedMethod }}">
                             
