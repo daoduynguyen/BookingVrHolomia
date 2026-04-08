@@ -154,6 +154,22 @@
         </div>
     </div>
 
+    {{-- ═══════════════════════════════════════
+         BẢN ĐỒ
+    ════════════════════════════════════════ --}}
+    @if($location->maps_url)
+    <div class="container pb-5">
+        <h2 class="text-dark fw-bold text-uppercase d-flex align-items-center mb-4">
+            <i class="bi bi-map-fill text-primary me-3 fs-3"></i> Tìm đường đến chúng tôi
+        </h2>
+        <div class="shadow-sm rounded-4 overflow-hidden" style="border: 4px solid #fff;">
+            <div style="width: 100%; height: 350px;">
+                {!! str_replace('<iframe ', '<iframe style="width: 100%; height: 100%; border: 0;" ', $location->maps_url) !!}
+            </div>
+        </div>
+    </div>
+    @endif
+
     @include('branch.partials.footer')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
