@@ -546,10 +546,10 @@ class BranchController extends Controller
         }
 
         $settings = \App\Models\Setting::whereIn('key', ['bank_bin', 'bank_account', 'bank_name', 'bank_owner'])->pluck('value', 'key');
-        $bankBin = $settings['bank_bin'] ?? '970436';
-        $bankAccount = $settings['bank_account'] ?? '';
-        $bankName = $settings['bank_name'] ?? 'Ngân hàng';
-        $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
+        $bankBin = !empty($settings['bank_bin']) ? $settings['bank_bin'] : '970418';
+        $bankAccount = !empty($settings['bank_account']) ? $settings['bank_account'] : '8860075445';
+        $bankName = !empty($settings['bank_name']) ? $settings['bank_name'] : 'BIDV';
+        $bankOwner = !empty($settings['bank_owner']) ? $settings['bank_owner'] : 'HOLOMIA VR';
 
         $refCode = 'DH' . $order->id;
         $amount = $order->total_amount;
