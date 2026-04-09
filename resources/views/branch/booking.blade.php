@@ -7,7 +7,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Thông tin đặt vé - {{ $location->name }}</title>
+    <title>{{ __('checkout.page_booking', ['name' => $location->name]) }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link
@@ -34,8 +34,7 @@
     @include('branch.partials.navbar')
 
     <div class="container py-5">
-        <h2 class="text-info fw-bold mb-4 text-uppercase"><i class="bi bi-person-lines-fill"></i> Thông tin người đặt
-        </h2>
+        <h2 class="text-info fw-bold mb-4 text-uppercase"><i class="bi bi-person-lines-fill"></i> {{ __('checkout.personal_info') }}</h2>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -61,41 +60,39 @@
                 {{-- CỘT TRÁI: ĐIỀN THÔNG TIN --}}
                 <div class="col-lg-7">
                     <div class="card border-0 rounded-4 p-4 mb-4 shadow">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">Thông tin cá nhân</h5>
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">{{ __('checkout.personal_info') }}</h5>
                         <div class="mb-3">
-                            <label class="form-label text-dark fw-bold">Họ và tên</label>
+                            <label class="form-label text-dark fw-bold">{{ __('checkout.field_name') }}</label>
                            <input type="text" name="customer_name" class="form-control"
     value="{{ $oldCartData['customer_name'] ?? (Auth::check() ? Auth::user()->name : '') }}" required>
 
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-dark fw-bold">Số điện thoại</label>
+                            <label class="form-label text-dark fw-bold">{{ __('checkout.field_phone') }}</label>
                             <input type="text" name="customer_phone" class="form-control"
     value="{{ $oldCartData['customer_phone'] ?? (Auth::check() ? Auth::user()->phone : '') }}" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-dark fw-bold">Email nhận vé</label>
+                            <label class="form-label text-dark fw-bold">{{ __('checkout.field_email') }}</label>
                             <input type="email" name="customer_email" class="form-control"
     value="{{ $oldCartData['customer_email'] ?? (Auth::check() ? Auth::user()->email : '') }}" required
-                                placeholder="Ví dụ: nguyenvan@gmail.com">
+                                placeholder="{{ __('checkout.field_email_ph') }}">
                         </div>
 
                         {{-- CHỌN NGÀY VÀ GIỜ --}}
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i>
-                                    Ngày chơi</label>
+                                <label class="form-label fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i> {{ __('checkout.play_date') }}</label>
                                <input type="date" name="booking_date" id="booking_date" class="form-control"
     value="{{ $oldCartData['booking_date'] ?? '' }}" required>
-                                <div id="date-message" class="mt-2 small text-muted">Vui lòng chọn ngày...</div>
+                                <div id="date-message" class="mt-2 small text-muted">{{ __('checkout.date_choose') }}</div>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold text-warning"><i class="bi bi-clock-history me-1"></i>
-                                    Khung giờ</label>
+                                <label class="form-label fw-bold text-warning"><i class="bi bi-clock-history me-1"></i> {{ __('checkout.time_slot') }}</label>
                                 <select name="slot_id" id="slot_id"
                                     class="form-select bg-white text-dark border-light shadow-sm" required>
-                                    <option value="">-- Hãy chọn ngày trước --</option>
+                                    <option value="">{{ __('checkout.slot_choose_date') }}</option>
                                 </select>
                             </div>
                         </div>
@@ -103,8 +100,7 @@
                         {{-- CHỌN SỐ LƯỢNG / DUYỆT CÁC LOẠI VÉ MỚI --}}
                         @if($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0)
                             <div class="mb-4">
-                                <label class="form-label fw-bold text-primary"><i class="bi bi-ticket-detailed me-1"></i>
-                                    Chọn số lượng vé</label>
+                                <label class="form-label fw-bold text-primary"><i class="bi bi-ticket-detailed me-1"></i> {{ __('checkout.ticket_qty') }}</label>
                                 @php
                                     $selectedType = request()->query('selected_ticket_type');
                                 @endphp
@@ -128,8 +124,7 @@
                             </div>
                         @else
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-primary"><i class="bi bi-people-fill me-1"></i> Số
-                                    lượng vé</label>
+                                <label class="form-label fw-bold text-primary"><i class="bi bi-people-fill me-1"></i> {{ __('checkout.ticket_qty_simple') }}</label>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1" max="50"
                                     class="form-control bg-light text-dark border-light ticket-qty-input"
                                     data-price="{{ $ticket->price }}" data-name="{{ $ticket->name }}" style="width: 120px;">
@@ -137,14 +132,14 @@
                         @endif
 
                         <div class="mb-3">
-                            <label class="form-label text-dark fw-bold">Ghi chú đơn hàng (Không bắt buộc)</label>
+                            <label class="form-label text-dark fw-bold">{{ __('checkout.note') }}</label>
                             <textarea name="note" class="form-control bg-light" rows="2"></textarea>
                         </div>
                     </div>
 
                     {{-- PHƯƠNG THỨC THANH TOÁN --}}
                     <div class="card border-0 rounded-4 p-4 shadow">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">Phương thức thanh toán</h5>
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">{{ __('checkout.payment_method') }}</h5>
 
                         {{-- Tiền mặt --}}
                         <div class="form-check mb-3 p-3 border border-light rounded bg-white shadow-sm payment-box"
@@ -154,7 +149,7 @@
                             <label class="form-check-label d-flex align-items-center gap-2 w-100" for="cod"
                                 style="cursor: pointer;">
                                 <i class="bi bi-cash-coin text-success fs-4"></i>
-                                <div class="text-dark"><strong>Thanh toán tại quầy</strong></div>
+                                <div class="text-dark"><strong>{{ __('checkout.pay_counter') }}</strong></div>
                             </label>
                         </div>
 
@@ -166,7 +161,7 @@
                             <label class="form-check-label d-flex align-items-center gap-2 w-100" for="banking"
                                 style="cursor: pointer;">
                                 <i class="bi bi-qr-code-scan text-primary fs-4"></i>
-                                <div class="text-dark"><strong>Chuyển khoản / Mã QR</strong></div>
+                                <div class="text-dark"><strong>{{ __('checkout.pay_banking') }}</strong></div>
                             </label>
                         </div>
 
@@ -180,17 +175,14 @@
                                     style="cursor: pointer;">
                                     <i class="bi bi-wallet2 text-primary fs-4"></i>
                                     <div>
-                                        <strong class="text-dark text-uppercase">Ví Holomia</strong>
-                                        <div class="small text-muted">Số dư:
-                                            <span>{{ number_format(Auth::user()->balance) }}đ</span></div>
+                                        <strong class="text-dark text-uppercase">{{ __('checkout.pay_wallet') }}</strong>
+                                        <div class="small text-muted">{{ __('checkout.wallet_balance') }}: <span>{{ number_format(Auth::user()->balance) }}đ</span></div>
                                     </div>
                                 </label>
                             </div>
                         @else
                             <div class="alert alert-info small mt-2">
-                                <i class="bi bi-info-circle me-1"></i> <a
-                                    href="{{ route('branch.login', ['subdomain' => $subdomain]) }}" class="fw-bold">Đăng
-                                    nhập</a> để thanh toán bằng Ví.
+                                <i class="bi bi-info-circle me-1"></i> {!! str_replace(':login', '<a href="' . route('branch.login', ['subdomain' => $subdomain]) . '" class="fw-bold">' . __('checkout.wallet_login_link') . '</a>', __('checkout.wallet_login_hint', ['login' => ''])) !!}
                             </div>
                         @endif
                     </div>
@@ -200,12 +192,11 @@
                 <div class="col-lg-5">
                     <div class="card border-0 rounded-4 p-4 shadow-sm sticky-top"
                         style="top: 100px; background-color: var(--bg-card);">
-                        <h5 class="fw-bold mb-4 text-center text-primary border-bottom pb-3">TÓM TẮT VÉ
-                        </h5>
+                        <h5 class="fw-bold mb-4 text-center text-primary border-bottom pb-3">{{ __('checkout.summary_title') }}</h5>
 
                         <div
                             class="d-flex justify-content-between align-items-center mb-3 bg-white shadow-sm p-2 rounded border border-light">
-                            <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cơ sở:</span>
+                            <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ __('cart.branch') }}:</span>
                             <span class="text-dark fw-bold text-end">{{ $location->name }}</span>
                         </div>
 
@@ -214,15 +205,14 @@
                                 class="rounded shadow-sm" width="70" height="70" style="object-fit: cover;">
                             <div>
                                 <h5 class="mb-1 text-dark fw-bold">{{ $ticket->name }}</h5>
-                                <span class="badge bg-primary bg-opacity-10 text-primary" id="display-qty">Số lượng:
-                                    0</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary" id="display-qty">{{ __('cart.quantity') }}: 0</span>
                             </div>
                         </div>
 
                         <div id="summary-ticket-list" class="mb-3"></div>
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted">Tạm tính:</span>
+                            <span class="text-muted">{{ __('checkout.subtotal') }}:</span>
                             <span class="fs-5 fw-bold text-dark" id="temp-total">0đ</span>
                         </div>
 
@@ -234,13 +224,12 @@
 
                         <div
                             class="d-flex justify-content-between align-items-center border-top border-light pt-3 mb-4">
-                            <span class="text-dark fw-bold fs-5">TỔNG TIỀN:</span>
+                            <span class="text-dark fw-bold fs-5">{{ __('checkout.grand_total') }}</span>
                             <span class="fs-3 fw-bold text-primary" id="final-total">0đ</span>
                         </div>
 
-                        <button type="submit"
-                            class="btn btn-info w-100 py-3 fw-bold text-uppercase rounded-pill shadow">
-                            Thêm vào Giỏ Hàng <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                        <button type="submit" class="btn btn-info w-100 py-3 fw-bold text-uppercase rounded-pill shadow">
+                            {{ __('checkout.add_to_cart') }} <i class="bi bi-arrow-right-circle-fill ms-2"></i>
                         </button>
                     </div>
                 </div>
@@ -262,7 +251,7 @@ $('#booking_date').val(today);
 var ticket_id = $('input[name="ticket_id"]').val();
 var slotSelect = $('#slot_id');
 
-slotSelect.html('<option value="">Đang tải khung giờ...</option>');
+slotSelect.html('<option value="">' + '{{ __('checkout.slot_loading') }}' + '</option>');
 slotSelect.prop('disabled', true);
 
 $.ajax({
@@ -273,7 +262,7 @@ $.ajax({
         slotSelect.empty();
 
         if (slots.length === 0) {
-            slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
+            slotSelect.html('<option value="">' + '{{ __('checkout.slot_empty_today') }}' + '</option>');
             return;
         }
 
@@ -312,7 +301,7 @@ $.ajax({
         updateSummary();
     },
     error: function () {
-        slotSelect.html('<option value="">Lỗi tải khung giờ!</option>');
+        slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
     }
 });
 
@@ -361,11 +350,11 @@ updateSummary();
                     $('#surcharge-row').removeClass('d-none');
                     $('#surcharge-percent').text(surchargeRate);
                     $('#surcharge-amount').text('+' + formatMoney(surchargeAmount));
-                    $('#date-message').html('<span class="text-danger fw-bold"><i class="bi bi-info-circle"></i> Có áp dụng phụ phí cuối tuần</span>');
+                    $('#date-message').html('<span class="text-danger fw-bold"><i class="bi bi-info-circle"></i> ' + '{{ __('checkout.date_weekend') }}' + '</span>');
                 } else {
                     $('#surcharge-row').addClass('d-none');
                     if (dateVal) {
-                        $('#date-message').html('<span class="text-success fw-bold"><i class="bi bi-check-circle"></i> Giá ngày thường</span>');
+                        $('#date-message').html('<span class="text-success fw-bold"><i class="bi bi-check-circle"></i> ' + '{{ __('checkout.date_weekday') }}' + '</span>');
                     }
                 }
 
@@ -396,7 +385,7 @@ updateSummary();
                 // Cập nhật phụ phí ngay khi đổi ngày
                 updateSummary();
 
-                slotSelect.html('<option value="">Đang tải khung giờ...</option>');
+                slotSelect.html('<option value="">' + '{{ __('checkout.slot_loading') }}' + '</option>');
                 slotSelect.prop('disabled', true);
 
                 $.ajax({
@@ -406,7 +395,7 @@ updateSummary();
                         slotSelect.prop('disabled', false);
                         slotSelect.empty();
                         if (slots.length === 0) {
-                            slotSelect.html('<option value="">Chưa có lịch giờ này!</option>');
+                            slotSelect.html('<option value="">' + '{{ __('checkout.slot_empty') }}' + '</option>');
                         } else {
                             $.each(slots, function (i, slot) {
                                 // Formating time to HH:mm
@@ -418,7 +407,7 @@ updateSummary();
                     },
                     error: function () {
                         slotSelect.prop('disabled', false);
-                        slotSelect.html('<option value="">Lỗi tải khung giờ</option>');
+                        slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
                     }
                 });
             });

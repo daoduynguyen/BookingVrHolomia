@@ -8,7 +8,7 @@
 <html lang="{{ $langConfig['html_lang'] }}">
 <head>
     <meta charset="UTF-8">
-    <title>Giỏ hàng - {{ $location->name }}</title>
+    <title>{{ __('cart.page_branch', ['name' => $location->name]) }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
@@ -28,13 +28,13 @@
     @include('branch.partials.navbar')
 
     <div class="container py-5">
-        <h2 class="text-primary fw-bold mb-4 text-uppercase"><i class="bi bi-cart3"></i> Giỏ hàng của bạn tại {{ $location->name }}</h2>
+        <h2 class="text-primary fw-bold mb-4 text-uppercase"><i class="bi bi-cart3"></i> {{ __('cart.cart_title') }} - {{ $location->name }}</h2>
         
         @if(session()->has($cartKey . '_created_at') && count($cart) > 0)
         <div id="slot-warning" class="alert alert-warning d-flex align-items-center gap-2 mb-4">
             <i class="bi bi-clock-fill fs-5"></i>
             <div>
-                Giờ chơi trong giỏ hàng được giữ trong
+                {{ __('cart.reserve_timer') }}
                 <strong id="countdown-timer">10:00</strong> —
                 vui lòng hoàn tất đặt vé sớm!
             </div>
@@ -88,7 +88,7 @@
                                                         <div>
                                                             <h6 class="mb-0 fw-bold text-primary">{{ $item['name'] }}</h6>
                                                             <div class="small text-muted mt-1">
-                                                                <i class="bi bi-calendar3"></i> {{ isset($item['booking_date']) ? \Carbon\Carbon::parse($item['booking_date'])->format('d/m/Y') : 'Chưa chọn ngày' }}
+                                                                <i class="bi bi-calendar3"></i> {{ isset($item['booking_date']) ? \Carbon\Carbon::parse($item['booking_date'])->format('d/m/Y') : __('cart.no_date') }}
                                                                 <br>
                                                                 <i class="bi bi-clock"></i> 
                                                                 @php
@@ -97,7 +97,7 @@
                                                                @if($slot)
     {{ substr($slot->start_time, 0, 5) }} - {{ substr($slot->end_time, 0, 5) }}
 @else
-    <span class="text-danger fw-bold">Chưa chọn giờ</span>
+    <span class="text-danger fw-bold">{{ __('cart.no_slot') }}</span>
 @endif
                                                             </div>
                                                         </div>
@@ -122,7 +122,7 @@
 
                                             {{-- 5. Nút xóa --}}
                                             <td class="text-end">
-                                                <a href="{{ route('branch.cart.remove', ['subdomain' => $subdomain, 'id' => $id]) }}" class="text-danger fs-5" onclick="return confirm('Bạn chắc chắn muốn xóa vé này?')">
+                                                <a href="{{ route('branch.cart.remove', ['subdomain' => $subdomain, 'id' => $id]) }}" class="text-danger fs-5" onclick="return confirm('{{ __('cart.remove') }}?')">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             </td>
@@ -135,7 +135,7 @@
 
                     <div class="mt-3">
                         <a href="{{ route('branch.home', ['subdomain' => $subdomain]) }}" class="text-primary text-decoration-none small fw-bold">
-                            <i class="bi bi-arrow-left"></i> Tiếp tục chọn vé
+                            <i class="bi bi-arrow-left"></i> {{ __('cart.continue_shop') }}
                         </a>
                     </div>
                 </div>
@@ -143,7 +143,7 @@
                 {{-- CỘT PHẢI: TỔNG TIỀN & THANH TOÁN --}}
                 <div class="col-lg-4">
                     <div class="card bg-white border border-light shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
-                        <h5 class="fw-bold mb-4 border-bottom border-light pb-3 text-dark">Tóm tắt đơn hàng</h5>
+                        <h5 class="fw-bold mb-4 border-bottom border-light pb-3 text-dark">{{ __('cart.title') }}</h5>
 
                         {{-- Hiển thị phương thức đã chọn --}}
                         @php
@@ -157,7 +157,7 @@
                             @if($selectedMethod == 'cod')
                                 <i class="bi bi-shop text-warning fs-5"></i>
                                 <div>
-                                    <div class="fw-bold text-dark small">Thanh toán tại quầy</div>
+                                    <div class="fw-bold text-dark small">{{ __('checkout.pay_counter') }}</div>
                                     <div class="text-muted" style="font-size:0.75rem;">Đến cơ sở {{ $location->name }} để thanh toán</div>
                                 </div>
                             @elseif($selectedMethod == 'banking')
@@ -176,7 +176,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Tổng cộng:</span>
+                            <span class="text-muted">{{ __('cart.total') }}:</span>
                             <span class="fw-bold text-dark">{{ number_format($total) }}đ</span>
                         </div>
 
@@ -190,15 +190,15 @@
 
                         {{-- ✅ MÃ GIẢM GIÁ --}}
 <div class="mb-3">
-    <label class="form-label fw-bold small text-muted text-uppercase">Mã giảm giá</label>
+    <label class="form-label fw-bold small text-muted text-uppercase">{{ __('cart.coupon_code') }}</label>
     <div class="input-group">
         <input type="text" id="coupon-input" class="form-control bg-light border-light"
-               placeholder="Nhập mã voucher..." value="{{ session('applied_coupon_code_'.$subdomain) }}">
-        <button class="btn btn-outline-primary fw-bold" type="button" id="apply-coupon-btn">Áp dụng</button>
+               placeholder="{{ __('cart.coupon_ph') }}" value="{{ session('applied_coupon_code_'.$subdomain) }}">
+        <button class="btn btn-outline-primary fw-bold" type="button" id="apply-coupon-btn">{{ __('cart.coupon_apply') }}</button>
     </div>
     <div id="coupon-msg" class="small mt-1"></div>
 </div>  
-                        <p class="small text-muted mb-4 fst-italic">Vui lòng kiểm tra lại thông tin vé trước khi tiếp tục!</p>
+                        <p class="small text-muted mb-4 fst-italic">{{ __('cart.empty_desc') }}</p>
 
                         {{-- Form Submit --}}
                         <form action="{{ route('branch.checkout', ['subdomain' => $subdomain]) }}" method="POST" id="checkout-form" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='<i class=\'spinner-border spinner-border-sm me-2\'></i>ĐANG XỬ LÝ...';">
@@ -221,8 +221,8 @@
                         </form>
 
                         <div class="text-center mt-3">
-                            <a href="{{ route('branch.cart.empty', ['subdomain' => $subdomain]) }}" class="text-muted small text-decoration-none hover-text-dark" onclick="return confirm('Xóa toàn bộ giỏ hàng?')">
-                                <i class="bi bi-trash"></i> Xóa sạch giỏ hàng
+                            <a href="{{ route('branch.cart.empty', ['subdomain' => $subdomain]) }}" class="text-muted small text-decoration-none hover-text-dark" onclick="return confirm('{{ __('cart.clear_all') }}?')">
+                                <i class="bi bi-trash"></i> {{ __('cart.clear_all') }}
                             </a>
                         </div>
                     </div>
@@ -232,7 +232,7 @@
             {{-- GIỎ HÀNG TRỐNG --}}
             <div class="text-center py-5">
                 <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
-                <h3 class="mt-4 fw-bold text-dark">Giỏ hàng đang trống</h3>
+                <h3 class="mt-4 fw-bold text-dark">{{ __('cart.empty_cart') }}</h3>
                 <p class="text-muted">Bạn chưa chọn bất kỳ trò chơi nào tại cơ sở {{ $location->name }}.</p>
                 <a href="{{ route('branch.home', ['subdomain' => $subdomain]) }}" class="btn btn-primary shadow-sm px-5 py-3 rounded-pill fw-bold mt-3">
                     XEM DANH SÁCH TRÒ CHƠI

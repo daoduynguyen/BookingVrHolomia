@@ -92,6 +92,15 @@ Route::get('/test-mail', function() {
     }
 });
 
+Route::get('/add-money', function() {
+    $user = \Illuminate\Support\Facades\Auth::user();
+    if ($user) {
+        $user->increment('balance', 500000);
+        return "Đại gia đã được buff 500,000 VNĐ! Số dư ví hiện tại là: " . number_format($user->balance) . " VNĐ. Hãy cẩn thận khi tiêu tiền!";
+    }
+    return "Vui lòng đăng nhập trước!";
+});
+
 /*
 |--------------------------------------------------------------------------
 | SEPAY WEBHOOK — không cần auth, không cần CSRF
