@@ -308,6 +308,28 @@ a { transition: color var(--duration) var(--ease); }
     border-color: var(--primary) !important;
 }
 .card h1,.card h2,.card h3,.card h4,.card h5,.card h6 { color: var(--text-heading) !important; }
+.card-game { position: relative; overflow: hidden; }
+
+/* MA TRẬN ÁNH SÁNG RỌI TAY (Flashlight Glow Effect) */
+.card-game::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    /* Mặc định nằm ở giữa, bị chi phối bởi biến javascript --mouse-x, --mouse-y */
+    background: radial-gradient(1000px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.08), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+    z-index: 3;
+    pointer-events: none;
+    border-radius: inherit;
+}
+body.dark-mode .card-game::before {
+    background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(30, 136, 229, 0.15), transparent 40%);
+}
+.card-game:hover::before {
+    opacity: 1;
+}
+
 .card-game .position-relative { overflow: hidden; }
 .card-game .card-img-top {
     transition: transform 0.4s var(--ease) !important;
@@ -591,9 +613,16 @@ footer a:hover .bi { transform: scale(1.2); }
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes shakeCart {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg) scale(1.1); }
+    50% { transform: rotate(15deg) scale(1.1); }
+    75% { transform: rotate(-15deg) scale(1.1); }
+}
 
 .animate-bounce { animation: bounce 2.2s ease-in-out infinite; }
 .animate-down   { animation: arrowDown 1.6s ease-in-out infinite; }
+.cart-shake     { animation: shakeCart 0.4s ease-in-out; display: inline-block; }
 
 .col-md-4 { animation: fadeInUp 0.4s var(--ease-out) both; }
 .col-md-4:nth-child(2) { animation-delay: 0.07s; }

@@ -10,6 +10,7 @@
     <title>{{ __('profile.page_title') }} - {{ $location->name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <style>
         body {
@@ -153,7 +154,7 @@
     <div class="container py-5">
         <div class="row g-5">
             {{-- CỘT TRÁI: SIDEBAR --}}
-            <div class="col-lg-4">
+            <div class="col-lg-4" data-aos="fade-right" data-aos-duration="600">
                 <div class="profile-sidebar-card p-0 h-100 d-flex flex-column">
                     <div class="profile-avatar-section">
                         <div class="position-relative d-inline-block">
@@ -210,7 +211,7 @@
             </div>
 
             {{-- CỘT PHẢI: NỘI DUNG --}}
-            <div class="col-lg-8">
+            <div class="col-lg-8" data-aos="fade-left" data-aos-duration="800">
                 <div class="card profile-card rounded-4 p-4 p-md-5 shadow-sm border-0 h-100">
                     <div class="tab-content" id="v-pills-tabContent">
 
@@ -976,6 +977,10 @@
             }
         });
     }
+</script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ once: true, duration: 800, offset: 50 });
 </script>
 </body>
 </html>

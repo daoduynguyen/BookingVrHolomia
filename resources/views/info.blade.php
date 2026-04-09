@@ -12,6 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <style>
         body { font-family: {{ $langConfig['font_family'] }}; }
@@ -24,11 +25,11 @@
     {{-- ABOUT SECTION --}}
     <div class="container py-5">
         <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-6" data-aos="fade-right" data-aos-duration="1000">
                 <img src="https://holomia.com/images/contents/17194557751_16576174651-homejpgjpg.jpg"
                     class="img-fluid rounded shadow" alt="Holomia Team">
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
                 <div class="d-flex align-items-center mb-3">
                     <div class="bg-info me-3" style="width: 50px; height: 2px;"></div>
                     <h4 class="text-info fw-bold text-uppercase letter-spacing-2 mb-0"
@@ -60,7 +61,7 @@
 
     <div class="container py-4"> 
         <div class="row g-4">
-            <div class="col-md-6">
+            <div class="col-md-6" data-aos="zoom-in" data-aos-duration="800">
                 <div class="p-4 bg-white rounded-4 h-100 border border-light shadow-sm">
                         <div class="d-flex align-items-center mb-3">
                         <i class="bi bi-eye fs-2 text-primary me-3"></i>
@@ -70,7 +71,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-6" data-aos="zoom-in" data-aos-duration="800" data-aos-delay="200">
                 <div class="p-4 bg-white rounded-4 h-100 border border-light shadow-sm">
                     <div class="d-flex align-items-center mb-3">
                         <i class="bi bi-rocket-takeoff fs-2 text-primary me-3"></i>
@@ -84,7 +85,7 @@
 
     {{-- CONTACT SECTION --}}
     <div class="container py-5">
-        <div class="d-flex align-items-center mb-5">
+        <div class="d-flex align-items-center mb-5" data-aos="fade-up">
             <div class="bg-primary me-3" style="width: 50px; height: 3px;"></div>
             <h2 class="text-primary fw-bold text-uppercase mb-0" style="letter-spacing: 3px;">
                 {{ __('contact.heading') }}
@@ -94,7 +95,7 @@
         <div class="row g-4">
 
             {{-- INFO COLUMN --}}
-            <div class="col-lg-5">
+            <div class="col-lg-5" data-aos="fade-up" data-aos-delay="100">
                 <div class="profile-content h-100 shadow-sm bg-white border border-light p-4 rounded-4">
                     <h4 class="text-dark fw-bold mb-4 border-bottom border-light pb-3">
                         {{ __('contact.info_title') }}
@@ -143,7 +144,7 @@
             </div>
 
             {{-- FORM COLUMN --}}
-            <div class="col-lg-7">
+            <div class="col-lg-7" data-aos="fade-left" data-aos-delay="200">
                 <div class="profile-content shadow-sm bg-white border border-light p-4 rounded-4">
                     <h4 class="text-dark fw-bold mb-4 border-bottom border-light pb-3">
                         {{ __('contact.form_title') }}
@@ -285,6 +286,10 @@
         }, 4000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, duration: 800, offset: 50 });
+    </script>
 
     @include('partials.footer')
 </body>

@@ -22,9 +22,34 @@
             position: relative;
         }
         .hero-overlay {
-            position: absolute; top: 0; start: 0; w: 100%; h: 100%;
+            position: absolute;
+            top: 0;
+            start: 0;
+            w: 100%;
+            h: 100%;
             background: linear-gradient(90deg, rgba(233, 236, 239, 0.95) 0%, rgba(233, 236, 239, 0.8) 40%, rgba(233, 236, 239, 0) 100%);
-            z-index: 1; width: 100%; height: 100%;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .card-game {
+            position: relative;
+            transition: 0.3s;
+            background: #fff;
+        }
+        .card-game:hover::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            padding: 2px;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), {{ $location->color ?? '#0d6efd' }}, transparent 40%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -34,9 +59,10 @@
     @include('branch.partials.navbar')
 
     <div class="hero-section container-fluid p-0 mb-5">
+        <div id="particles-js" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;"></div>
         <div class="hero-overlay"></div>
-        <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2;">
-            <div class="col-lg-6 px-5" style="padding-left: 8% !important;">
+        <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2; pointer-events: none;">
+            <div class="col-lg-6 px-5" style="padding-left: 8% !important; pointer-events: auto;">
                 <div class="mb-3">
                     <i class="bi bi-geo-alt-fill display-4 text-primary"></i>
                 </div>
@@ -149,6 +175,102 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        AOS.init({ once: true, duration: 800, offset: 50 });
+
+        // Cấu hình Particles.js
+        if(document.getElementById('particles-js')) {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": "{{ $location->color ?? '#0d6efd' }}" }, // Màu chi nhánh
+                    "shape": { "type": "circle" },
+                    "opacity": { "value": 0.5, "random": false },
+                    "size": { "value": 3, "random": true },
+                    "line_linked": { "enable": true, "distance": 150, "color": "{{ $location->color ?? '#0d6efd' }}", "opacity": 0.4, "width": 1 },
+                    "move": { "enable": true, "speed": 4, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                },
+                "interactivity": {
+                    "detect_on": "window",
+                    "events": {
+                        "onhover": { "enable": true, "mode": "grab" },
+                        "onclick": { "enable": true, "mode": "push" },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": { "distance": 200, "line_linked": { "opacity": 1 } },
+                        "push": { "particles_nb": 4 }
+                    }
+                },
+                "retina_detect": true
+            });
+        }
+
+        // Script tọa độ ánh sáng Card Glow
+        document.querySelectorAll('.card-game').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // Script Hiệu ứng Bắn Game vào Giỏ Hàng
+        document.querySelectorAll('a[href*="cart/add"], a[href*="them-gio-hang"]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if(this.classList.contains('processing')) return;
+                this.classList.add('processing');
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                
+                const card = this.closest('.card-game');
+                if(card) {
+                    const img = card.querySelector('.card-img-top');
+                    const cartIcon = document.querySelector('.bi-cart3, .cart-icon-hover');
+                    
+                    if(img && cartIcon) {
+                        const imgRect = img.getBoundingClientRect();
+                        const clone = img.cloneNode(true);
+                        clone.style.width = imgRect.width + 'px';
+                        clone.style.height = imgRect.height + 'px';
+                        clone.style.position = 'fixed';
+                        clone.style.top = imgRect.top + 'px';
+                        clone.style.left = imgRect.left + 'px';
+                        clone.style.zIndex = '9999';
+                        clone.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                        clone.style.borderRadius = '12px';
+                        clone.style.opacity = '0.9';
+                        document.body.appendChild(clone);
+                        
+                        const cartRect = cartIcon.getBoundingClientRect();
+                        
+                        setTimeout(() => {
+                            clone.style.top = (cartRect.top + 5) + 'px';
+                            clone.style.left = (cartRect.left + 5) + 'px';
+                            clone.style.width = '30px';
+                            clone.style.height = '30px';
+                            clone.style.opacity = '0';
+                        }, 20);
+                        
+                        setTimeout(() => {
+                            clone.remove();
+                            if(cartIcon.parentElement) {
+                                cartIcon.parentElement.classList.add('cart-shake');
+                                setTimeout(() => cartIcon.parentElement.classList.remove('cart-shake'), 400);
+                            }
+                            window.location.href = href;
+                        }, 800);
+                        return;
+                    }
+                }
+                window.location.href = href;
+            });
+        });
+    </script>
     <script>
         $(document).on('click', '.btn-wishlist', function () {
             @if(!Auth::check())

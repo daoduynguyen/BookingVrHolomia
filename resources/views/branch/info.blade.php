@@ -12,6 +12,7 @@
     <meta name="description" content="{{ __('about.meta_description') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <style>
@@ -28,7 +29,7 @@
     <div class="py-5 text-white" style="background: linear-gradient(135deg, #0d1b3e 0%, #0a2a6e 55%, {{ $location->color ?? '#1565c0' }} 100%);">
         <div class="container py-3">
             <div class="row align-items-center g-5">
-                <div class="col-lg-6">
+                <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
                     <div class="d-flex align-items-center mb-3">
                         <div class="me-3" style="width: 50px; height: 2px; background: {{ $location->color ?? '#38bdf8' }};"></div>
                         <span class="fw-bold text-uppercase" style="font-size: 0.85rem; letter-spacing: 3px; color: {{ $location->color ?? '#38bdf8' }};">
@@ -50,7 +51,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6 text-center">
+                <div class="col-lg-6 text-center" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
                     <img src="https://holomia.com/images/contents/17194557751_16576174651-homejpgjpg.jpg"
                         class="img-fluid rounded-4 shadow-lg" alt="{{ $location->name }}" style="max-height: 360px; object-fit: cover; width: 100%;">
                 </div>
@@ -60,7 +61,7 @@
 
     <div class="container py-5">
         {{-- THỐNG KÊ --}}
-        <div class="row g-4 text-center mb-5">
+        <div class="row g-4 text-center mb-5" data-aos="fade-up">
             <div class="col-6 col-md-3">
                 <div class="p-4 bg-white rounded-4 shadow-sm border border-light h-100">
                     <h2 class="fw-bold mb-1" style="color: var(--primary);">50+</h2>
@@ -89,7 +90,7 @@
 
         {{-- TẦM NHÌN & SỨ MỆNH --}}
         <div class="row g-4 mb-5">
-            <div class="col-md-6">
+            <div class="col-md-6" data-aos="zoom-in" data-aos-duration="800">
                 <div class="p-4 bg-white rounded-4 h-100 border border-light shadow-sm">
                     <div class="d-flex align-items-center mb-3">
                         <i class="bi bi-eye fs-2 me-3" style="color: var(--primary);"></i>
@@ -98,7 +99,7 @@
                     <p class="text-muted mb-0">{{ __('about.vision_content') }}</p>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6" data-aos="zoom-in" data-aos-duration="800" data-aos-delay="200">
                 <div class="p-4 bg-white rounded-4 h-100 border border-light shadow-sm">
                     <div class="d-flex align-items-center mb-3">
                         <i class="bi bi-rocket-takeoff fs-2 me-3" style="color: var(--primary);"></i>
@@ -110,7 +111,7 @@
         </div>
 
         {{-- CONTACT SECTION --}}
-        <div class="d-flex align-items-center mb-4 mt-5" id="contact-section">
+        <div class="d-flex align-items-center mb-4 mt-5" id="contact-section" data-aos="fade-up">
             <div class="me-3" style="width: 50px; height: 3px; background: var(--primary);"></div>
             <h2 class="fw-bold text-uppercase mb-0" style="letter-spacing: 3px; color: var(--primary);">
                 {{ __('about.contact_section', ['name' => $location->name]) }}
@@ -119,7 +120,7 @@
 
         <div class="row g-4 mb-5">
             {{-- INFO COLUMN --}}
-            <div class="col-lg-5">
+            <div class="col-lg-5" data-aos="fade-up" data-aos-delay="100">
                 <div class="profile-content h-100 shadow-sm bg-white border border-light p-4 rounded-4">
                     <h4 class="text-dark fw-bold mb-4 border-bottom border-light pb-3">
                         {{ __('about.contact_info') }}
@@ -178,7 +179,7 @@
             </div>
 
             {{-- FORM COLUMN --}}
-            <div class="col-lg-7">
+            <div class="col-lg-7" data-aos="fade-left" data-aos-delay="200">
                 <div class="profile-content shadow-sm bg-white border border-light p-4 rounded-4">
                     <h4 class="text-dark fw-bold mb-4 border-bottom border-light pb-3">
                         {{ __('about.form_title') }}
@@ -306,5 +307,9 @@
 
     @include('branch.partials.footer')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, duration: 800, offset: 50 });
+    </script>
 </body>
 </html>

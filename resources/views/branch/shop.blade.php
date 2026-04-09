@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đặt vé - {{ $location->name }} | Holomia VR</title>
+    <title>{{ __('branch.shop_title') }} - {{ $location->name }} | Holomia VR</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link
@@ -89,10 +89,10 @@
                 </span>
                 <h1 class="text-white fw-bold display-5 mb-1">
                     <i class="bi bi-controller me-2" style="color: var(--primary);"></i>
-                    KHO VÉ TOÀN TẬP
+                    {{ __('branch.shop_header') }}
                 </h1>
                 <p class="text-white-50 mb-0">
-                    Hiện có <strong class="text-white">{{ $tickets->count() }}</strong> trò chơi tại cơ sở này
+                    {{ __('branch.shop_available') }} <strong class="text-white">{{ $tickets->count() }}</strong> {{ __('branch.shop_games_here') }}
                 </p>
             </div>
 
@@ -101,13 +101,13 @@
                 <div class="col-lg-7">
                     <div class="search-box">
                         <label class="text-white-50 small fw-semibold mb-2 d-block" style="letter-spacing: 1px;">
-                            TRÒ CHƠI BẠN MUỐN TÌM?
+                            {{ __('branch.shop_search_label') }}
                         </label>
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="bi bi-search text-primary"></i>
                             </span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên trò chơi...">
+                            <input type="text" id="searchInput" class="form-control" placeholder="{{ __('branch.shop_search_ph') }}">
                         </div>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <p class="text-muted mb-0" id="resultCount">
-                Hiển thị <strong>{{ $tickets->count() }}</strong> trò chơi
+                {{ __('branch.shop_showing') }} <strong>{{ $tickets->count() }}</strong> {{ __('branch.shop_games') }}
             </p>
         </div>
 
@@ -142,7 +142,7 @@
                             {{-- NÚT TIM YÊU THÍCH --}}
                             <button
                                 class="btn btn-light rounded-circle position-absolute top-0 start-0 m-3 shadow-sm btn-wishlist"
-                                data-id="{{ $ticket->id }}" title="Thêm vào yêu thích">
+                                data-id="{{ $ticket->id }}" title="{{ __('branch.add_to_wishlist') }}">
                                 @if(Auth::check() && Auth::user()->favorites->contains($ticket->id))
                                     <i class="bi bi-heart-fill text-danger fs-5"></i>
                                 @else
@@ -159,36 +159,36 @@
 
                         <div class="card-body d-flex flex-column p-4">
                            <div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
-    <small class="text-muted fw-bold" style="font-size: 0.8rem;">
-        <i class="bi bi-person-check-fill text-secondary"></i>
-        {{ number_format($ticket->play_count) }} lượt
-    </small>
-</div>
-<h5 class="card-title fw-bold mb-2 ticket-name">{{ $ticket->name }}</h5>
-<p class="small text-muted mb-3 fw-medium">
-    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-    {{ $location->name }}
-</p>
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
+                                <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+                                    <i class="bi bi-person-check-fill text-secondary"></i>
+                                    {{ number_format($ticket->play_count) }} {{ __('branch.plays') }}
+                                </small>
+                            </div>
+                            <h5 class="card-title fw-bold mb-2 ticket-name">{{ $ticket->name }}</h5>
+                            <p class="small text-muted mb-3 fw-medium">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                {{ $location->name }}
+                            </p>
 
                             <div
                                 class="mt-auto pt-3 border-top border-light mb-4 d-flex justify-content-between align-items-center">
-                                <span class="small text-muted fw-medium">{{ __('home.price_from') }}</span>
+                                <span class="small text-muted fw-medium">{{ __('branch.shop_price_from') }}</span>
                                 <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                             </div>
 
                             @if($ticket->status == 'maintenance')
-                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>BẢO TRÌ</button>
+                                <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>{{ __('branch.maintenance') }}</button>
                             @else
 
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm d-flex align-items-center justify-content-center">
-                                        ĐẶT VÉ NGAY
+                                        {{ __('branch.book_now') }}
                                     </a>
-                                    <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Thêm vào giỏ">
+                                    <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="{{ __('branch.add_to_cart') }}">
                                         <i class="bi bi-cart-plus fs-5"></i>
                                     </a>
-                                    <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Xem chi tiết">
+                                    <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="{{ __('branch.view_detail') }}">
                                         <i class="bi bi-eye fs-5"></i>
                                     </a>
                                 </div>
@@ -199,7 +199,7 @@
             @empty
                 <div class="col-12 text-center text-muted py-5">
                     <i class="bi bi-controller display-1 opacity-25"></i>
-                    <h4 class="mt-3">Hiện tại chưa có trò chơi nào tại cơ sở này.</h4>
+                    <h4 class="mt-3">{{ __('branch.no_games') }}</h4>
                 </div>
             @endforelse
         </div>
@@ -207,8 +207,8 @@
         {{-- KHÔNG TÌM THẤY --}}
         <div id="noResult" class="text-center py-5">
             <i class="bi bi-search display-1 text-muted opacity-25"></i>
-            <h4 class="mt-3 text-muted">Không tìm thấy trò chơi nào.</h4>
-            <p class="text-muted">Thử tìm với từ khóa khác.</p>
+            <h4 class="mt-3 text-muted">{{ __('branch.shop_no_result') }}</h4>
+            <p class="text-muted">{{ __('branch.shop_try_again') }}</p>
         </div>
 
     </div>
@@ -238,7 +238,7 @@
                 }
             });
             noResult.style.display = visible === 0 ? 'block' : 'none';
-            resultCount.innerHTML = `Hiển thị <strong>${visible}</strong> trò chơi`;
+            resultCount.innerHTML = `{{ __('branch.shop_showing') }} <strong>${visible}</strong> {{ __('branch.shop_games') }}`;
         });
 
         // ===== YÊU THÍCH =====
@@ -260,11 +260,11 @@
                     if (response.is_favorited) {
                         icon.removeClass('bi-heart').addClass('bi-heart-fill');
                         Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, background: '#212529', color: '#fff' })
-                            .fire({ icon: 'success', title: 'Đã thêm vào yêu thích' });
+                            .fire({ icon: 'success', title: '{{ __('branch.added_wishlist') }}' });
                     } else {
                         icon.removeClass('bi-heart-fill').addClass('bi-heart');
                         Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, background: '#212529', color: '#fff' })
-                            .fire({ icon: 'info', title: 'Đã xóa khỏi yêu thích' });
+                            .fire({ icon: 'info', title: '{{ __('branch.removed_wishlist') }}' });
                     }
                 }
             });

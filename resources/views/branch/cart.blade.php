@@ -36,7 +36,7 @@
             <div>
                 {{ __('cart.reserve_timer') }}
                 <strong id="countdown-timer">10:00</strong> —
-                vui lòng hoàn tất đặt vé sớm!
+                {{ __('cart.reserve_timer_desc') }}
             </div>
         </div>
         @endif
@@ -57,10 +57,10 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                     <tr class="text-muted small text-uppercase">
-                                        <th>Sản phẩm</th>
-                                        <th>Giá</th>
-                                        <th>Số lượng</th>
-                                        <th class="text-end">Thành tiền</th>
+                                        <th>{{ __('cart.col_product') }}</th>
+                                        <th>{{ __('cart.col_price') }}</th>
+                                        <th>{{ __('cart.col_qty') }}</th>
+                                        <th class="text-end">{{ __('cart.col_subtotal') }}</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -81,7 +81,7 @@
                                             @endphp
                                             {{-- 1. Tên, Ảnh & Giờ chơi --}}
                                             <td>
-                                                <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $realTicketId]) }}?replace_cart_id={{ $id }}" class="text-decoration-none text-dark d-block ticket-cart-link" title="Nhấn để cập nhật ngày giờ chơi">
+                                                <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $realTicketId]) }}?replace_cart_id={{ $id }}" class="text-decoration-none text-dark d-block ticket-cart-link" title="{{ __('cart.update_datetime') }}">
                                                     <div class="d-flex align-items-center gap-3">
                                                         <img src="{{ Str::startsWith($item['image'], 'http') ? $item['image'] : asset($item['image']) }}" 
                                                              class="rounded shadow-sm" width="70" height="70" style="object-fit: cover;">
@@ -95,10 +95,10 @@
                                                                     $slot = isset($item['slot_id']) ? \App\Models\TimeSlot::find($item['slot_id']) : null;
                                                                 @endphp
                                                                @if($slot)
-    {{ substr($slot->start_time, 0, 5) }} - {{ substr($slot->end_time, 0, 5) }}
-@else
-    <span class="text-danger fw-bold">{{ __('cart.no_slot') }}</span>
-@endif
+                                                                    {{ substr($slot->start_time, 0, 5) }} - {{ substr($slot->end_time, 0, 5) }}
+                                                                @else
+                                                                    <span class="text-danger fw-bold">{{ __('cart.no_slot') }}</span>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     </div>
@@ -158,19 +158,19 @@
                                 <i class="bi bi-shop text-warning fs-5"></i>
                                 <div>
                                     <div class="fw-bold text-dark small">{{ __('checkout.pay_counter') }}</div>
-                                    <div class="text-muted" style="font-size:0.75rem;">Đến cơ sở {{ $location->name }} để thanh toán</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">{{ __('checkout.pay_counter_desc', ['name' => $location->name]) }}</div>
                                 </div>
                             @elseif($selectedMethod == 'banking')
                                 <i class="bi bi-qr-code-scan text-primary fs-5"></i>
                                 <div>
-                                    <div class="fw-bold text-dark small">Chuyển khoản / QR</div>
-                                    <div class="text-muted" style="font-size:0.75rem;">Quét mã QR ở bước tiếp theo</div>
+                                    <div class="fw-bold text-dark small">{{ __('checkout.banking_qr') }}</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">{{ __('checkout.banking_qr_desc') }}</div>
                                 </div>
                             @else
                                 <i class="bi bi-wallet2 text-success fs-5"></i>
                                 <div>
-                                    <div class="fw-bold text-dark small">Ví Holomia</div>
-                                    <div class="text-muted" style="font-size:0.75rem;">Trừ tiền ví ngay lập tức</div>
+                                    <div class="fw-bold text-dark small">{{ __('checkout.wallet') }}</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">{{ __('checkout.wallet_desc') }}</div>
                                 </div>
                             @endif
                         </div>
@@ -184,38 +184,38 @@
 
                         {{-- TỔNG TIỀN CUỐI CÙNG --}}
                         <div class="d-flex justify-content-between mb-3">
-                            <span class="text-dark fw-bold text-uppercase">Thành tiền:</span>
+                            <span class="text-dark fw-bold text-uppercase">{{ __('cart.final_total') }}</span>
                             <span class="fs-4 fw-bold text-primary" id="grand-total">{{ number_format($total) }}đ</span>
                         </div>
 
                         {{-- ✅ MÃ GIẢM GIÁ --}}
-<div class="mb-3">
-    <label class="form-label fw-bold small text-muted text-uppercase">{{ __('cart.coupon_code') }}</label>
-    <div class="input-group">
-        <input type="text" id="coupon-input" class="form-control bg-light border-light"
-               placeholder="{{ __('cart.coupon_ph') }}" value="{{ session('applied_coupon_code_'.$subdomain) }}">
-        <button class="btn btn-outline-primary fw-bold" type="button" id="apply-coupon-btn">{{ __('cart.coupon_apply') }}</button>
-    </div>
-    <div id="coupon-msg" class="small mt-1"></div>
-</div>  
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">{{ __('cart.coupon_code') }}</label>
+                            <div class="input-group">
+                                <input type="text" id="coupon-input" class="form-control bg-light border-light"
+                                       placeholder="{{ __('cart.coupon_ph') }}" value="{{ session('applied_coupon_code_'.$subdomain) }}">
+                                <button class="btn btn-outline-primary fw-bold" type="button" id="apply-coupon-btn">{{ __('cart.coupon_apply') }}</button>
+                            </div>
+                            <div id="coupon-msg" class="small mt-1"></div>
+                        </div>  
                         <p class="small text-muted mb-4 fst-italic">{{ __('cart.empty_desc') }}</p>
 
                         {{-- Form Submit --}}
-                        <form action="{{ route('branch.checkout', ['subdomain' => $subdomain]) }}" method="POST" id="checkout-form" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='<i class=\'spinner-border spinner-border-sm me-2\'></i>ĐANG XỬ LÝ...';">
+                        <form action="{{ route('branch.checkout', ['subdomain' => $subdomain]) }}" method="POST" id="checkout-form" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='<i class=\'spinner-border spinner-border-sm me-2\'></i>{{ __('cart.processing') }}';">
                             @csrf
                             <input type="hidden" name="payment_method" value="{{ $selectedMethod }}">
                             
                             @if($selectedMethod == 'cod')
                                 <button type="submit" class="btn btn-warning w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm text-dark">
-                                    <i class="bi bi-shop me-2"></i>ĐẶT VÉ TẠI QUẦY
+                                    <i class="bi bi-shop me-2"></i>{{ __('cart.btn_cod') }}
                                 </button>
                             @elseif($selectedMethod == 'banking')
                                 <button type="submit" class="btn btn-primary w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm">
-                                    <i class="bi bi-qr-code-scan me-2"></i>TIẾP TỤC CHUYỂN KHOẢN
+                                    <i class="bi bi-qr-code-scan me-2"></i>{{ __('cart.btn_banking') }}
                                 </button>
                             @else
                                 <button type="submit" class="btn btn-success w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm">
-                                    <i class="bi bi-wallet2 me-2"></i>THANH TOÁN BẰNG VÍ
+                                    <i class="bi bi-wallet2 me-2"></i>{{ __('cart.btn_wallet') }}
                                 </button>
                             @endif
                         </form>
@@ -233,9 +233,9 @@
             <div class="text-center py-5">
                 <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
                 <h3 class="mt-4 fw-bold text-dark">{{ __('cart.empty_cart') }}</h3>
-                <p class="text-muted">Bạn chưa chọn bất kỳ trò chơi nào tại cơ sở {{ $location->name }}.</p>
+                <p class="text-muted">{{ __('cart.empty_desc_branch', ['name' => $location->name]) }}</p>
                 <a href="{{ route('branch.home', ['subdomain' => $subdomain]) }}" class="btn btn-primary shadow-sm px-5 py-3 rounded-pill fw-bold mt-3">
-                    XEM DANH SÁCH TRÒ CHƠI
+                    {{ __('cart.btn_shop') }}
                 </a>
             </div>
         @endif
@@ -269,7 +269,7 @@
                     },
                     error: function(xhr) {
                         ele.prop('disabled', false);
-                        alert('Có lỗi xảy ra, vui lòng thử lại');
+                        alert('{{ __('cart.error_try_again') }}');
                     }
                 });
             });
@@ -280,7 +280,7 @@
             var msg  = $('#coupon-msg');
 
             if (!code) {
-                msg.html('<span class="text-danger">Vui lòng nhập mã giảm giá.</span>');
+                msg.html('<span class="text-danger">{{ __('cart.enter_coupon') }}</span>');
                 return;
             }
 
@@ -310,7 +310,7 @@
                     }
                 },
                 error: function () {
-                    msg.html('<span class="text-danger">Có lỗi xảy ra, vui lòng thử lại.</span>');
+                    msg.html('<span class="text-danger">{{ __('cart.error_try_again') }}</span>');
                 }
             });
         });
@@ -340,7 +340,7 @@
                 timer.textContent = '00:00';
                 warning.className = 'alert alert-danger d-flex align-items-center gap-2 mb-4';
                 warning.innerHTML = '<i class="bi bi-exclamation-triangle-fill fs-5"></i>'
-                    + '<div>Đã hết 10 phút đếm ngược. Hệ thống đang tự động làm mới trang để phục hồi chỗ.</div>';
+                    + '<div>{{ __('cart.timeout_msg') }}</div>';
                 document.body.insertAdjacentHTML('beforeend', '<form id="form-clear-cart" action="{{ route('branch.cart.empty', ['subdomain' => $subdomain, 'redirect' => 'home']) }}" method="GET" style="display:none"></form>');
                 document.getElementById('form-clear-cart').submit();
                 return;

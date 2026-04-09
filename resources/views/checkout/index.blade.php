@@ -244,11 +244,12 @@
             const formatMoney = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
 
             // Chặn ngày quá khứ
-            var today = new Date().toISOString().split('T')[0];
+            var dateObj = new Date();
+            var today = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
             $('#booking_date').attr('min', today);
 
             // ✅ TỰ ĐỘNG CHỌN NGÀY HÔM NAY
-$('#booking_date').val(today);
+            $('#booking_date').val(today);
 
 // ✅ TỰ ĐỘNG LOAD SLOT GIỜ GẦN NHẤT
 var ticket_id = $('input[name="ticket_id"]').val();
@@ -264,41 +265,58 @@ $.ajax({
         slotSelect.prop('disabled', false);
         slotSelect.empty();
 
-        if (slots.length === 0) {
+        if (!slots || slots.length === 0) {
             slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
             return;
         }
 
-        // Lấy giờ hiện tại quy ra phút
         var now = new Date();
         var currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        var bestIndex = 0;
+        var bestIndex = -1;
         var bestDiff = Infinity;
+        var validSlotsCount = 0;
 
-        $.each(slots, function (i, slot) {
-            var start = slot.start_time.substring(0, 5);
-            var parts = start.split(':');
-            var slotMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-            var diff = slotMinutes - currentMinutes;
+        try {
+            $.each(slots, function (i, slot) {
+                if (!slot || !slot.start_time || !slot.end_time) return;
 
-            // Tìm slot gần nhất SAU giờ hiện tại
-            if (diff > 0 && diff < bestDiff) {
-                bestDiff = diff;
-                bestIndex = i;
+                var start = slot.start_time.substring(0, 5);
+                var end = slot.end_time.substring(0, 5);
+                var parts = start.split(':');
+                var slotMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                var diff = slotMinutes - currentMinutes;
+
+                // Tìm slot gần nhất SAU giờ hiện tại
+                if (diff > 0 && diff < bestDiff) {
+                    bestDiff = diff;
+                    bestIndex = validSlotsCount;
+                }
+
+                var available = slot.capacity - slot.booked_count;
+                slotSelect.append(
+                    '<option value="' + slot.id + '" data-available="' + available + '">' +
+                    start + ' - ' + end +
+                    ' (Còn ' + available + ' chỗ)</option>'
+                );
+                validSlotsCount++;
+            });
+
+            if (validSlotsCount === 0) {
+                slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
+                return;
             }
 
-            var end = slot.end_time.substring(0, 5);
-            var available = slot.capacity - slot.booked_count;
-            slotSelect.append(
-                '<option value="' + slot.id + '">' +
-                start + ' - ' + end +
-                ' (Còn ' + available + ' chỗ)</option>'
-            );
-        });
-
-        // ✅ TỰ ĐỘNG CHỌN SLOT GẦN NHẤT
-        slotSelect.find('option').eq(bestIndex).prop('selected', true);
+            // ✅ TỰ ĐỘNG CHỌN SLOT GẦN NHẤT
+            if (bestIndex !== -1) {
+                slotSelect.find('option').eq(bestIndex).prop('selected', true);
+            } else if (validSlotsCount > 0) {
+                slotSelect.find('option').eq(0).prop('selected', true);
+            }
+        } catch (e) {
+            console.error('Lỗi phân tích thời gian:', e);
+            slotSelect.html('<option value="">Lỗi tải khung giờ!</option>');
+        }
 
         updateSummary();
     },
@@ -441,8 +459,50 @@ updateSummary();
     });
 }
 
+            // VALIDATE SLOT CAPACITY 
+            function enforceSlotCapacity() {
+                var selectedSlot = $('#slot_id').find(':selected');
+                if (selectedSlot.length > 0 && selectedSlot.data('available') !== undefined) {
+                    var maxAvail = parseInt(selectedSlot.data('available'));
+                    var totalQty = 0;
+                    var $inputs = $('.ticket-qty-input');
+                    
+                    // Gán max attribute cho từng ô
+                    $inputs.attr('max', maxAvail);
+
+                    $inputs.each(function() {
+                        totalQty += parseInt($(this).val()) || 0;
+                    });
+                    
+                    if (totalQty > maxAvail) {
+                        if (maxAvail === 0) {
+                            $inputs.val(0);
+                        } else {
+                            // Tự động giản lược số lượng từ dưới lên
+                            for (let i = $inputs.length - 1; i >= 0; i--) {
+                                let $inp = $($inputs[i]);
+                                let val = parseInt($inp.val()) || 0;
+                                if (totalQty > maxAvail && val > 0) {
+                                    let reduce = Math.min(val, totalQty - maxAvail);
+                                    $inp.val(val - reduce);
+                                    totalQty -= reduce;
+                                }
+                            }
+                        }
+                        
+                        $('#capacity-warning').remove();
+                        $('#quantity').closest('.mb-3, .mb-4').append('<div id="capacity-warning" class="text-danger small fw-bold mt-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Số lượng đã tự động điều chỉnh vì khung giờ này chỉ còn '+maxAvail+' suất!</div>');
+                        setTimeout(function() { $('#capacity-warning').fadeOut(1000, function(){ $(this).remove(); }); }, 4500);
+                    }
+                }
+            }
+
             // LẮNG NGHE SỰ KIỆN TĂNG/GIẢM SỐ LƯỢNG
-            $('.ticket-qty-input').on('input change', updateSummary);
+            $('.ticket-qty-input').on('input change', function() {
+                enforceSlotCapacity();
+                updateSummary();
+            });
+            $('#slot_id').on('change', enforceSlotCapacity);
 
         // ==========================================
             // HÀM 4: KIỂM TRA TIỀN VÍ LIÊN TỤC
@@ -528,9 +588,10 @@ updateSummary();
                             slotSelect.html('<option value="">Chưa có lịch giờ này!</option>');
                         } else {
                             $.each(slots, function (i, slot) {
-                                slotSelect.append('<option value="' + slot.id + '">' + slot.label + ' (Còn ' + slot.available + ' chỗ)</option>');
+                                slotSelect.append('<option value="' + slot.id + '" data-available="' + slot.available + '">' + slot.label + ' (Còn ' + slot.available + ' chỗ)</option>');
                             });
                         }
+                        enforceSlotCapacity();
                     },
                     error: function () {
                         slotSelect.prop('disabled', false);

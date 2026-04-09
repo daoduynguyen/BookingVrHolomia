@@ -96,8 +96,8 @@ Route::get('/test-mail', function () {
 Route::get('/add-money', function () {
     $user = \Illuminate\Support\Facades\Auth::user();
     if ($user) {
-        $user->increment('balance', 5000000000);
-        return "Đại gia đã được buff 5,000,000,000 VNĐ! Số dư ví hiện tại là: " . number_format($user->balance) . " VNĐ. Hãy cẩn thận khi tiêu tiền!";
+        $user->increment('balance', 5000000);
+        return "Đại gia đã được buff 5,000,000 VNĐ! Số dư ví hiện tại là: " . number_format($user->balance) . " VNĐ. Hãy cẩn thận khi tiêu tiền!";
     }
     return "Vui lòng đăng nhập trước!";
 });

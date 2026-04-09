@@ -26,11 +26,13 @@
     <div class="container-fluid p-0 mb-5 position-relative" style="height: 600px; background: url('https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?q=80&w=2000&auto=format&fit=crop') center right/cover no-repeat;">
         
         <!-- Background overlay: Lớp phủ xám sáng bên trái, mờ dần sang phải -->
-        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(90deg, #e9ecef 0%, rgba(233, 236, 239, 0.9) 35%, rgba(233, 236, 239, 0) 100%); z-index: 1;"></div>
+        <!-- Thêm lưới hạt không gian Particles.js -->
+        <div id="particles-js" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;"></div>
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(90deg, #e9ecef 0%, rgba(233, 236, 239, 0.9) 35%, rgba(233, 236, 239, 0) 100%); z-index: 1; pointer-events: none;"></div>
 
-        <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2;">
+        <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2; pointer-events: none;">
             <!-- Cột trái: Chữ -->
-            <div class="col-lg-6 position-relative text-dark d-flex align-items-center" style="height: 100%;">
+            <div class="col-lg-6 position-relative text-dark d-flex align-items-center" style="height: 100%; pointer-events: auto;">
                 <div class="px-5 w-100" style="padding-left: 8% !important;">
                     <div class="mb-3 animate-bounce" data-aos="zoom-in" data-aos-duration="1000">
                         <i class="bi bi-headset-vr display-4 text-primary"></i>
@@ -156,8 +158,100 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script>
         AOS.init({ once: true, duration: 800, offset: 50 });
+
+        // Cấu hình Particles.js
+        if(document.getElementById('particles-js')) {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": "#1e88e5" }, // Màu xanh primary holomia
+                    "shape": { "type": "circle" },
+                    "opacity": { "value": 0.5, "random": false },
+                    "size": { "value": 3, "random": true },
+                    "line_linked": { "enable": true, "distance": 150, "color": "#1e88e5", "opacity": 0.4, "width": 1 },
+                    "move": { "enable": true, "speed": 4, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                },
+                "interactivity": {
+                    "detect_on": "window", // Phát hiện rê chuột trên toàn bộ banner
+                    "events": {
+                        "onhover": { "enable": true, "mode": "grab" },
+                        "onclick": { "enable": true, "mode": "push" },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": { "distance": 200, "line_linked": { "opacity": 1 } },
+                        "push": { "particles_nb": 4 }
+                    }
+                },
+                "retina_detect": true
+            });
+        }
+
+        // Script tọa độ ánh sáng Card Glow
+        document.querySelectorAll('.card-game').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // Script Hiệu ứng Bắn Game vào Giỏ Hàng
+        document.querySelectorAll('a[href*="cart/add"], a[href*="them-gio-hang"]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if(this.classList.contains('processing')) return;
+                this.classList.add('processing');
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                
+                const card = this.closest('.card-game');
+                if(card) {
+                    const img = card.querySelector('.card-img-top');
+                    const cartIcon = document.querySelector('.bi-cart3, .cart-icon-hover');
+                    
+                    if(img && cartIcon) {
+                        const imgRect = img.getBoundingClientRect();
+                        const clone = img.cloneNode(true);
+                        clone.style.width = imgRect.width + 'px';
+                        clone.style.height = imgRect.height + 'px';
+                        clone.style.position = 'fixed';
+                        clone.style.top = imgRect.top + 'px';
+                        clone.style.left = imgRect.left + 'px';
+                        clone.style.zIndex = '9999';
+                        clone.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                        clone.style.borderRadius = '12px';
+                        clone.style.opacity = '0.9';
+                        document.body.appendChild(clone);
+                        
+                        const cartRect = cartIcon.getBoundingClientRect();
+                        
+                        setTimeout(() => {
+                            clone.style.top = (cartRect.top + 5) + 'px';
+                            clone.style.left = (cartRect.left + 5) + 'px';
+                            clone.style.width = '30px';
+                            clone.style.height = '30px';
+                            clone.style.opacity = '0';
+                        }, 20);
+                        
+                        setTimeout(() => {
+                            clone.remove();
+                            if(cartIcon.parentElement) {
+                                cartIcon.parentElement.classList.add('cart-shake');
+                                setTimeout(() => cartIcon.parentElement.classList.remove('cart-shake'), 400);
+                            }
+                            window.location.href = href;
+                        }, 800);
+                        return;
+                    }
+                }
+                window.location.href = href;
+            });
+        });
     </script>
     @if(session('cod_success'))
     <script>
