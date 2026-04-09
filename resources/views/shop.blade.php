@@ -16,6 +16,7 @@
 
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style> body { font-family: {{ $langConfig['font_family'] }}; } </style>
     {{-- Thêm SweetAlert2 để thông báo đẹp --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -54,10 +55,10 @@
             <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
 
             <div class="container position-relative text-center text-white" style="z-index: 1;">
-                <h1 class="display-4 fw-bold text-uppercase mb-2 text-shadow" style="letter-spacing: 2px;">
+                <h1 class="display-4 fw-bold text-uppercase mb-2 text-shadow" style="letter-spacing: 2px;" data-aos="fade-down" data-aos-duration="1000">
                     <i class="bi bi-shop text-info"></i> {{ __('shop.shop_title') }}
                 </h1>
-                <p class="lead text-light opacity-75">{{ __('shop.total_games', ['count' => $tickets->total()]) }}</p>
+                <p class="lead text-light opacity-75" data-aos="fade-up" data-aos-delay="200">{{ __('shop.total_games', ['count' => $tickets->total()]) }}</p>
             </div>
         </div>
     </div>
@@ -68,8 +69,8 @@
     <div class="container pb-5">
 
         <div class="row g-4">
-            @foreach($tickets as $ticket)
-                <div class="col-md-4">
+            @foreach($tickets as $index => $ticket)
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
                     <div
                         class="card h-100 card-game overflow-hidden rounded-4 border-0 {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
 
@@ -165,6 +166,10 @@
     @include('partials.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, duration: 800, offset: 50 });
+    </script>
 
     {{-- [SCRIPT XỬ LÝ AJAX THẢ TIM] --}}
     <script>

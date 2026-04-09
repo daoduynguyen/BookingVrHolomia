@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     {{-- Font động theo ngôn ngữ --}}
     <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <style>
         body { font-family: {{ $langConfig['font_family'] }}; }
@@ -31,19 +32,19 @@
             <!-- Cột trái: Chữ -->
             <div class="col-lg-6 position-relative text-dark d-flex align-items-center" style="height: 100%;">
                 <div class="px-5 w-100" style="padding-left: 8% !important;">
-                    <div class="mb-3 animate-bounce">
+                    <div class="mb-3 animate-bounce" data-aos="zoom-in" data-aos-duration="1000">
                         <i class="bi bi-headset-vr display-4 text-primary"></i>
                     </div>
 
-                    <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 3px; color: #212529;">
+                    <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 3px; color: #212529;" data-aos="fade-right" data-aos-duration="1000">
                         Holomia <br><span class="text-primary">VR World</span>
                     </h1>
 
-                    <p class="lead fs-4 mb-5 text-secondary" style="max-width: 500px; font-weight: 500;">
+                    <p class="lead fs-4 mb-5 text-secondary" style="max-width: 500px; font-weight: 500;" data-aos="fade-right" data-aos-duration="1000" data-aos-delay="150">
                         {{ __('home.hero_tagline') }}
                     </p>
 
-                    <a href="#featured-games" class="btn btn-primary rounded-pill px-4 py-3 fw-bold text-white border-0" style="box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
+                    <a href="#featured-games" class="btn btn-primary rounded-pill px-4 py-3 fw-bold text-white border-0" style="box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="300">
                         <i class="bi bi-controller me-2"></i> {{ __('home.explore_now') }}
                     </a>
                 </div>
@@ -69,7 +70,7 @@
     </div>
 @endif
 
-        <div class="text-center mb-5">
+        <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="text-info fw-bold text-uppercase display-6">
                 <i class="bi bi-controller"></i> {{ __('home.featured_games') }}
             </h2>
@@ -82,8 +83,8 @@
                     <h3>{{ __('home.no_tickets') }}</h3>
                 </div>
             @else
-                @foreach($tickets as $ticket)
-                    <div class="col-md-4">
+                @foreach($tickets as $index => $ticket)
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
                         <div class="card h-100 card-game overflow-hidden rounded-4 border-0 {{ $ticket->status == 'maintenance' ? 'card-maintenance' : '' }}">
 
                             <div class="position-relative">
@@ -154,6 +155,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, duration: 800, offset: 50 });
+    </script>
     @if(session('cod_success'))
     <script>
         Swal.fire({

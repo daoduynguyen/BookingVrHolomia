@@ -73,18 +73,19 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
         Route::post('/tai-khoan/cap-nhat', [App\Http\Controllers\BranchController::class, 'updateProfile'])->name('branch.profile.update');
         Route::post('/tai-khoan/avatar', [App\Http\Controllers\BranchController::class, 'updateAvatar'])->name('branch.profile.avatar');
         Route::get('/tai-khoan/don-hang/{orderId}', [App\Http\Controllers\BranchController::class, 'orderDetail'])->name('branch.profile.order.detail');
-        
+
         // Hoàn tiền và Đánh giá (Branch)
         Route::post('/order/refund/{id}', [App\Http\Controllers\CheckoutController::class, 'refundOrder'])->name('branch.order.refund');
         Route::post('/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('branch.reviews.store');
     });
 });
 
-Route::get('/test-mail', function() {
+Route::get('/test-mail', function () {
     try {
         $order = \App\Models\Order::latest()->first();
-        if (!$order) return "Order not found";
-        
+        if (!$order)
+            return "Order not found";
+
         \Illuminate\Support\Facades\Mail::to('test@example.com')->send(new \App\Mail\BookingConfirmedMail($order));
         return "Gửi mail thành công cho đơn " . $order->id . "!";
     } catch (\Exception $e) {
@@ -92,11 +93,11 @@ Route::get('/test-mail', function() {
     }
 });
 
-Route::get('/add-money', function() {
+Route::get('/add-money', function () {
     $user = \Illuminate\Support\Facades\Auth::user();
     if ($user) {
-        $user->increment('balance', 500000);
-        return "Đại gia đã được buff 500,000 VNĐ! Số dư ví hiện tại là: " . number_format($user->balance) . " VNĐ. Hãy cẩn thận khi tiêu tiền!";
+        $user->increment('balance', 5000000000);
+        return "Đại gia đã được buff 5,000,000,000 VNĐ! Số dư ví hiện tại là: " . number_format($user->balance) . " VNĐ. Hãy cẩn thận khi tiêu tiền!";
     }
     return "Vui lòng đăng nhập trước!";
 });
@@ -162,7 +163,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
         Route::post('/users/{id}/ban', [AdminController::class, 'toggleBan'])->name('users.ban');
         Route::post('/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('users.updateRole');
 
-        Route::get('/users/edit/{id}',   [AdminController::class, 'editUser'])->name('users.edit');
+        Route::get('/users/edit/{id}', [AdminController::class, 'editUser'])->name('users.edit');
         Route::put('/users/update/{id}', [AdminController::class, 'updateUser'])->name('users.update');
 
         // Quản lý liên hệ
@@ -190,11 +191,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
             return view('admin.audit_log', compact('logs'));
         })->name('audit_log');
 
-        
-Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('settings.index');
-Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('settings.update');
-     
-});
+
+        Route::get('/settings', [AdminSettingsController::class, 'adminIndex'])->name('settings.index');
+        Route::post('/settings/update', [AdminSettingsController::class, 'adminUpdate'])->name('settings.update');
+
+    });
 });
 /*
 |--------------------------------------------------------------------------
@@ -280,9 +281,9 @@ Route::get('/thanh-toan/chuyen-khoan/{id}', [CheckoutController::class, 'banking
 // Route checkout.banking đã được hợp nhất vào payment.banking ở trên (tránh trùng lặp)
 Route::get('/remove-coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
 Route::post('/checkout/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('check.coupon');
- // Thanh toán chốt đơn
+// Thanh toán chốt đơn
 Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
-        ->name('payment.final');
+    ->name('payment.final');
 
 /*
 |--------------------------------------------------------------------------
@@ -291,7 +292,7 @@ Route::post('/thanh-toan/chot-don', [CheckoutController::class, 'finalPayment'])
 */
 Route::middleware('auth')->group(function () {
 
-   
+
     // Email verification
     Route::get('/email/verify', function () {
         return view('auth.verify_email');

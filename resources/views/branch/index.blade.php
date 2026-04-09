@@ -15,6 +15,7 @@
         href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap"
         rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         body {
             font-family:
@@ -56,17 +57,17 @@
         <div class="hero-overlay"></div>
         <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2;">
             <div class="col-lg-6 px-5" style="padding-left: 8% !important;">
-                <div class="mb-3">
+                <div class="mb-3" data-aos="zoom-in" data-aos-duration="1000">
                     <i class="bi bi-geo-alt-fill display-4 text-primary"></i>
                 </div>
-                <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 2px;">
+                <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 2px;" data-aos="fade-right" data-aos-duration="1000">
                     Holomia <br><span class="text-primary">{{ $location->name }}</span>
                 </h1>
-                <p class="lead fs-4 mb-5 text-secondary fw-medium">
+                <p class="lead fs-4 mb-5 text-secondary fw-medium" data-aos="fade-right" data-aos-delay="150" data-aos-duration="1000">
                     Trải nghiệm thực tế ảo đỉnh cao tại trung tâm {{ $location->name }}. Đặt vé ngay hôm nay để nhận ưu
                     đãi!
                 </p>
-                <a href="#list-games" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg">
+                <a href="#list-games" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg" data-aos="fade-up" data-aos-delay="300" data-aos-duration="1000">
                     KHÁM PHÁ NGAY <i class="bi bi-arrow-down-circle ms-2"></i>
                 </a>
             </div>
@@ -81,7 +82,7 @@
             </div>
         @endif
 
-        <div class="text-center mb-5">
+        <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="text-dark fw-bold text-uppercase display-6">
                 <i class="bi bi-controller me-2"></i> Trò chơi tại cơ sở
             </h2>
@@ -89,8 +90,8 @@
         </div>
 
         <div class="row g-4">
-            @forelse($tickets as $ticket)
-                <div class="col-md-4">
+            @forelse($tickets as $index => $ticket)
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
                     <div class="card h-100 card-game overflow-hidden rounded-4 border-0 shadow-sm">
                         <div class="position-relative">
                             <img src="{{ $ticket->image_url ?? 'https://via.placeholder.com/640x480' }}"
@@ -158,7 +159,7 @@
          BẢN ĐỒ
     ════════════════════════════════════════ --}}
     @if($location->maps_url)
-    <div class="container pb-5">
+    <div class="container pb-5" data-aos="fade-up">
         <h2 class="text-dark fw-bold text-uppercase d-flex align-items-center mb-4">
             <i class="bi bi-map-fill text-primary me-3 fs-3"></i> Tìm đường đến chúng tôi
         </h2>
@@ -174,6 +175,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, duration: 800, offset: 50 });
+    </script>
     <script>
         $(document).on('click', '.btn-wishlist', function () {
             @if(!Auth::check())
