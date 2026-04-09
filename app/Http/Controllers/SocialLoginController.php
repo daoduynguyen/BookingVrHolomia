@@ -26,7 +26,13 @@ class SocialLoginController extends Controller
     if (request()->query('subdomain')) {
         session(['branch_subdomain_redirect' => request()->query('subdomain')]);
     }
-        return Socialite::driver($provider)->redirect();
+       if ($provider === 'facebook') {
+  return Socialite::driver('facebook')
+        ->scopes(['public_profile'])
+        ->redirect();
+}
+
+return Socialite::driver($provider)->redirect();
     }
 
     /**
@@ -67,14 +73,14 @@ class SocialLoginController extends Controller
 
             // ✅ Lưu avatar khi tạo user mới
             $newUser = User::create([
-                'name' => $socialUser->getName(),
-                'email' => $socialUser->getEmail(),
-                'provider_name' => $provider,
-                'provider_id' => $socialUser->getId(),
-                'password' => Hash::make(Str::random(24)),
-                'role' => 'customer',
-                'avatar' => $socialUser->getAvatar(),
-            ]);
+    'name'          => $socialUser->getName(),
+    'email'         => $socialUser->getEmail() ?? $socialUser->getId() . '@facebook.com',
+    'provider_name' => $provider,
+    'provider_id'   => $socialUser->getId(),
+    'password'      => Hash::make(Str::random(24)),
+    'role'          => 'customer',
+    'avatar'        => $socialUser->getAvatar(),
+]);
 
             Auth::login($newUser);
             return $this->redirectAfterLogin();
