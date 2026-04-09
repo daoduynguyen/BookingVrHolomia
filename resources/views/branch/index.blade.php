@@ -11,40 +11,20 @@
     <title>{{ $location->name }} - Holomia VR World</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={{ $langConfig['font'] }}&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
-        body {
-            font-family:
-                {{ $langConfig['font_family'] }}
-            ;
-        }
-
-        :root {
-            --primary:
-                {{ $location->color ?? '#0d6efd' }}
-            ;
-        }
-
+        body { font-family: {{ $langConfig['font_family'] }}; }
+        :root { var(--primary: {{ $location->color ?? '#0d6efd' }}); }
         .hero-section {
             height: 600px;
             background: url('https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?q=80&w=2000&auto=format&fit=crop') center center/cover no-repeat;
             position: relative;
         }
-
         .hero-overlay {
-            position: absolute;
-            top: 0;
-            start: 0;
-            w: 100%;
-            h: 100%;
+            position: absolute; top: 0; start: 0; w: 100%; h: 100%;
             background: linear-gradient(90deg, rgba(233, 236, 239, 0.95) 0%, rgba(233, 236, 239, 0.8) 40%, rgba(233, 236, 239, 0) 100%);
-            z-index: 1;
-            width: 100%;
-            height: 100%;
+            z-index: 1; width: 100%; height: 100%;
         }
     </style>
 </head>
@@ -57,18 +37,17 @@
         <div class="hero-overlay"></div>
         <div class="row g-0 align-items-center h-100 position-relative" style="z-index: 2;">
             <div class="col-lg-6 px-5" style="padding-left: 8% !important;">
-                <div class="mb-3" data-aos="zoom-in" data-aos-duration="1000">
+                <div class="mb-3">
                     <i class="bi bi-geo-alt-fill display-4 text-primary"></i>
                 </div>
-                <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 2px;" data-aos="fade-right" data-aos-duration="1000">
+                <h1 class="display-3 fw-bold text-uppercase mb-3" style="letter-spacing: 2px;">
                     Holomia <br><span class="text-primary">{{ $location->name }}</span>
                 </h1>
-                <p class="lead fs-4 mb-5 text-secondary fw-medium" data-aos="fade-right" data-aos-delay="150" data-aos-duration="1000">
-                    Trải nghiệm thực tế ảo đỉnh cao tại trung tâm {{ $location->name }}. Đặt vé ngay hôm nay để nhận ưu
-                    đãi!
+                <p class="lead fs-4 mb-5 text-secondary fw-medium">
+                    {{ __('branch.hero_desc', ['name' => $location->name]) }}
                 </p>
-                <a href="#list-games" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg" data-aos="fade-up" data-aos-delay="300" data-aos-duration="1000">
-                    KHÁM PHÁ NGAY <i class="bi bi-arrow-down-circle ms-2"></i>
+                <a href="#list-games" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg">
+                    {{ __('branch.explore_now') }} <i class="bi bi-arrow-down-circle ms-2"></i>
                 </a>
             </div>
         </div>
@@ -82,24 +61,23 @@
             </div>
         @endif
 
-        <div class="text-center mb-5" data-aos="fade-up">
+        <div class="text-center mb-5">
             <h2 class="text-dark fw-bold text-uppercase display-6">
-                <i class="bi bi-controller me-2"></i> Trò chơi tại cơ sở
+                <i class="bi bi-controller me-2"></i> {{ __('branch.games_at_branch') }}
             </h2>
             <div style="width: 60px; height: 3px; background-color: var(--primary); margin: 10px auto;"></div>
         </div>
 
         <div class="row g-4">
-            @forelse($tickets as $index => $ticket)
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
+            @forelse($tickets as $ticket)
+                <div class="col-md-4">
                     <div class="card h-100 card-game overflow-hidden rounded-4 border-0 shadow-sm">
                         <div class="position-relative">
                             <img src="{{ $ticket->image_url ?? 'https://via.placeholder.com/640x480' }}"
                                 class="card-img-top" alt="{{ $ticket->name }}" style="height: 240px; object-fit: cover;">
 
-                            <button
-                                class="btn btn-light rounded-circle position-absolute top-0 start-0 m-3 shadow-sm btn-wishlist"
-                                data-id="{{ $ticket->id }}" title="Thêm vào yêu thích">
+                            <button class="btn btn-light rounded-circle position-absolute top-0 start-0 m-3 shadow-sm btn-wishlist"
+                                data-id="{{ $ticket->id }}" title="{{ __('branch.add_to_wishlist') }}">
                                 @if(Auth::check() && Auth::user()->favorites->contains($ticket->id))
                                     <i class="bi bi-heart-fill text-danger fs-5"></i>
                                 @else
@@ -107,8 +85,7 @@
                                 @endif
                             </button>
 
-                            <div
-                                class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
+                            <div class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
                                 <i class="bi bi-star-fill text-dark"></i> {{ $ticket->avg_rating }}
                             </div>
                         </div>
@@ -118,7 +95,7 @@
                                     <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $ticket->category->name }}</span>
                                     <small class="text-muted fw-bold" style="font-size: 0.8rem;">
                                         <i class="bi bi-person-check-fill text-secondary"></i>
-                                        {{ number_format($ticket->play_count) }} lượt
+                                        {{ number_format($ticket->play_count) }} {{ __('branch.plays') }}
                                     </small>
                                 </div>
                                 
@@ -130,16 +107,16 @@
                                 </div>
 
                                 @if($ticket->status == 'maintenance')
-                                    <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>BẢO TRÌ</button>
+                                    <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>{{ __('branch.maintenance') }}</button>
                                 @else
                                     <div class="d-flex gap-2">
                                         <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm d-flex align-items-center justify-content-center">
-                                            ĐẶT VÉ NGAY
+                                            {{ __('branch.book_now') }}
                                         </a>
-                                        <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Thêm vào giỏ">
+                                        <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="{{ __('branch.add_to_cart') }}">
                                             <i class="bi bi-cart-plus fs-5"></i>
                                         </a>
-                                        <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="Xem chi tiết">
+                                        <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" class="btn btn-outline-primary fw-bold py-2 px-3 shadow-sm d-flex align-items-center justify-content-center" title="{{ __('branch.view_detail') }}">
                                             <i class="bi bi-eye fs-5"></i>
                                         </a>
                                     </div>
@@ -149,19 +126,16 @@
                 </div>
             @empty
                 <div class="col-12 text-center text-muted py-5">
-                    <h3>Hiện tại chưa có trò chơi nào tại cơ sở này.</h3>
+                    <h3>{{ __('branch.no_games') }}</h3>
                 </div>
             @endforelse
         </div>
     </div>
 
-    {{-- ═══════════════════════════════════════
-         BẢN ĐỒ
-    ════════════════════════════════════════ --}}
     @if($location->maps_url)
-    <div class="container pb-5" data-aos="fade-up">
+    <div class="container pb-5">
         <h2 class="text-dark fw-bold text-uppercase d-flex align-items-center mb-4">
-            <i class="bi bi-map-fill text-primary me-3 fs-3"></i> Tìm đường đến chúng tôi
+            <i class="bi bi-map-fill text-primary me-3 fs-3"></i> {{ __('branch.find_us') }}
         </h2>
         <div class="shadow-sm rounded-4 overflow-hidden" style="border: 4px solid #fff;">
             <div style="width: 100%; height: 350px;">
@@ -175,10 +149,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        AOS.init({ once: true, duration: 800, offset: 50 });
-    </script>
     <script>
         $(document).on('click', '.btn-wishlist', function () {
             @if(!Auth::check())
@@ -208,32 +178,31 @@
     <script>
         Swal.fire({
             icon: 'success',
-            title: 'Đặt vé thành công! 🎉',
+            title: '{{ __('branch.booking_success') }} 🎉',
             html: `
                 <div class="text-start small">
                     <div class="alert alert-warning border-0 rounded-3 mb-3 py-2" style="font-size:0.85rem;">
                         <i class="bi bi-shop me-2"></i>
-                        <strong>Thanh toán tại quầy</strong><br>
-                        Vui lòng đến quầy để thanh toán và nhận vé.
+                        <strong>{{ __('branch.pay_at_counter') }}</strong><br>
+                        {{ __('branch.pay_at_counter_desc') }}
                     </div>
                     <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                        <span class="text-muted">Mã đơn:</span>
+                        <span class="text-muted">{{ __('branch.order_code') }}</span>
                         <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted">Tổng tiền:</span>
+                        <span class="text-muted">{{ __('branch.total_amount') }}</span>
                         <span class="fw-bold text-success">{{ number_format(session('total_amount')) }}đ</span>
                     </div>
                 </div>
             `,
             background: '#fff',
             color: '#1f2937',
-            confirmButtonText: 'Đã hiểu',
+            confirmButtonText: '{{ __('branch.got_it') }}',
             confirmButtonColor: '#0dcaf0',
             width: '420px',
         });
     </script>
     @endif
 </body>
-
 </html>

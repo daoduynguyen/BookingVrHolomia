@@ -199,8 +199,7 @@
                 style="padding-bottom: 2px;">
                 <i class="bi bi-vr"></i> {{ $location->name }}
             </a>
-            <small
-                style="color:rgba(255,255,255,0.7); font-size:10px; letter-spacing:1px; margin-top:3px; text-transform:uppercase;">
+            <small style="color:rgba(255,255,255,0.7); font-size:10px; letter-spacing:1px; margin-top:3px; text-transform:uppercase;">
                 By Holomia VR
             </small>
         </div>
@@ -218,7 +217,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('branch.info') ? 'active' : '' }}"
-                        href="{{ route('branch.info', ['subdomain' => $subdomain]) }}">Thông tin</a>
+                        href="{{ route('branch.info', ['subdomain' => $subdomain]) }}">{{ __('branch.info') }}</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('branch.shop') ? 'active' : '' }}"
@@ -227,55 +226,53 @@
                     </a>
                 </li>
             </ul>
-        
+        </div>
 
         <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-                @include('partials.lang_switcher')
+            @include('partials.lang_switcher')
 
-                <a href="{{ route('branch.cart', ['subdomain' => $subdomain]) }}"
-                    class="nav-link cart-icon-hover position-relative p-0">
-                    <i class="bi bi-cart3 fs-5"></i>
-                    @php $cartCount = session('branch_cart_' . $subdomain) ? count(session('branch_cart_' . $subdomain)) : 0; @endphp
-                    @if($cartCount > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            style="font-size: 0.62rem; padding: 0.3em 0.5em;">
-                            {{ $cartCount }}
-                        </span>
-                    @endif
-                </a>
-
-                @if(Auth::check())
-                    <div class="dropdown">
-                        <a href="#" class="btn-user dropdown-toggle" data-bs-toggle="dropdown">
-                            @if(Auth::user()->avatar)
-                                <img src="{{ Auth::user()->avatar }}" class="rounded-circle"
-                                    style="width:28px; height:28px; object-fit:cover;">
-                            @else
-                                <i class="bi bi-person-circle fs-5"></i>
-                            @endif
-                            {{ __('navbar.hi') }}, {{ last(explode(' ', Auth::user()->name)) }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-user">
-                            <li><a class="dropdown-item" href="{{ route('branch.profile', ['subdomain' => $subdomain]) }}"><i class="bi bi-person me-2"></i> {{ __('navbar.profile') }}</a></li>
-                            <li><a class="dropdown-item" href="{{ route('branch.settings', ['subdomain' => $subdomain]) }}"><i class="bi bi-gear me-2"></i> Cài đặt</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form action="{{ route('branch.logout', ['subdomain' => $subdomain]) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item text-danger fw-bold">
-                                        <i class="bi bi-box-arrow-right me-2"></i> {{ __('navbar.logout') }}
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                @else
-                    <a href="{{ route('branch.login', ['subdomain' => $subdomain]) }}" class="btn-user text-decoration-none">
-                        <i class="bi bi-person"></i> {{ __('navbar.login') }}
-                    </a>
+            <a href="{{ route('branch.cart', ['subdomain' => $subdomain]) }}" class="nav-link cart-icon-hover position-relative p-0">
+                <i class="bi bi-cart3 fs-5"></i>
+                @php $cartCount = session('branch_cart_' . $subdomain) ? count(session('branch_cart_' . $subdomain)) : 0; @endphp
+                @if($cartCount > 0)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style="font-size: 0.62rem; padding: 0.3em 0.5em;">
+                        {{ $cartCount }}
+                    </span>
                 @endif
-            </div>
+            </a>
+
+            @if(Auth::check())
+                <div class="dropdown">
+                    <a href="#" class="btn-user dropdown-toggle" data-bs-toggle="dropdown">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ Auth::user()->avatar }}" class="rounded-circle" style="width:28px; height:28px; object-fit:cover;">
+                        @else
+                            <i class="bi bi-person-circle fs-5"></i>
+                        @endif
+                        {{ __('navbar.hi') }}, {{ last(explode(' ', Auth::user()->name)) }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-user">
+                        <li><a class="dropdown-item" href="{{ route('branch.profile', ['subdomain' => $subdomain]) }}"><i class="bi bi-person me-2"></i> {{ __('navbar.profile') }}</a></li>
+                        <li><a class="dropdown-item" href="{{ route('branch.settings', ['subdomain' => $subdomain]) }}"><i class="bi bi-gear me-2"></i> {{ __('branch.settings') }}</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="{{ route('branch.logout', ['subdomain' => $subdomain]) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="dropdown-item text-danger fw-bold">
+                                    <i class="bi bi-box-arrow-right me-2"></i> {{ __('navbar.logout') }}
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            @else
+                <a href="{{ route('branch.login', ['subdomain' => $subdomain]) }}" class="btn-user text-decoration-none">
+                    <i class="bi bi-person"></i> {{ __('navbar.login') }}
+                </a>
+            @endif
         </div>
+    </div>
 </nav>
 
 {{-- ===== GLOBAL UI SETTINGS — chạy trên mọi trang ===== --}}
