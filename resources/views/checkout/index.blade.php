@@ -247,6 +247,67 @@
             var today = new Date().toISOString().split('T')[0];
             $('#booking_date').attr('min', today);
 
+            // ✅ TỰ ĐỘNG CHỌN NGÀY HÔM NAY
+$('#booking_date').val(today);
+
+// ✅ TỰ ĐỘNG LOAD SLOT GIỜ GẦN NHẤT
+var ticket_id = $('input[name="ticket_id"]').val();
+var slotSelect = $('#slot_id');
+
+slotSelect.html('<option value="">Đang tải khung giờ...</option>');
+slotSelect.prop('disabled', true);
+
+$.ajax({
+    url: '/api/get-slots',
+    data: { ticket_id: ticket_id, date: today },
+    success: function (slots) {
+        slotSelect.prop('disabled', false);
+        slotSelect.empty();
+
+        if (slots.length === 0) {
+            slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
+            return;
+        }
+
+        // Lấy giờ hiện tại quy ra phút
+        var now = new Date();
+        var currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        var bestIndex = 0;
+        var bestDiff = Infinity;
+
+        $.each(slots, function (i, slot) {
+            var start = slot.start_time.substring(0, 5);
+            var parts = start.split(':');
+            var slotMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+            var diff = slotMinutes - currentMinutes;
+
+            // Tìm slot gần nhất SAU giờ hiện tại
+            if (diff > 0 && diff < bestDiff) {
+                bestDiff = diff;
+                bestIndex = i;
+            }
+
+            var end = slot.end_time.substring(0, 5);
+            var available = slot.capacity - slot.booked_count;
+            slotSelect.append(
+                '<option value="' + slot.id + '">' +
+                start + ' - ' + end +
+                ' (Còn ' + available + ' chỗ)</option>'
+            );
+        });
+
+        // ✅ TỰ ĐỘNG CHỌN SLOT GẦN NHẤT
+        slotSelect.find('option').eq(bestIndex).prop('selected', true);
+
+        updateSummary();
+    },
+    error: function () {
+        slotSelect.html('<option value="">Lỗi tải khung giờ!</option>');
+    }
+});
+
+updateSummary();
             // ==========================================
             // HÀM 1: CẬP NHẬT GIAO DIỆN & TÍNH TIỀN GỐC
             // ==========================================
