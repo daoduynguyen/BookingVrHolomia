@@ -80,6 +80,18 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
     });
 });
 
+Route::get('/test-mail', function() {
+    try {
+        $order = \App\Models\Order::latest()->first();
+        if (!$order) return "Order not found";
+        
+        \Illuminate\Support\Facades\Mail::to('test@example.com')->send(new \App\Mail\BookingConfirmedMail($order));
+        return "Gửi mail thành công cho đơn " . $order->id . "!";
+    } catch (\Exception $e) {
+        return "Lỗi: " . $e->getMessage() . " ở dòng " . $e->getLine() . " file " . $e->getFile();
+    }
+});
+
 /*
 |--------------------------------------------------------------------------
 | SEPAY WEBHOOK — không cần auth, không cần CSRF
