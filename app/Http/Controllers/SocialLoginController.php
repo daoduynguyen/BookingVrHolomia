@@ -26,10 +26,12 @@ class SocialLoginController extends Controller
     if (request()->query('subdomain')) {
         session(['branch_subdomain_redirect' => request()->query('subdomain')]);
     }
-       if ($provider === 'facebook') {
-  return Socialite::driver('facebook')
-        ->scopes(['public_profile'])
+      if ($provider === 'facebook') {
+    return Socialite::driver('facebook')
+        ->setScopes(['public_profile'])
+        ->with(['auth_type' => 'rerequest'])
         ->redirect();
+
 }
 
 return Socialite::driver($provider)->redirect();
@@ -57,7 +59,8 @@ return Socialite::driver($provider)->redirect();
                 return $this->redirectAfterLogin();
             }
 
-            $existingUser = User::where('email', $socialUser->getEmail())->first();
+            $email = $socialUser->getEmail() ?? $socialUser->getId() . '@facebook.com';
+$existingUser = User::where('email', $email)->first();
 
             if ($existingUser) {
                 // ✅ Thêm avatar khi link tài khoản cũ với Google
@@ -74,7 +77,7 @@ return Socialite::driver($provider)->redirect();
             // ✅ Lưu avatar khi tạo user mới
             $newUser = User::create([
     'name'          => $socialUser->getName(),
-    'email'         => $socialUser->getEmail() ?? $socialUser->getId() . '@facebook.com',
+    'email' => $email,
     'provider_name' => $provider,
     'provider_id'   => $socialUser->getId(),
     'password'      => Hash::make(Str::random(24)),

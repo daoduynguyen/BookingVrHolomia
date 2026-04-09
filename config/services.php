@@ -41,10 +41,12 @@ return [
         'redirect' => env('APP_URL', 'http://127.0.0.1:8000') . '/auth/google/callback',
     ],
 
-    'facebook' => [
-    'client_id' => env('FACEBOOK_CLIENT_ID'),
+   'facebook' => [
+    'client_id'     => env('FACEBOOK_CLIENT_ID'),
     'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-    'redirect' => env('APP_URL', 'http://127.0.0.1:8000') . '/auth/facebook/callback',
+    'redirect'      => env('APP_URL', 'http://127.0.0.1:8000') . '/auth/facebook/callback',
+    'scopes'        => ['public_profile'],
+    'fields'        => ['name', 'id'],
 ],
 
 ];
