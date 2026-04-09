@@ -89,30 +89,45 @@
 
                         <div class="mt-5">
                             <h5 class="section-title text-primary"><i class="bi bi-controller me-2"></i> {{ __('detail.rules_title') }}</h5>
-                            <div class="bg-white p-3 rounded border border-light shadow-sm">
-                                <div class="text-dark">
-                                    <ul class="mb-0 ps-3 mt-2">
-                                        <li>{{ __('detail.rule_1') }}</li>
-                                        <li>{{ __('detail.rule_2') }}</li>
-                                        <li>{{ __('detail.rule_3') }}</li>
-                                        <li>{{ __('detail.rule_4') }}</li>
-                                    </ul>
-                                </div>
-                            </div>
+<div class="bg-white p-3 rounded border border-light shadow-sm">
+    <div class="text-dark">
+        <ul class="mb-0 ps-3 mt-2">
+            @if($ticket->rules)
+                @foreach(explode("\n", $ticket->rules) as $rule)
+                    @if(trim($rule) != '')
+                        <li>{{ trim($rule) }}</li>
+                    @endif
+                @endforeach
+            @else
+                <li>{{ __('detail.rule_1') }}</li>
+                <li>{{ __('detail.rule_2') }}</li>
+                <li>{{ __('detail.rule_3') }}</li>
+                <li>{{ __('detail.rule_4') }}</li>
+            @endif
+        </ul>
+    </div>
+</div>
                         </div>
 
                         <div class="mt-5">
-                            <h5 class="section-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                {{ __('detail.notes_title') }}</h5>
-                            <div
-                                class="bg-danger bg-opacity-10 p-3 rounded border border-danger border-opacity-25 text-dark">
-                                <ul class="mb-0 ps-3">
-                                    <li class="mb-2">{!! __('detail.note_1') !!}</li>
-                                    <li class="mb-2">{{ __('detail.note_2') }}</li>
-                                    <li class="mb-2">{{ __('detail.note_3') }}</li>
-                                    <li>{{ __('detail.note_4') }}</li>
-                                </ul>
-                            </div>
+                           <h5 class="section-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ __('detail.notes_title') }}</h5>
+<div class="bg-danger bg-opacity-10 p-3 rounded border border-danger border-opacity-25 text-dark">
+    <ul class="mb-0 ps-3">
+        @if($ticket->notes)
+            @foreach(explode("\n", $ticket->notes) as $note)
+                @if(trim($note) != '')
+                    <li class="mb-2">{{ trim($note) }}</li>
+                @endif
+            @endforeach
+        @else
+            <li class="mb-2">{!! __('detail.note_1') !!}</li>
+            <li class="mb-2">{{ __('detail.note_2') }}</li>
+            <li class="mb-2">{{ __('detail.note_3') }}</li>
+            <li>{{ __('detail.note_4') }}</li>
+        @endif
+    </ul>
+</div>
                         </div>
 
                         <div style="height: 50px;"></div>

@@ -54,6 +54,8 @@ class TicketController extends Controller
             'price_weekend' => 'nullable|numeric|min:0',
             'category_id' => 'required',
             'image_url' => 'required',
+            'rules'  => 'nullable|string',   
+            'notes'  => 'nullable|string',   
         ]);
 
         // 3. Lưu vé
@@ -68,7 +70,10 @@ class TicketController extends Controller
         $ticket->price = $request->price;
         $ticket->price_weekend = $request->price_weekend;
 
-        $ticket->trailer_url = $request->trailer_url;
+        $ticket->description = $request->description;  // ← thêm
+$ticket->rules = $request->rules;               // ← thêm
+$ticket->notes = $request->notes;               // ← thêm
+$ticket->trailer_url = $request->trailer_url;
         if ($request->hasFile('gallery')) {
             $imagePaths = [];
             foreach ($request->file('gallery') as $file) {
@@ -149,7 +154,9 @@ class TicketController extends Controller
         $ticket->image_url = $request->image_url;
         $ticket->duration = $request->duration;
         $ticket->status = $request->status;
-        $ticket->description = $request->description;
+       $ticket->description = $request->description;
+$ticket->rules = $request->rules;   // ← thêm
+$ticket->notes = $request->notes;   // ← thêm
 
         // 🔥 LOGIC MỚI: XỬ LÝ MẢNG JSON VÀ TỰ ĐỘNG GÁN GIÁ GỐC
         $ticket_types = [];

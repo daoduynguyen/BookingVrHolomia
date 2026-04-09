@@ -34,26 +34,27 @@ class BranchController extends Controller
     }
 
     public function applyCoupon(Request $request, $subdomain)
-{
-    $code     = strtoupper(trim($request->coupon_code));
-    $coupon = \App\Models\Coupon::where('code', $code)
-                ->where(function($q){ $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()); })
-                ->first();
+    {
+        $code = strtoupper(trim($request->coupon_code));
+        $coupon = \App\Models\Coupon::where('code', $code)
+            ->where(function ($q) {
+                $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()); })
+            ->first();
 
-    if (!$coupon) {
-        return response()->json(['success' => false, 'message' => 'Mã không hợp lệ hoặc đã hết hạn.']);
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Mã không hợp lệ hoặc đã hết hạn.']);
+        }
+
+        session()->put('applied_coupon_code_' . $subdomain, $code);
+        session()->put('applied_coupon_id_' . $subdomain, $coupon->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Áp dụng thành công! Giảm ' . ($coupon->type === 'percent' ? $coupon->value . '%' : number_format($coupon->value) . 'đ'),
+            'type' => $coupon->type,
+            'value' => $coupon->value,
+        ]);
     }
-
-    session()->put('applied_coupon_code_' . $subdomain, $code);
-    session()->put('applied_coupon_id_'   . $subdomain, $coupon->id);
-
-    return response()->json([
-        'success'       => true,
-        'message'       => 'Áp dụng thành công! Giảm ' . ($coupon->type === 'percent' ? $coupon->value.'%' : number_format($coupon->value).'đ'),
-        'type'          => $coupon->type,
-        'value'         => $coupon->value,
-    ]);
-}
 
     // ==================== CHI TIẾT VÉ ====================
     public function detail($subdomain, $id)
@@ -146,12 +147,12 @@ class BranchController extends Controller
         $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
         $surchargeRate = (int) $surchargeStr;
 
-         $oldCartData = null;
-    $replaceId   = request('replace_cart_id');
-    if ($replaceId) {
-        $cart = session()->get('branch_cart_' . $subdomain, []);
-        $oldCartData = $cart[$replaceId] ?? null;
-    }
+        $oldCartData = null;
+        $replaceId = request('replace_cart_id');
+        if ($replaceId) {
+            $cart = session()->get('branch_cart_' . $subdomain, []);
+            $oldCartData = $cart[$replaceId] ?? null;
+        }
 
         return view('branch.booking', compact('location', 'ticket', 'subdomain', 'selectedType', 'slots', 'surchargeRate', 'oldCartData', 'replaceId'));
     }
@@ -266,7 +267,7 @@ class BranchController extends Controller
         session()->put('branch_cart_' . $subdomain, $cart);
         return redirect()->route('branch.cart', ['subdomain' => $subdomain])
             ->with('success', 'Đã thêm vé vào giỏ hàng!');
-    
+
     }
 
     // ==================== THÊM NHANH VÀO GIỎ ====================
@@ -368,7 +369,7 @@ class BranchController extends Controller
 
         // Tạo đơn hàng
         $order = Order::create([
-           'user_id' => Auth::id() ?? null,
+            'user_id' => Auth::id() ?? null,
             'customer_name' => $firstItem['customer_name'],
             'customer_phone' => $firstItem['customer_phone'],
             'customer_email' => $firstItem['customer_email'] ?? ($user->email ?? ''),
@@ -432,7 +433,7 @@ class BranchController extends Controller
         // LOGIC CỘNG ĐIỂM, PLAY_COUNT VÀ GỬI MAIL (Trừ Banking)
         if ($paymentMethod !== 'banking') {
             foreach ($cart as $item) {
-                \App\Models\Ticket::where('id', $item['id'])
+                Ticket::where('id', $item['id'])
                     ->increment('play_count', $item['quantity']);
             }
 
@@ -452,15 +453,15 @@ class BranchController extends Controller
 
         // 2. CHUYỂN KHOẢN / QR → Nhảy sang trang thanh toán QR
         if ($paymentMethod === 'banking') {
-             if (!Auth::check()) {
-        session(['guest_order_' . $order->id => true]);
-    }
+            if (!Auth::check()) {
+                session(['guest_order_' . $order->id => true]);
+            }
             return redirect()->route('branch.payment.banking', ['subdomain' => $subdomain, 'id' => $order->id]);
         }
 
         // 3. VÍ HOLOMIA + COD → Thông báo thành công
         if ($paymentMethod === 'cod') {
-            if (!\Illuminate\Support\Facades\Auth::check()) {
+            if (Auth::check()) {
                 return redirect()->route('branch.home', ['subdomain' => $subdomain])
                     ->with('success', __('messages.booking_success') ?? 'Đặt vé thành công!');
             }
@@ -646,17 +647,17 @@ class BranchController extends Controller
     public function updateUISettings(Request $request, $subdomain)
     {
         $request->validate([
-            'theme'         => 'required|in:light,dark,auto',
-            'font'          => 'required|string|max:60',
-            'font_size'     => 'required|integer|min:12|max:32',
+            'theme' => 'required|in:light,dark,auto',
+            'font' => 'required|string|max:60',
+            'font_size' => 'required|integer|min:12|max:32',
             'primary_color' => 'required|regex:/^#[0-9a-fA-F]{6}$/',
         ]);
 
         Auth::user()->update([
             'ui_settings' => array_merge(Auth::user()->ui_settings ?? [], [
-                'theme'         => $request->theme,
-                'font'          => $request->font,
-                'font_size'     => (int) $request->font_size,
+                'theme' => $request->theme,
+                'font' => $request->font,
+                'font_size' => (int) $request->font_size,
                 'primary_color' => $request->primary_color,
             ])
         ]);
@@ -672,16 +673,16 @@ class BranchController extends Controller
         }
 
         $request->validate([
-            'current_password'          => 'required',
-            'new_password'              => 'required|min:8|confirmed',
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
             'new_password_confirmation' => 'required',
         ]);
 
-        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+        if (Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
         }
 
-        $user->update(['password' => \Illuminate\Support\Facades\Hash::make($request->new_password)]);
+        $user->update(['password' => Hash::make($request->new_password)]);
         return back()->with('success', 'Đổi mật khẩu thành công!');
     }
     public function shop($subdomain)

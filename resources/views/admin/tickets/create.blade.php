@@ -115,11 +115,35 @@
                 </div>
 
                 {{-- 8. Mô tả --}}
-                <div class="mb-4">
-                    <label class="form-label text-dark fw-bold">Mô tả trò chơi</label>
-                    <textarea name="description" class="form-control bg-white text-dark border-light" rows="4"
-                        placeholder="Nhập mô tả chi tiết về trò chơi VR này...">{{ old('description') }}</textarea>
-                </div>
+<div class="mb-4">
+    <label class="form-label text-dark fw-bold">Mô tả trò chơi</label>
+    <textarea name="description" class="form-control bg-white text-dark border-light" rows="4"
+        placeholder="Nhập mô tả chi tiết về trò chơi VR này...">{{ old('description') }}</textarea>
+</div>
+
+{{-- 9. Luật chơi --}}
+<div class="mb-4">
+    <label class="form-label text-dark fw-bold">
+        <i class="bi bi-controller me-1"></i> Luật chơi
+    </label>
+    <small class="text-muted d-block mb-2">Mỗi dòng = 1 luật. Ví dụ: Đeo kính VR chắc tay.</small>
+    <textarea name="rules" class="form-control bg-white text-dark border-light" rows="5"
+        placeholder="Người chơi cần đeo kính VR và cầm chắc 2 tay cầm điều khiển.
+Không di chuyển ra khỏi vòng tròn an toàn trên sàn.
+Giơ tay trái để nạp đạn hoặc đổi vũ khí.">{{ old('rules') }}</textarea>
+</div>
+
+{{-- 10. Lưu ý --}}
+<div class="mb-4">
+    <label class="form-label text-danger fw-bold">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Lưu ý quan trọng
+    </label>
+    <small class="text-muted d-block mb-2">Mỗi dòng = 1 lưu ý. Ví dụ: Không dành cho phụ nữ mang thai.</small>
+    <textarea name="notes" class="form-control bg-white text-dark border-light" rows="5"
+        placeholder="Vui lòng có mặt trước 15 phút để nhân viên hướng dẫn thiết bị.
+Không dành cho phụ nữ mang thai hoặc người có bệnh tim.
+Trẻ em dưới 12 tuổi cần có người giám hộ đi cùng.">{{ old('notes') }}</textarea>
+</div>
 
                 <div class="d-flex gap-3 mt-4">
                     <button type="submit" class="btn btn-primary fw-bold text-dark px-5">LƯU VÉ MỚI</button>

@@ -182,12 +182,32 @@
                         </div>
                     </div>
 
-                    {{-- 8. Mô tả --}}
-                    <div class="mb-4">
-                        <label class="form-label text-dark">Mô tả trò chơi</label>
-                        <textarea name="description" class="form-control"
-                            rows="3">{{ old('description', $ticket->description) }}</textarea>
-                    </div>
+                   {{-- 8. Mô tả --}}
+<div class="col-md-12 mb-4">
+    <label class="form-label text-dark fw-bold">Mô tả trò chơi</label>
+    <textarea name="description" class="form-control bg-white text-dark border-light"
+        rows="4">{{ old('description', $ticket->description) }}</textarea>
+</div>
+
+{{-- 9. Luật chơi --}}
+<div class="col-md-12 mb-4">
+    <label class="form-label text-dark fw-bold">
+        <i class="bi bi-controller me-1"></i> Luật chơi
+    </label>
+    <small class="text-muted d-block mb-2">Mỗi dòng = 1 luật.</small>
+    <textarea name="rules" class="form-control bg-white text-dark border-light"
+        rows="5">{{ old('rules', $ticket->rules) }}</textarea>
+</div>
+
+{{-- 10. Lưu ý --}}
+<div class="col-md-12 mb-4">
+    <label class="form-label text-danger fw-bold">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Lưu ý quan trọng
+    </label>
+    <small class="text-muted d-block mb-2">Mỗi dòng = 1 lưu ý.</small>
+    <textarea name="notes" class="form-control bg-white text-dark border-light"
+        rows="5">{{ old('notes', $ticket->notes) }}</textarea>
+</div>
 
                     <div class="d-flex gap-3 mt-4">
                         <button type="submit" class="btn btn-warning fw-bold text-dark px-5">CẬP NHẬT</button>

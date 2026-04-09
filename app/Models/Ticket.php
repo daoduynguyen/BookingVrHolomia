@@ -15,6 +15,8 @@ class Ticket extends Model
         'location_id',
         'name',
         'description',
+        'rules',      
+        'notes',
         'image_url',
         'price',
         'price_weekend',
