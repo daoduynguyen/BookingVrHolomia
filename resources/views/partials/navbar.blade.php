@@ -212,13 +212,23 @@
                     <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}"
                         href="{{ route('home') }}">{{ __('navbar.home') }}</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}"
-                        href="{{ route('about') }}">{{ __('navbar.about') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}"
-                        href="{{ route('contact') }}">{{ __('navbar.contact') }}</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ request()->routeIs('about') || request()->routeIs('contact') ? 'active' : '' }}"
+                        href="#" id="navbarInfoDropdown" role="button" data-bs-toggle="dropdown">
+                        Thông tin
+                    </a>
+                    <ul class="dropdown-menu shadow border-0" aria-labelledby="navbarInfoDropdown">
+                        <li>
+                            <a class="dropdown-item {{ request()->routeIs('about') ? 'text-info fw-bold' : '' }}" href="{{ route('about') }}">
+                                <i class="bi bi-info-circle me-2 text-info"></i> {{ __('navbar.about') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ request()->routeIs('contact') ? 'text-info fw-bold' : '' }}" href="{{ route('contact') }}">
+                                <i class="bi bi-telephone me-2 text-info"></i> {{ __('navbar.contact') }}
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle {{ request()->routeIs('ticket.*') ? 'active' : '' }}"

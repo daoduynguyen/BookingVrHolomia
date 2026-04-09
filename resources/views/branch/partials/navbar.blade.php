@@ -216,13 +216,23 @@
                     <a class="nav-link {{ request()->routeIs('branch.home') ? 'active' : '' }}"
                         href="{{ route('branch.home', ['subdomain' => $subdomain]) }}">{{ __('navbar.home') }}</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('branch.about') ? 'active' : '' }}"
-                        href="{{ route('branch.about', ['subdomain' => $subdomain]) }}">{{ __('navbar.about') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('branch.contact') ? 'active' : '' }}"
-                        href="{{ route('branch.contact', ['subdomain' => $subdomain]) }}">{{ __('navbar.contact') }}</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {{ request()->routeIs('branch.about') || request()->routeIs('branch.contact') ? 'active' : '' }}"
+                        href="#" id="navbarBranchInfoDropdown" role="button" data-bs-toggle="dropdown">
+                        Thông tin
+                    </a>
+                    <ul class="dropdown-menu shadow border-0" aria-labelledby="navbarBranchInfoDropdown">
+                        <li>
+                            <a class="dropdown-item {{ request()->routeIs('branch.about') ? 'fw-bold' : '' }}" style="{{ request()->routeIs('branch.about') ? 'color: ' . ($location->color ?? '#38bdf8') . ' !important;' : '' }}" href="{{ route('branch.about', ['subdomain' => $subdomain]) }}">
+                                <i class="bi bi-info-circle me-2" style="color: {{ $location->color ?? '#38bdf8' }};"></i> {{ __('navbar.about') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ request()->routeIs('branch.contact') ? 'fw-bold' : '' }}" style="{{ request()->routeIs('branch.contact') ? 'color: ' . ($location->color ?? '#38bdf8') . ' !important;' : '' }}" href="{{ route('branch.contact', ['subdomain' => $subdomain]) }}">
+                                <i class="bi bi-telephone me-2" style="color: {{ $location->color ?? '#38bdf8' }};"></i> {{ __('navbar.contact') }}
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('branch.shop') ? 'active' : '' }}"
