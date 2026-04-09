@@ -31,13 +31,8 @@
                         </a>
                     </li>
                     <li class="mb-2">
-                        <a href="{{ route('branch.about', ['subdomain' => $subdomain]) }}" class="text-secondary text-decoration-none small">
-                            <i class="bi bi-chevron-right me-1"></i>Giới thiệu
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ route('branch.contact', ['subdomain' => $subdomain]) }}" class="text-secondary text-decoration-none small">
-                            <i class="bi bi-chevron-right me-1"></i>Liên hệ
+                        <a href="{{ route('branch.info', ['subdomain' => $subdomain]) }}" class="text-secondary text-decoration-none small">
+                            <i class="bi bi-chevron-right me-1"></i>Thông tin
                         </a>
                     </li>
                     @auth

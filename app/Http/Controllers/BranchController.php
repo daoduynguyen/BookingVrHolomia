@@ -610,18 +610,13 @@ class BranchController extends Controller
         ));
     }
 
-    public function about($subdomain)
+    public function info($subdomain)
     {
         $location = $this->getLocation($subdomain);
         $tickets = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
         })->where('status', 'active')->get();
-        return view('branch.about', compact('location', 'subdomain', 'tickets'));
-    }
-    public function contact($subdomain)
-    {
-        $location = $this->getLocation($subdomain);
-        return view('branch.contact', compact('location', 'subdomain'));
+        return view('branch.info', compact('location', 'subdomain', 'tickets'));
     }
 
     public function contactSend(Request $request, $subdomain)

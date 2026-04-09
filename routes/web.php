@@ -28,8 +28,7 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
     Route::get('/', [App\Http\Controllers\BranchController::class, 'index'])->name('branch.home');
     Route::get('/tro-choi/{id}', [App\Http\Controllers\BranchController::class, 'detail'])->name('branch.detail');
 
-    Route::get('/gioi-thieu', [App\Http\Controllers\BranchController::class, 'about'])->name('branch.about');
-    Route::get('/lien-he', [App\Http\Controllers\BranchController::class, 'contact'])->name('branch.contact');
+    Route::get('/thong-tin', [App\Http\Controllers\BranchController::class, 'info'])->name('branch.info');
     Route::post('/lien-he', [App\Http\Controllers\BranchController::class, 'contactSend'])->name('branch.contact.send')->middleware('throttle:5,1');
 
     // Đăng nhập / Đăng ký
@@ -184,7 +183,7 @@ Route::get('/lang/{locale}', [ProfileController::class, 'switchLanguage'])->name
 // Trang chủ & Sản phẩm — dùng TicketController (client), KHÔNG phải AdminTicketController
 Route::get('/', [TicketController::class, 'index'])->name('home');
 Route::get('/tro-choi/{id}', [TicketController::class, 'show'])->name('ticket.show');
-Route::get('/gioi-thieu', [TicketController::class, 'about'])->name('about');
+Route::get('/thong-tin', [TicketController::class, 'info'])->name('info');
 Route::get('/danh-sach-ve', [TicketController::class, 'shop'])->name('ticket.shop');
 
 
@@ -201,7 +200,7 @@ Route::get('/booking/nhap-thong-tin/{id}', [CheckoutController::class, 'bookingF
 Route::post('/booking/xac-nhan', [CheckoutController::class, 'confirmToCart'])->name('booking.confirm');
 
 // Liên hệ
-Route::get('/lien-he', [ContactController::class, 'index'])->name('contact');
+// Liên hệ (POST)
 Route::post('/lien-he', [ContactController::class, 'send'])->name('contact.send')
     ->middleware('throttle:5,1');
 

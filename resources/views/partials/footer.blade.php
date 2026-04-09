@@ -43,13 +43,8 @@
                         </a>
                     </li>
                     <li class="mb-2">
-                        <a href="{{ route('about') }}" class="text-secondary text-decoration-none small">
-                            <i class="bi bi-chevron-right me-1"></i>{{ __('navbar.about') }}
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ route('contact') }}" class="text-secondary text-decoration-none small">
-                            <i class="bi bi-chevron-right me-1"></i>{{ __('navbar.contact') }}
+                        <a href="{{ route('info') }}" class="text-secondary text-decoration-none small">
+                            <i class="bi bi-chevron-right me-1"></i>Thông tin
                         </a>
                     </li>
                     @auth

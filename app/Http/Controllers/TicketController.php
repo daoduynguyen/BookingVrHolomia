@@ -191,9 +191,9 @@ class TicketController extends Controller
     // ---------------------------------------------------------
     // 6. CÁC TRANG TĨNH & AJAX
     // ---------------------------------------------------------
-    public function about()
+    public function info()
     {
-        return view('about');
+        return view('info');
     }
 
     public function removeGalleryImage(Request $request, $id)
