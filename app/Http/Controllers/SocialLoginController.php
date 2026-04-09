@@ -27,10 +27,10 @@ class SocialLoginController extends Controller
         session(['branch_subdomain_redirect' => request()->query('subdomain')]);
     }
       if ($provider === 'facebook') {
-    return Socialite::driver('facebook')
-        ->setScopes(['public_profile'])
-        ->with(['auth_type' => 'rerequest'])
-        ->redirect();
+    $driver = Socialite::driver('facebook');
+    /** @var \Laravel\Socialite\Two\FacebookProvider $driver */
+    return $driver->setScopes(['public_profile'])->redirect();
+
 
 }
 
