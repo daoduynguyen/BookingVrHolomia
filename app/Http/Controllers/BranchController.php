@@ -461,9 +461,13 @@ class BranchController extends Controller
 
         // 3. VÍ HOLOMIA + COD → Thông báo thành công
         if ($paymentMethod === 'cod') {
-            if (Auth::check()) {
+            if (!Auth::check()) {
                 return redirect()->route('branch.home', ['subdomain' => $subdomain])
-                    ->with('success', __('messages.booking_success') ?? 'Đặt vé thành công!');
+                    ->with([
+                        'cod_success' => true,
+                        'order_id' => $order->id,
+                        'total_amount' => $order->total_amount
+                    ]);
             }
             return redirect()->route('branch.profile', ['subdomain' => $subdomain])
                 ->with([

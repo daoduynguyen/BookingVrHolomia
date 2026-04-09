@@ -427,7 +427,11 @@ class CheckoutController extends Controller
             // 1. THANH TOÁN TẠI QUẦY (COD)
             if ($paymentMethod === 'cod') {
                 if (!Auth::check()) {
-                    return redirect()->route('home')->with('success', __('messages.booking_success'));
+                    return redirect()->route('home')->with([
+                        'cod_success' => true,
+                        'order_id' => $order->id,
+                        'total_amount' => $order->total_amount,
+                    ]);
                 }
                 return redirect()->route('profile.index')->with([
                     'cod_success' => true,

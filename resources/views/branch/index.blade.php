@@ -199,6 +199,36 @@
             });
         });
     </script>
+    @if(session('cod_success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Đặt vé thành công! 🎉',
+            html: `
+                <div class="text-start small">
+                    <div class="alert alert-warning border-0 rounded-3 mb-3 py-2" style="font-size:0.85rem;">
+                        <i class="bi bi-shop me-2"></i>
+                        <strong>Thanh toán tại quầy</strong><br>
+                        Vui lòng đến quầy để thanh toán và nhận vé.
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                        <span class="text-muted">Mã đơn:</span>
+                        <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Tổng tiền:</span>
+                        <span class="fw-bold text-success">{{ number_format(session('total_amount')) }}đ</span>
+                    </div>
+                </div>
+            `,
+            background: '#fff',
+            color: '#1f2937',
+            confirmButtonText: 'Đã hiểu',
+            confirmButtonColor: '#0dcaf0',
+            width: '420px',
+        });
+    </script>
+    @endif
 </body>
 
 </html>
