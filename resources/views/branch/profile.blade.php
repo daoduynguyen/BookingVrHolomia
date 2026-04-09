@@ -645,10 +645,26 @@
                     success: function (response) {
                         Swal.fire({
                             html: response.html,
+                            background: '#fff',
+                            color: '#1f2937',
                             showConfirmButton: true,
-                            confirmButtonText: 'Đóng',
-                            customClass: { container: 'swal-order-container' },
-                            width: '500px'
+                            confirmButtonText: 'Đóng lại',
+                            confirmButtonColor: '#6c757d',
+                            showCancelButton: true,
+                            cancelButtonText: '<i class="bi bi-printer"></i> In biên lai',
+                            cancelButtonColor: '#0dcaf0',
+                            width: '500px',
+                            padding: '2em',
+                            allowOutsideClick: true,
+                            backdrop: `rgba(0,0,0,0.85)`,
+                            customClass: {
+                                container: 'swal-order-container',
+                                popup: 'swal-order-popup',
+                            },
+                        }).then((result) => {
+                            if (result.dismiss === Swal.DismissReason.cancel) {
+                                window.print();
+                            }
                         });
                     }
                 });
@@ -727,5 +743,239 @@
     @endif
     
     @include('branch.partials.footer')
+
+    {{-- MODAL ĐÁNH GIÁ (REVIEW) --}}
+<div class="modal fade text-dark" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-white text-dark border-light shadow-sm">
+      <div class="modal-header border-light">
+        <h5 class="modal-title fw-bold text-primary" id="reviewModalLabel"><i class="bi bi-star me-2"></i>Đánh giá trò chơi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="reviewForm">
+          @csrf
+          <input type="hidden" id="reviewTicketId" name="ticket_id">
+          <input type="hidden" id="reviewOrderItemId" name="order_item_id">
+          
+          <div class="mb-3 text-center">
+            <h6 class="text-primary fw-bold mb-3" id="reviewTicketName">Tên trò chơi</h6>
+            
+            {{-- Chọn sao --}}
+            <div class="rating-stars fs-2" style="cursor: pointer; display: inline-flex; flex-direction: row-reverse;">
+                <input type="radio" name="rating" id="star5" value="5" class="d-none" checked>
+                <label for="star5" class="bi bi-star-fill text-warning px-1 star-label" data-value="5"></label>
+                
+                <input type="radio" name="rating" id="star4" value="4" class="d-none">
+                <label for="star4" class="bi bi-star-fill text-warning px-1 star-label" data-value="4"></label>
+                
+                <input type="radio" name="rating" id="star3" value="3" class="d-none">
+                <label for="star3" class="bi bi-star-fill text-warning px-1 star-label" data-value="3"></label>
+                
+                <input type="radio" name="rating" id="star2" value="2" class="d-none">
+                <label for="star2" class="bi bi-star-fill text-warning px-1 star-label" data-value="2"></label>
+                
+                <input type="radio" name="rating" id="star1" value="1" class="d-none">
+                <label for="star1" class="bi bi-star-fill text-warning px-1 star-label" data-value="1"></label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="reviewComment" class="form-label text-secondary small text-uppercase fw-bold">Nhận xét (Tùy chọn)</label>
+            <textarea class="form-control" id="reviewComment" name="comment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" id="submitReviewBtn" class="btn btn-info rounded-pill fw-bold" onclick="submitReview()">Gửi đánh giá</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+    .rating-stars label { color: #6c757d !important; transition: color 0.2s ease-in-out; }
+    .rating-stars label:hover, .rating-stars label:hover ~ label, .rating-stars input:checked ~ label { color: #ffc107 !important; }
+    .modal { z-index: 9999 !important; }
+    .modal-backdrop { z-index: 9998 !important; }
+</style>
+
+<script>
+    function confirmRefund(orderId) {
+        Swal.fire({
+            title: 'Hoàn trả vé?',
+            text: 'Bạn có chắc chắn muốn hoàn trả vé này không? Tiền sẽ được hoàn về số dư ví của bạn.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Có, hoàn vé!',
+            cancelButtonText: 'Không, thoát',
+            background: '#fff',
+            color: '#1f2937'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let form = document.createElement('form');
+                form.action = '{{ route("branch.order.refund", ["subdomain" => $subdomain, "id" => "ORDER_ID"]) }}'.replace('ORDER_ID', orderId);
+                form.method = 'POST';
+                form.innerHTML = '@csrf';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        @if(session('error'))
+            Swal.fire({ icon: 'error', title: 'Lỗi!', text: "{{ session('error') }}", background: '#fff', color: '#1f2937' });
+        @endif
+    });
+
+    function openReviewModal(ticketId, orderItemId, ticketName) {
+        Swal.fire({
+            title: '<i class="bi bi-star-fill text-warning me-2"></i>Đánh giá trò chơi',
+            html: `
+                <div class="text-center mb-3">
+                    <h6 class="text-primary fw-bold mb-3" id="swal-reviewTicketName">${ticketName}</h6>
+                    <div class="rating-stars fs-2" style="cursor:pointer;display:inline-flex;flex-direction:row-reverse;">
+                        <input type="radio" name="swal_rating" id="sstar5" value="5" class="d-none">
+                        <label for="sstar5" class="bi bi-star-fill text-warning px-1 star-label" data-value="5"></label>
+                        <input type="radio" name="swal_rating" id="sstar4" value="4" class="d-none">
+                        <label for="sstar4" class="bi bi-star-fill text-warning px-1 star-label" data-value="4"></label>
+                        <input type="radio" name="swal_rating" id="sstar3" value="3" class="d-none" checked>
+                        <label for="sstar3" class="bi bi-star-fill text-warning px-1 star-label" data-value="3"></label>
+                        <input type="radio" name="swal_rating" id="sstar2" value="2" class="d-none">
+                        <label for="sstar2" class="bi bi-star-fill text-warning px-1 star-label" data-value="2"></label>
+                        <input type="radio" name="swal_rating" id="sstar1" value="1" class="d-none">
+                        <label for="sstar1" class="bi bi-star-fill text-warning px-1 star-label" data-value="1"></label>
+                    </div>
+                </div>
+                <div class="text-start">
+                    <label class="form-label text-secondary small text-uppercase fw-bold">Nhận xét (Tùy chọn)</label>
+                    <textarea class="form-control" id="swal-reviewComment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+                </div>
+            `,
+            background: '#fff',
+            color: '#1f2937',
+            showCancelButton: true,
+            confirmButtonText: 'Gửi đánh giá',
+            confirmButtonColor: '#0dcaf0',
+            cancelButtonText: 'Hủy',
+            cancelButtonColor: '#6c757d',
+            width: '450px',
+            didOpen: () => {
+                const style = document.createElement('style');
+                style.textContent = `.rating-stars label{color:#6c757d!important;transition:color .2s}.rating-stars label:hover,.rating-stars label:hover~label,.rating-stars input:checked~label{color:#ffc107!important}`;
+                Swal.getPopup().appendChild(style);
+            },
+            preConfirm: () => {
+                const rating = Swal.getPopup().querySelector('input[name="swal_rating"]:checked')?.value;
+                const comment = document.getElementById('swal-reviewComment')?.value ?? '';
+                if (!rating) {
+                    Swal.showValidationMessage('Vui lòng chọn số sao!');
+                    return false;
+                }
+                return { rating, comment };
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+            const { rating, comment } = result.value;
+
+            $.ajax({
+                url: '{{ route("branch.reviews.store", ["subdomain" => $subdomain]) }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    ticket_id: ticketId,
+                    order_item_id: orderItemId,
+                    rating: rating,
+                    comment: comment
+                },
+                success: function(response) {
+                    if (response.success) {
+                        let starsHtml = '<div class="mt-1" style="font-size:0.75rem;">';
+                        for (let i = 1; i <= 5; i++) {
+                            starsHtml += `<i class="bi bi-star-fill text-warning ${i > parseInt(rating) ? 'opacity-25' : ''}"></i> `;
+                        }
+                        starsHtml += '</div>';
+                        let btn = document.getElementById('review-btn-' + orderItemId);
+                        if (btn) btn.outerHTML = starsHtml;
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: response.message,
+                            background: '#fff',
+                            color: '#1f2937',
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Có lỗi xảy ra, vui lòng thử lại.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) errorMsg = xhr.responseJSON.message;
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: errorMsg, background: '#fff', color: '#1f2937' });
+                }
+            });
+        });
+    }
+
+    function submitReview() {
+        const form = document.getElementById('reviewForm');
+        const formData = new FormData(form);
+        const orderItemId = formData.get('order_item_id');
+        const rating = formData.get('rating');
+        
+        const submitBtn = document.getElementById('submitReviewBtn');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...';
+        submitBtn.disabled = true;
+
+        $.ajax({
+            url: '{{ route("branch.reviews.store", ["subdomain" => $subdomain]) }}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if(response.success) {
+                    let parseIntRating = parseInt(rating);
+                    let starsHtml = '<div class="mt-1" style="font-size: 0.75rem;">';
+                    for(let i = 1; i <= 5; i++) {
+                        let opacityClass = i > parseIntRating ? 'opacity-25' : '';
+                        starsHtml += '<i class="bi bi-star-fill text-warning ' + opacityClass + '"></i> ';
+                    }
+                    starsHtml += '</div>';
+                    let btn = document.getElementById('review-btn-' + orderItemId);
+                    if(btn) btn.outerHTML = starsHtml;
+
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
+                    if (modal) modal.hide();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: response.message,
+                        background: '#fff',
+                        color: '#1f2937',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Có lỗi xảy ra, vui lòng thử lại.';
+                if(xhr.responseJSON && xhr.responseJSON.message) errorMsg = xhr.responseJSON.message;
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: errorMsg, background: '#fff', color: '#1f2937' });
+            },
+            complete: function() {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+</script>
 </body>
 </html>

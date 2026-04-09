@@ -73,6 +73,10 @@ Route::prefix('chi-nhanh/{subdomain}')->group(function () {
         Route::post('/tai-khoan/cap-nhat', [App\Http\Controllers\BranchController::class, 'updateProfile'])->name('branch.profile.update');
         Route::post('/tai-khoan/avatar', [App\Http\Controllers\BranchController::class, 'updateAvatar'])->name('branch.profile.avatar');
         Route::get('/tai-khoan/don-hang/{orderId}', [App\Http\Controllers\BranchController::class, 'orderDetail'])->name('branch.profile.order.detail');
+        
+        // Hoàn tiền và Đánh giá (Branch)
+        Route::post('/order/refund/{id}', [App\Http\Controllers\CheckoutController::class, 'refundOrder'])->name('branch.order.refund');
+        Route::post('/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('branch.reviews.store');
     });
 });
 
