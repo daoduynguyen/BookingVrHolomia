@@ -355,3 +355,15 @@ Route::middleware('auth')->group(function () {
 */
 Route::get('auth/{provider}/redirect', [\App\Http\Controllers\SocialLoginController::class, 'redirect'])->name('social.redirect');
 Route::get('auth/{provider}/callback', [\App\Http\Controllers\SocialLoginController::class, 'callback'])->name('social.callback');
+
+// ROUTE TEST MAIL - XÓA SAU KHI TEST XONG
+Route::get('/test-mail-holomia-2024', function () {
+    try {
+        \Illuminate\Support\Facades\Mail::raw('Test email từ Holomia VR', function($m) {
+            $m->to(config('mail.from.address'))->subject('Test SMTP Railway');
+        });
+        return '✅ Gửi thành công! Kiểm tra hộp thư ' . config('mail.from.address');
+    } catch (\Exception $e) {
+        return '❌ Lỗi: ' . $e->getMessage();
+    }
+});
