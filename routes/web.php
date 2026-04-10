@@ -356,14 +356,3 @@ Route::middleware('auth')->group(function () {
 Route::get('auth/{provider}/redirect', [\App\Http\Controllers\SocialLoginController::class, 'redirect'])->name('social.redirect');
 Route::get('auth/{provider}/callback', [\App\Http\Controllers\SocialLoginController::class, 'callback'])->name('social.callback');
 
-// ROUTE TEST MAIL - XÓA SAU KHI TEST XONG
-Route::get('/test-mail-holomia-2024', function () {
-    try {
-        \Illuminate\Support\Facades\Mail::raw('Test email từ Holomia VR', function($m) {
-            $m->to('nguyendeptrai131024@gmail.com')->subject('Test SMTP Railway');
-        });
-        return '✅ Gửi thành công! Kiểm tra hộp thư nguyendeptrai131024@gmail.com';
-    } catch (\Exception $e) {
-        return '❌ Lỗi: ' . $e->getMessage();
-    }
-});
