@@ -2,16 +2,14 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class OrderCompletedMail extends Mailable implements ShouldQueue
+class OrderCompletedMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $order;
 
@@ -19,7 +17,6 @@ class OrderCompletedMail extends Mailable implements ShouldQueue
     {
         $order->loadMissing(['location', 'orderItems.ticket', 'slot', 'details.ticket']);
         $this->order = $order;
-        $this->afterCommit();
     }
 
     public function envelope(): Envelope

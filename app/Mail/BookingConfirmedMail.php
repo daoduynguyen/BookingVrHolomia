@@ -2,26 +2,21 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class BookingConfirmedMail extends Mailable implements ShouldQueue
+class BookingConfirmedMail extends Mailable
 {
-    use Queueable, SerializesModels;
-    
+    use SerializesModels;
+
     public $order;
 
-    // Hàm này để nhận đơn hàng từ CheckoutController truyền sang
     public function __construct($order)
     {
-        // ✅ Eager load trước khi serialize vào queue
         $order->loadMissing(['location', 'orderItems.ticket', 'slot']);
         $this->order = $order;
-        
     }
 
     public function envelope(): Envelope
@@ -33,9 +28,8 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        // Trỏ đúng vào file giao diện booking_confirmed.blade.php
         return new Content(
-            view: 'emails.booking_confirmed', 
+            view: 'emails.booking_confirmed',
         );
     }
 }
