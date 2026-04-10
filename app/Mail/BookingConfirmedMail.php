@@ -21,7 +21,7 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
         // ✅ Eager load trước khi serialize vào queue
         $order->loadMissing(['location', 'orderItems.ticket', 'slot']);
         $this->order = $order;
-        $this->afterCommit();
+        
     }
 
     public function envelope(): Envelope

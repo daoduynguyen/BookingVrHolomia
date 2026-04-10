@@ -22,7 +22,7 @@ class OrderStatusMail extends Mailable implements ShouldQueue
         $this->order = $order;
         $this->statusName = $statusName;
         $this->messageBody = $messageBody;
-        $this->afterCommit();
+        
     }
 
     // ✅ Đổi từ build() sang envelope() + content() cho nhất quán
