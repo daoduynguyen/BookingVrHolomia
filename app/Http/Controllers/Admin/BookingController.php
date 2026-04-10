@@ -74,9 +74,41 @@ public function updateStatus(Request $request, $id) {
     $order->status = $newStatus;
     $order->save();
 
+    // Lấy email an toàn cho cả user lẫn guest
+    $recipientEmail = $order->customer_email ?? ($order->user ? $order->user->email : null);
+
+    // ✅ THÊM MỚI: Email khi admin duyệt đơn (pending → paid)
+    if ($newStatus === 'paid' && $oldStatus !== 'paid') {
+        if ($recipientEmail) {
+            try {
+                Mail::to($recipientEmail)->send(new \App\Mail\OrderStatusMail(
+                    $order,
+                    'Đã xác nhận',
+                    'Đơn vé #' . $order->id . ' của bạn đã được xác nhận. Vui lòng xuất trình mã QR khi đến trải nghiệm.'
+                ));
+            } catch (\Exception $e) {
+                \Log::error('Gửi email duyệt đơn thất bại (Order #' . $id . '): ' . $e->getMessage());
+            }
+        }
+    }
+
+    // ✅ THÊM MỚI: Email khi admin hủy đơn
+    if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+        if ($recipientEmail) {
+            try {
+                Mail::to($recipientEmail)->send(new \App\Mail\OrderStatusMail(
+                    $order,
+                    'Đã hủy',
+                    'Đơn vé #' . $order->id . ' của bạn đã bị hủy. Nếu có thắc mắc, vui lòng liên hệ Holomia VR để được hỗ trợ.'
+                ));
+            } catch (\Exception $e) {
+                \Log::error('Gửi email hủy đơn thất bại (Order #' . $id . '): ' . $e->getMessage());
+            }
+        }
+    }
+
     // Gửi email + tăng play_count khi chuyển sang "Hoàn thành"
     if ($newStatus === 'completed' && $oldStatus !== 'completed') {
-        // Tăng play_count cho từng vé trong đơn
         foreach ($order->details as $item) {
             $ticket = \App\Models\Ticket::find($item->ticket_id);
             if ($ticket) {
@@ -84,11 +116,10 @@ public function updateStatus(Request $request, $id) {
             }
         }
 
-        // Gửi email thông báo hoàn thành
-        $email = $order->user->email ?? $order->customer_email ?? null;
-        if ($email) {
+        // ✅ SỬA: dùng $recipientEmail thay vì $order->user->email để tránh lỗi null
+        if ($recipientEmail) {
             try {
-                Mail::to($email)->send(new OrderCompletedMail($order));
+                Mail::to($recipientEmail)->send(new OrderCompletedMail($order));
             } catch (\Exception $e) {
                 \Log::error('Gửi email hoàn thành thất bại (Order #' . $id . '): ' . $e->getMessage());
             }

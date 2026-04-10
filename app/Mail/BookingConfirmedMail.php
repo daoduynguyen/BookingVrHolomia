@@ -18,6 +18,8 @@ class BookingConfirmedMail extends Mailable implements ShouldQueue
     // Hàm này để nhận đơn hàng từ CheckoutController truyền sang
     public function __construct($order)
     {
+        // ✅ Eager load trước khi serialize vào queue
+        $order->loadMissing(['location', 'orderItems.ticket', 'slot']);
         $this->order = $order;
         $this->afterCommit();
     }

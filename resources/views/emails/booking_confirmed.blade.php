@@ -38,7 +38,17 @@
                 </tr>
                 <tr>
                     <td style="padding: 10px 0; color: #888888;">Phương thức:</td>
-                    <td style="padding: 10px 0; text-align: right; text-transform: uppercase;">{{ $order->payment_method == 'cod' ? 'Tiền mặt' : 'Chuyển khoản' }}</td>
+                    <td style="padding: 10px 0; text-align: right; text-transform: uppercase;">
+                        @php
+    $methodLabel = match($order->payment_method) {
+        'cod'     => 'Tiền mặt tại quầy',
+        'banking' => 'Chuyển khoản',
+        'wallet'  => 'Ví Holomia',
+        default   => strtoupper($order->payment_method),
+    };
+@endphp
+{{ $methodLabel }}
+                    </td>
                 </tr>
             </table>
 

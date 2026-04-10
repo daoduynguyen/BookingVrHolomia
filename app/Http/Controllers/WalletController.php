@@ -175,15 +175,20 @@ class WalletController extends Controller
                 }
             }
 
-            // Gửi mail xác nhận vé điện tử sau khi banking được xác nhận
-            if ($order->user && $order->user->email) {
+
+            // ✅ Lấy email: ưu tiên customer_email (bao gồm cả guest), fallback về user
+            $recipientEmail = $order->customer_email
+                ?? ($order->user ? $order->user->email : null);
+
+            if ($recipientEmail) {
                 try {
-                    \Illuminate\Support\Facades\Mail::to($order->user->email)
+                    \Illuminate\Support\Facades\Mail::to($recipientEmail)
                         ->send(new \App\Mail\BookingConfirmedMail($order));
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('Sepay: Lỗi gửi mail xác nhận: ' . $e->getMessage());
+                    Log::warning('Sepay: Lỗi gửi mail xác nhận: ' . $e->getMessage());
                 }
             }
+
 
             Log::info("Đơn #{$order->id} đã được xác nhận thanh toán qua Sepay");
         });

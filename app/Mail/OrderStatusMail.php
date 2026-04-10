@@ -4,6 +4,8 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -23,9 +25,18 @@ class OrderStatusMail extends Mailable implements ShouldQueue
         $this->afterCommit();
     }
 
-    public function build()
+    // ✅ Đổi từ build() sang envelope() + content() cho nhất quán
+    public function envelope(): Envelope
     {
-        return $this->subject('Cập nhật trạng thái đơn vé #' . $this->order->id . ' - Holomia VR')
-            ->view('emails.order_status');
+        return new Envelope(
+            subject: 'Cập nhật trạng thái đơn vé #' . $this->order->id . ' - Holomia VR',
+        );
+    }
+
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.order_status',
+        );
     }
 }
