@@ -121,27 +121,29 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
 
     Route::name('admin.')->group(function () {
 
-        // Dashboard tổng quan
-    Route::get('/', [AdminChatbotController::class, 'index'])->name('index');
- 
-    // Quản lý Cache Q&A
-    Route::prefix('cache')->name('cache.')->group(function () {
-        Route::get('/',                     [AdminChatbotController::class, 'cacheIndex'])->name('index');
-        Route::patch('/{id}/approve',       [AdminChatbotController::class, 'approveCache'])->name('approve');
-        Route::get('/{id}/edit',            [AdminChatbotController::class, 'editCache'])->name('edit');
-        Route::put('/{id}',                 [AdminChatbotController::class, 'updateCache'])->name('update');
-        Route::delete('/{id}',              [AdminChatbotController::class, 'destroyCache'])->name('destroy');
-    });
- 
-    // Quản lý Knowledge Base
-    Route::prefix('knowledge')->name('knowledge.')->group(function () {
-        Route::get('/',                     [AdminChatbotController::class, 'knowledgeIndex'])->name('index');
-        Route::get('/create',               [AdminChatbotController::class, 'createKnowledge'])->name('create');
-        Route::post('/',                    [AdminChatbotController::class, 'storeKnowledge'])->name('store');
-        Route::get('/{id}/edit',            [AdminChatbotController::class, 'editKnowledge'])->name('edit');
-        Route::put('/{id}',                 [AdminChatbotController::class, 'updateKnowledge'])->name('update');
-        Route::delete('/{id}',              [AdminChatbotController::class, 'destroyKnowledge'])->name('destroy');
-        Route::patch('/{id}/toggle',        [AdminChatbotController::class, 'toggleKnowledge'])->name('toggle');
+    // Quản lý Chatbot AI
+    Route::prefix('chatbot')->name('chatbot.')->group(function() {
+        Route::get('/', [AdminChatbotController::class, 'index'])->name('index');
+     
+        // Quản lý Cache Q&A
+        Route::prefix('cache')->name('cache.')->group(function () {
+            Route::get('/',                     [AdminChatbotController::class, 'cacheIndex'])->name('index');
+            Route::patch('/{id}/approve',       [AdminChatbotController::class, 'approveCache'])->name('approve');
+            Route::get('/{id}/edit',            [AdminChatbotController::class, 'editCache'])->name('edit');
+            Route::put('/{id}',                 [AdminChatbotController::class, 'updateCache'])->name('update');
+            Route::delete('/{id}',              [AdminChatbotController::class, 'destroyCache'])->name('destroy');
+        });
+     
+        // Quản lý Knowledge Base
+        Route::prefix('knowledge')->name('knowledge.')->group(function () {
+            Route::get('/',                     [AdminChatbotController::class, 'knowledgeIndex'])->name('index');
+            Route::get('/create',               [AdminChatbotController::class, 'createKnowledge'])->name('create');
+            Route::post('/',                    [AdminChatbotController::class, 'storeKnowledge'])->name('store');
+            Route::get('/{id}/edit',            [AdminChatbotController::class, 'editKnowledge'])->name('edit');
+            Route::put('/{id}',                 [AdminChatbotController::class, 'updateKnowledge'])->name('update');
+            Route::delete('/{id}',              [AdminChatbotController::class, 'destroyKnowledge'])->name('destroy');
+            Route::patch('/{id}/toggle',        [AdminChatbotController::class, 'toggleKnowledge'])->name('toggle');
+        });
     });
 
         // Dashboard
@@ -221,9 +223,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
 
     });
 });
-
-// ── Chatbot (public) ───────────────────────────────────────
-Route::post('/chat-ai', [ChatAIController::class, 'chat'])->name('chat.ai');
 
 /*
 |--------------------------------------------------------------------------

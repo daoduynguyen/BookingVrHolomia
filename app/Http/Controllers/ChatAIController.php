@@ -64,7 +64,7 @@ class ChatAIController extends Controller
         $ragContext      = KnowledgeBase::search($userMessage);
 
         // Ghi nhận knowledge đã dùng
-        $ragContext->each->recordUse();
+        $ragContext->each(fn($k) => $k->recordUse());
 
         $reply = $needsWebSearch
             ? $this->callGeminiWithSearch($userMessage, $dbContext, $ragContext, $apiKey)
@@ -156,36 +156,38 @@ class ChatAIController extends Controller
     // =========================================================
     //  LƯU VÀO CACHE (chờ admin duyệt)
     // =========================================================
-    private function saveToCache(string $question, string $answer, bool $fromSearch): void
-    {
-        try {
-            $keywords = implode(',', ChatCache::extractKeywords($question));
-            $category = $this->detectCategory($question);
+ 
+private function saveToCache(string $question, string $answer, bool $fromSearch): void
+{
+    try {
+        $keywords = implode(',', ChatCache::extractKeywords($question));
+        $category = $this->detectCategory($question);
 
-            // Tránh lưu trùng câu hỏi giống hệt nhau
-            $exists = ChatCache::where('question', $question)->exists();
-            if ($exists) {
-                // Chỉ tăng ask_count
-                ChatCache::where('question', $question)->increment('ask_count');
-                return;
-            }
-
-            ChatCache::create([
-                'question'      => $question,
+        $cache = ChatCache::firstOrCreate(
+            ['question' => $question],
+            [
                 'keywords'      => $keywords,
                 'answer'        => $answer,
                 'source'        => 'ai_generated',
-                'approved'      => false, // Chờ admin duyệt
+                'approved'      => false,
                 'quality_score' => 5,
-                'ask_count'     => 1,
+                'ask_count'     => 0,
                 'hit_count'     => 0,
                 'category'      => $category,
-            ]);
-        } catch (\Exception $e) {
-            // Không ảnh hưởng trải nghiệm khách nếu lưu cache thất bại
-            \Log::warning('ChatCache save failed: ' . $e->getMessage());
+            ]
+        );
+
+        // Nếu đã tồn tại → cập nhật answer mới nhất
+        if (!$cache->wasRecentlyCreated) {
+            $cache->update(['answer' => $answer, 'keywords' => $keywords]);
         }
+
+        $cache->increment('ask_count');
+
+    } catch (\Exception $e) {
+        \Log::warning('ChatCache save failed: ' . $e->getMessage());
     }
+}
 
     // =========================================================
     //  DETECT CATEGORY

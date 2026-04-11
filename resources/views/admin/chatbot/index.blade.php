@@ -15,10 +15,10 @@
             <a href="{{ route('admin.chatbot.knowledge.create') }}" class="btn btn-success btn-sm">
                 <i class="bi bi-plus-circle me-1"></i> Thêm kiến thức
             </a>
-            <a href="{{ route('admin.chatbot.cache') }}" class="btn btn-outline-info btn-sm">
+            <a href="{{ route('admin.chatbot.cache.index') }}" class="btn btn-outline-info btn-sm">
                 <i class="bi bi-database me-1"></i> Quản lý Cache
             </a>
-            <a href="{{ route('admin.chatbot.knowledge') }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ route('admin.chatbot.knowledge.index') }}" class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-book me-1"></i> Knowledge Base
             </a>
         </div>
@@ -75,7 +75,7 @@
                             <span class="badge bg-danger ms-1">{{ $stats['pending_approval'] }}</span>
                         @endif
                     </h6>
-                    <a href="{{ route('admin.chatbot.cache', ['approved' => 0]) }}" class="small text-muted">Xem tất cả →</a>
+                    <a href="{{ route('admin.chatbot.cache.index', ['approved' => 0]) }}" class="small text-muted">Xem tất cả →</a>
                 </div>
                 <div class="card-body p-0">
                     @forelse($pendingCache as $item)
