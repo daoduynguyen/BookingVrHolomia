@@ -181,8 +181,8 @@
                                 </label>
                             </div>
                         @else
-                            <div class="alert alert-info small mt-2">
-                                <i class="bi bi-info-circle me-1"></i> {!! str_replace(':login', '<a href="' . route('branch.login', ['subdomain' => $subdomain]) . '" class="fw-bold">' . __('checkout.wallet_login_link') . '</a>', __('checkout.wallet_login_hint', ['login' => ''])) !!}
+                            <div class="alert alert-info small mt-3">
+                                <i class="bi bi-info-circle me-1"></i> <a href="{{ route('branch.login', ['subdomain' => $subdomain]) }}" class="fw-bold text-primary">Đăng nhập</a> để thanh toán bằng ví.
                             </div>
                         @endif
                     </div>

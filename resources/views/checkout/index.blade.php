@@ -161,7 +161,7 @@
                         </div>
                         @else
                         <div class="alert alert-info small mt-3">
-                            <i class="bi bi-info-circle me-1"></i> Có tài khoản? <a href="{{ route('login') }}" class="fw-bold">Đăng nhập ngay</a> để nhận điểm thưởng.
+                            <i class="bi bi-info-circle me-1"></i> <a href="{{ route('login') }}" class="fw-bold text-primary">Đăng nhập</a> để thanh toán bằng ví.
                         </div>
                         @endif
                     </div>

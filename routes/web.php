@@ -367,15 +367,3 @@ Route::get('/check-guest-email', function () {
     ];
 });
 
-Route::get('/test-send-order-mail', function () {
-    $order = App\Models\Order::with(['location', 'orderItems.ticket', 'slot'])
-        ->whereNull('user_id')->latest()->first();
-    
-    try {
-        \Illuminate\Support\Facades\Mail::to($order->customer_email)
-            ->send(new \App\Mail\BookingConfirmedMail($order));
-        return '✅ Gửi thành công đến: ' . $order->customer_email;
-    } catch (\Exception $e) {
-        return '❌ Lỗi: ' . $e->getMessage();
-    }
-});
