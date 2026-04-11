@@ -265,7 +265,15 @@ class CheckoutController extends Controller
 
             $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? null;
             $locationId = null;
-            if (!empty($cart)) {
+
+            // Xác định Location cho Trang chính
+            $mainLocation = \App\Models\Location::where('slug', 'trang-chinh')
+                ->orWhere('name', 'like', '%Trang chính%')
+                ->first();
+
+            if ($mainLocation) {
+                $locationId = $mainLocation->id;
+            } elseif (!empty($cart)) {
                 $firstItem = reset($cart); // Lấy món đầu tiên trong giỏ
 
                 // Quét tìm ID vé (có thể là 'id', 'ticket_id', hoặc chính là cái key của mảng $cart)
