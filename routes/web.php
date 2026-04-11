@@ -272,6 +272,8 @@ Route::get('/huong-dan', function () {
 
 // Quét QR vé
 Route::get('/scan-ticket/{id}', [ProfileController::class, 'scanTicket'])->name('ticket.scan');
+// Public token-based scan (fallback for email QR)
+Route::get('/scan-ticket/token/{token}', [ProfileController::class, 'scanByToken'])->name('ticket.scan.token');
 
 // Trang đặt vé thành công
 Route::get('/dat-ve-thanh-cong', [CheckoutController::class, 'bookingSuccess'])->name('booking.success');
@@ -294,6 +296,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/dat-lai-mat-khau/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
     Route::post('/dat-lai-mat-khau', [AuthController::class, 'resetPassword'])->name('password.update');
 });
+
+// Admin settings QR update route
+Route::post('/admin/settings/qr', [\App\Http\Controllers\Admin\AdminSettingsController::class, 'adminUpdateQr'])
+    ->name('admin.settings.qr.update')
+    ->middleware('auth', 'can:access-admin');
 
 /*
 |--------------------------------------------------------------------------

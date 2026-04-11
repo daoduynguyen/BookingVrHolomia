@@ -27,7 +27,18 @@
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
     <tr><td style="background:#12152a;border:2px dashed #ff6b35;border-radius:16px;padding:32px;text-align:center;">
       <div style="font-size:11px;font-weight:700;color:#ff6b35;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;">🎟️ Mã Check-in tại quầy</div>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode(route('ticket.scan', $order->id)) }}"
+        @php
+          // Prefer token-based QR (persistent) if available, else fallback to signed URL
+          $qrImageSrc = null;
+          if (!empty($order->qr_token)) {
+            $tokenUrl = route('ticket.scan.token', ['token' => $order->qr_token]);
+            $qrImageSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($tokenUrl);
+          } else {
+            $signed = URL::temporarySignedRoute('ticket.scan', now()->addHours(72), ['id' => $order->id]);
+            $qrImageSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($signed);
+          }
+        @endphp
+        <img src="{{ $qrImageSrc }}"
            alt="QR Code Check-in"
            style="border:6px solid #ffffff;border-radius:12px;display:block;margin:0 auto 16px;">
       <div style="font-size:28px;font-weight:700;color:#ff6b35;letter-spacing:4px;">{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>

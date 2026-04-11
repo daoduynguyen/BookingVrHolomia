@@ -90,4 +90,22 @@
     </div>
 
 </form>
+
+{{-- FORM QR TOKEN CONFIG --}}
+<form action="{{ route('admin.settings.qr.update') }}" method="POST">
+    @csrf
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="max-width:600px;">
+        <h6 class="fw-bold text-primary text-uppercase mb-3" style="letter-spacing:1px;"><i class="bi bi-qr-code-scan me-2"></i>Cài đặt QR</h6>
+
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="qr_token_one_time" name="qr_token_one_time" value="1" {{ ($qrOneTime ?? '0') === '1' ? 'checked' : '' }}>
+            <label class="form-check-label fw-semibold" for="qr_token_one_time">Bật chế độ một lần quét (một lần dùng)</label>
+        </div>
+        <div class="form-text mb-3">Khi bật, QR token sẽ chỉ cho phép truy cập một lần (không bao gồm admin/owner). Khi tắt, QR có thể được quét nhiều lần.</div>
+
+        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+            <i class="bi bi-save me-1"></i> Lưu cài đặt QR
+        </button>
+    </div>
+</form>
 @endsection

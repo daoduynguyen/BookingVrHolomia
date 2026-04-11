@@ -14,8 +14,9 @@ class AdminSettingsController extends Controller
         $bankBin     = Setting::where('key', 'bank_bin')->value('value') ?? '';
         $bankAccount = Setting::where('key', 'bank_account')->value('value') ?? '';
         $bankOwner   = Setting::where('key', 'bank_owner')->value('value') ?? '';
+        $qrOneTime   = Setting::where('key', 'qr_token_one_time')->value('value') ?? '0';
 
-        return view('admin.settings', compact('surcharge', 'bankName', 'bankBin', 'bankAccount', 'bankOwner'));
+        return view('admin.settings', compact('surcharge', 'bankName', 'bankBin', 'bankAccount', 'bankOwner', 'qrOneTime'));
     }
 
     public function adminUpdate(Request $request)
@@ -47,5 +48,16 @@ class AdminSettingsController extends Controller
         );
 
         return back()->with('success', '✅ Đã lưu cài đặt!');
+
+        // Note: fallthrough not expected. Other forms handled above.
+    }
+
+    // Handle QR settings form
+    public function adminUpdateQr(Request $request)
+    {
+        $value = $request->has('qr_token_one_time') && $request->qr_token_one_time == '1' ? '1' : '0';
+        Setting::updateOrCreate(['key' => 'qr_token_one_time'], ['value' => $value]);
+
+        return back()->with('success', '✅ Đã lưu cài đặt QR!');
     }
 }

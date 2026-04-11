@@ -151,17 +151,55 @@ class ProfileController extends Controller
     }
 
     // 5. Scan vé (QR)
-    public function scanTicket($id)
+    public function scanTicket(\Illuminate\Http\Request $request, $id)
     {
         $order = Order::with('orderItems', 'slot', 'location')->findOrFail($id);
 
-        // Chỉ admin và chủ đơn mới được xem
+        // Allow if the request carries a valid signed URL (from email QR)
+        if ($request->hasValidSignature()) {
+            return view('profile.ticket_scan', compact('order'));
+        }
+
+        // Otherwise only owner or admin can view
         $user = Auth::user();
         $isOwner = $user && $order->user_id === $user->id;
         $isAdmin = $user && in_array($user->role, ['admin', 'super_admin', 'branch_admin']);
 
         if (!$isOwner && !$isAdmin) {
             abort(403, 'Bạn không có quyền xem vé này.');
+        }
+
+        return view('profile.ticket_scan', compact('order'));
+    }
+
+    // 5b. Scan bằng QR token (public fallback) — reusable token (do not mark as used)
+    public function scanByToken($token)
+    {
+        $order = Order::with('orderItems', 'slot', 'location')->where('qr_token', $token)->first();
+        if (!$order) {
+            abort(404, 'Không tìm thấy vé.');
+        }
+
+        // Check admin setting whether QR tokens are one-time use
+        $oneTime = \App\Models\Setting::where('key', 'qr_token_one_time')->value('value') === '1';
+
+        $user = Auth::user();
+        $isOwner = $user && $order->user_id === $user->id;
+        $isAdmin = $user && in_array($user->role, ['admin', 'super_admin', 'branch_admin']);
+
+        if ($oneTime) {
+            if ($order->qr_used && !$isOwner && !$isAdmin) {
+                abort(410, 'Mã QR này đã được sử dụng.');
+            }
+
+            if (!$order->qr_used) {
+                try {
+                    $order->qr_used = true;
+                    $order->save();
+                } catch (\Throwable $e) {
+                    // ignore save errors
+                }
+            }
         }
 
         return view('profile.ticket_scan', compact('order'));
