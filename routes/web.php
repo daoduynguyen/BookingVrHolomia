@@ -144,8 +144,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
             Route::delete('/{id}',              [AdminChatbotController::class, 'destroyKnowledge'])->name('destroy');
             Route::patch('/{id}/toggle',        [AdminChatbotController::class, 'toggleKnowledge'])->name('toggle');
         });
-    });
-
+ });
         // Dashboard
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
         Route::get('/dashboard', [AdminController::class, 'index']);
@@ -382,15 +381,3 @@ Route::middleware('auth')->group(function () {
 */
 Route::get('auth/{provider}/redirect', [\App\Http\Controllers\SocialLoginController::class, 'redirect'])->name('social.redirect');
 Route::get('auth/{provider}/callback', [\App\Http\Controllers\SocialLoginController::class, 'callback'])->name('social.callback');
-
-Route::get('/check-guest-email', function () {
-    $order = App\Models\Order::whereNull('user_id')->latest()->first();
-    if (!$order) return 'Không có đơn guest nào';
-    return [
-        'order_id' => $order->id,
-        'customer_email' => $order->customer_email,
-        'customer_name' => $order->customer_name,
-        'status' => $order->status,
-    ];
-});
-
