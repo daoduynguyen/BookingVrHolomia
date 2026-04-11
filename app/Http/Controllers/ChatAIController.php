@@ -104,7 +104,7 @@ class ChatAIController extends Controller
     // =========================================================
     private function callGeminiDbOnly(string $message, array $ctx, $ragContext, string $apiKey): string
     {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
+       $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}";
         try {
             $response = Http::retry(3, 1000)
                 ->withHeaders(['Content-Type' => 'application/json'])
@@ -129,7 +129,8 @@ class ChatAIController extends Controller
     // =========================================================
     private function callGeminiWithSearch(string $message, array $ctx, $ragContext, string $apiKey): string
     {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
+       
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}";
         try {
             $response = Http::retry(3, 1000)
                 ->withHeaders(['Content-Type' => 'application/json'])
