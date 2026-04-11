@@ -117,7 +117,7 @@ class AdminChatbotController extends Controller
             'source'        => 'admin_written', // Admin đã chỉnh → đánh dấu là admin viết
         ]);
 
-        return redirect()->route('admin.chatbot.cache')
+        return redirect()->route('admin.chatbot.index')
             ->with('success', '✅ Đã cập nhật câu trả lời!');
     }
 
