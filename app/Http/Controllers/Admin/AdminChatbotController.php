@@ -74,7 +74,7 @@ class AdminChatbotController extends Controller
                         ->orderByDesc('created_at')
                         ->paginate(20);
 
-        return view('admin.chatbot.cache', compact('caches'));
+        return redirect()->route('admin.chatbot.index');
     }
 
     // =========================================================
