@@ -298,10 +298,24 @@
     </script>
     @if(session('cod_success'))
     <script>
-        Swal.fire({
-            icon: 'success',
-            title: '{{ __('branch.booking_success') }} 🎉',
-            html: `
+        (function(){
+            const orderSummary = @json(session('order_summary', []));
+            const orderId = '{{ session('order_id') }}';
+            const totalAmount = '{{ number_format(session('total_amount')) }}';
+
+            let itemsHtml = '';
+            if (orderSummary && orderSummary.items && orderSummary.items.length) {
+                itemsHtml += '<div class="mb-2">';
+                orderSummary.items.forEach(it => {
+                    itemsHtml += `<div class="d-flex justify-content-between align-items-center mb-1 small text-muted">
+                        <div class="me-2">${it.ticket_name}</div>
+                        <div class="fw-bold text-dark">${it.quantity} × ${Number(it.price).toLocaleString()}đ</div>
+                    </div>`;
+                });
+                itemsHtml += '</div>';
+            }
+
+            const bookingMeta = `
                 <div class="text-start small">
                     <div class="alert alert-warning border-0 rounded-3 mb-3 py-2" style="font-size:0.85rem;">
                         <i class="bi bi-shop me-2"></i>
@@ -310,20 +324,28 @@
                     </div>
                     <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
                         <span class="text-muted">{{ __('branch.order_code') }}</span>
-                        <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
+                        <span class="fw-bold text-dark">#${orderId}</span>
                     </div>
-                    <div class="d-flex justify-content-between">
+                    ${ itemsHtml }
+                    <div class="d-flex justify-content-between border-top pt-2 mt-2">
                         <span class="text-muted">{{ __('branch.total_amount') }}</span>
-                        <span class="fw-bold text-success">{{ number_format(session('total_amount')) }}đ</span>
+                        <span class="fw-bold text-success">${totalAmount}đ</span>
                     </div>
+                    <div class="text-muted small mt-2">${orderSummary.booking_date || ''} ${orderSummary.slot ? ' • ' + orderSummary.slot : ''} ${orderSummary.location ? ' • ' + orderSummary.location : ''}</div>
                 </div>
-            `,
-            background: '#fff',
-            color: '#1f2937',
-            confirmButtonText: '{{ __('branch.got_it') }}',
-            confirmButtonColor: '#0dcaf0',
-            width: '420px',
-        });
+            `;
+
+            Swal.fire({
+                icon: 'success',
+                title: '{{ __('branch.booking_success') }} 🎉',
+                html: bookingMeta,
+                background: '#fff',
+                color: '#1f2937',
+                confirmButtonText: '{{ __('branch.got_it') }}',
+                confirmButtonColor: '#0dcaf0',
+                width: '520px',
+            });
+        })();
     </script>
     @endif
 </body>

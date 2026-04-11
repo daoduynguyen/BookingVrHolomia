@@ -461,19 +461,35 @@ class BranchController extends Controller
 
         // 3. VÍ HOLOMIA + COD → Thông báo thành công
         if ($paymentMethod === 'cod') {
+            $order->loadMissing(['orderItems.ticket', 'slot', 'location']);
+            $orderSummary = [
+                'items' => $order->orderItems->map(function($it){
+                    return [
+                        'ticket_name' => $it->ticket_name ?? ($it->ticket->name ?? ''),
+                        'quantity' => $it->quantity,
+                        'price' => $it->price,
+                    ];
+                })->toArray(),
+                'booking_date' => $order->booking_date ? \Carbon\Carbon::parse($order->booking_date)->format('d/m/Y') : '',
+                'slot' => isset($order->slot) && $order->slot ? substr($order->slot->start_time,0,5) . ' - ' . substr($order->slot->end_time,0,5) : '',
+                'location' => $order->location->name ?? '',
+            ];
+
             if (!Auth::check()) {
                 return redirect()->route('branch.home', ['subdomain' => $subdomain])
                     ->with([
                         'cod_success' => true,
                         'order_id' => $order->id,
-                        'total_amount' => $order->total_amount
+                        'total_amount' => $order->total_amount,
+                        'order_summary' => $orderSummary,
                     ]);
             }
             return redirect()->route('branch.profile', ['subdomain' => $subdomain])
                 ->with([
                     'cod_success' => true,
                     'order_id' => $order->id,
-                    'total_amount' => $order->total_amount
+                    'total_amount' => $order->total_amount,
+                    'order_summary' => $orderSummary,
                 ]);
         }
 

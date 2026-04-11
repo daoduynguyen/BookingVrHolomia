@@ -90,6 +90,17 @@
                         <strong>{{ $order->location->name }}</strong>
                     </div>
                     @endif
+                    @if(isset($order->orderItems) && $order->orderItems->count())
+                    <div class="mt-3 pb-2">
+                        <h6 class="fw-bold mb-2 small text-uppercase">Chi tiết vé</h6>
+                        @foreach($order->orderItems as $it)
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
+                            <div>{{ $it->ticket_name }}</div>
+                            <div class="fw-bold text-dark">{{ $it->quantity }} × {{ number_format($it->price) }}đ</div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
                     <div class="order-info-row">
                         <span class="text-muted">Tổng thanh toán</span>
                         <strong class="fs-5 text-primary">{{ number_format($order->total_amount) }}đ</strong>

@@ -435,17 +435,47 @@ class CheckoutController extends Controller
             // 1. THANH TOÁN TẠI QUẦY (COD)
             if ($paymentMethod === 'cod') {
                 if (!Auth::check()) {
-                    return redirect()->route('home')->with([
+                        $order->loadMissing(['orderItems.ticket', 'slot', 'location']);
+                        $orderSummary = [
+                            'items' => $order->orderItems->map(function($it){
+                                return [
+                                    'ticket_name' => $it->ticket_name ?? ($it->ticket->name ?? ''),
+                                    'quantity' => $it->quantity,
+                                    'price' => $it->price,
+                                ];
+                            })->toArray(),
+                            'booking_date' => $order->booking_date ? \Carbon\Carbon::parse($order->booking_date)->format('d/m/Y') : '',
+                            'slot' => isset($order->slot) && $order->slot ? substr($order->slot->start_time,0,5) . ' - ' . substr($order->slot->end_time,0,5) : '',
+                            'location' => $order->location->name ?? '',
+                        ];
+
+                        return redirect()->route('home')->with([
+                            'cod_success' => true,
+                            'order_id' => $order->id,
+                            'total_amount' => $order->total_amount,
+                            'order_summary' => $orderSummary,
+                        ]);
+                    }
+                    $order->loadMissing(['orderItems.ticket', 'slot', 'location']);
+                    $orderSummary = [
+                        'items' => $order->orderItems->map(function($it){
+                            return [
+                                'ticket_name' => $it->ticket_name ?? ($it->ticket->name ?? ''),
+                                'quantity' => $it->quantity,
+                                'price' => $it->price,
+                            ];
+                        })->toArray(),
+                        'booking_date' => $order->booking_date ? \Carbon\Carbon::parse($order->booking_date)->format('d/m/Y') : '',
+                        'slot' => isset($order->slot) && $order->slot ? substr($order->slot->start_time,0,5) . ' - ' . substr($order->slot->end_time,0,5) : '',
+                        'location' => $order->location->name ?? '',
+                    ];
+
+                    return redirect()->route('profile.index')->with([
                         'cod_success' => true,
                         'order_id' => $order->id,
                         'total_amount' => $order->total_amount,
+                        'order_summary' => $orderSummary,
                     ]);
-                }
-                return redirect()->route('profile.index')->with([
-                    'cod_success' => true,
-                    'order_id' => $order->id,
-                    'total_amount' => $order->total_amount,
-                ]);
             }
 
             // 2. CHUYỂN KHOẢN / QR → Nhảy sang trang thanh toán QR
