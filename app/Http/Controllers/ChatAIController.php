@@ -8,20 +8,28 @@ use Carbon\Carbon;
 use App\Models\TimeSlot;
 use App\Models\Ticket;
 use App\Models\Location;
+use App\Models\ChatCache;
+use App\Models\KnowledgeBase;
 
 /**
- * ChatAIController – "Nhân viên Sales Holo"
+ * ChatAIController – "Nhân viên Sales Holo" với hệ thống tự học 3 lớp
  *
- * Kiến trúc 2 lớp:
+ *  LỚP 1 – Cache Q&A
+ *    → Tìm câu hỏi tương tự trong DB
+ *    → Nếu tìm thấy (đã được admin duyệt) → trả lời ngay, 0 API call
  *
- *  LAYER 1 – Câu hỏi liên quan shop/DB
- *    → Dùng dữ liệu DB thực (slot, game, giá, chi nhánh...)
- *    → Gemini KHÔNG search thêm, trả lời nhanh & chính xác
+ *  LỚP 2 – RAG + DB Context
+ *    → Tìm kiến thức liên quan trong knowledge_base
+ *    → Kết hợp với dữ liệu DB (slot, game, giá...)
+ *    → Gọi Gemini với đầy đủ context
  *
- *  LAYER 2 – Câu hỏi ngoài phạm vi DB
- *    → Bật Google Search Grounding (tích hợp sẵn Gemini, MIỄN PHÍ)
- *    → AI tự search Google rồi trả lời (VR là gì, độ tuổi, mẹo chơi...)
- *    → Vẫn giữ system prompt nhân viên Holomia, không lạc vai
+ *  LỚP 3 – Google Search Grounding (miễn phí)
+ *    → Câu hỏi ngoài phạm vi shop (VR, sức khoẻ, mẹo chơi...)
+ *    → Gemini tự search Google, sau đó kéo về Holomia VR
+ *
+ *  SAU MỖI TRẢ LỜI:
+ *    → Lưu câu hỏi + câu trả lời vào chat_cache (chờ admin duyệt)
+ *    → Admin duyệt → lần sau câu tương tự trả lời ngay (Lớp 1)
  */
 class ChatAIController extends Controller
 {
@@ -40,76 +48,76 @@ class ChatAIController extends Controller
             return response()->json(['reply' => 'Bạn muốn hỏi gì về Holomia VR ạ? 🎮']);
         }
 
-        // 1. Phân loại câu hỏi: nội bộ hay ngoài phạm vi?
+        // ── LỚP 1: Kiểm tra Cache ──────────────────────────────
+        $cached = ChatCache::findSimilar($userMessage);
+        if ($cached) {
+            $cached->recordHit();
+            return response()->json([
+                'reply'  => $cached->answer,
+                'source' => 'cache', // debug info, có thể bỏ ở production
+            ]);
+        }
+
+        // ── LỚP 2 & 3: Gọi Gemini ─────────────────────────────
         $needsWebSearch = $this->needsWebSearch($userMessage);
+        $dbContext      = $this->buildDatabaseContext();
+        $ragContext      = KnowledgeBase::search($userMessage);
 
-        // 2. Thu thập dữ liệu DB
-        $context = $this->buildDatabaseContext();
+        // Ghi nhận knowledge đã dùng
+        $ragContext->each->recordUse();
 
-        // 3. Gọi Gemini (có hoặc không có Google Search Grounding)
         $reply = $needsWebSearch
-            ? $this->callGeminiWithSearch($userMessage, $context, $apiKey)
-            : $this->callGeminiDbOnly($userMessage, $context, $apiKey);
+            ? $this->callGeminiWithSearch($userMessage, $dbContext, $ragContext, $apiKey)
+            : $this->callGeminiDbOnly($userMessage, $dbContext, $ragContext, $apiKey);
+
+        // ── LƯU vào cache để admin duyệt ──────────────────────
+        $this->saveToCache($userMessage, $reply, $needsWebSearch);
 
         return response()->json(['reply' => $reply]);
     }
 
     // =========================================================
+    //  LỚP 1 – Tìm cache tương tự (xử lý trong ChatCache model)
+    // =========================================================
+
+    // =========================================================
     //  PHÂN LOẠI CÂU HỎI
-    //  Nếu câu hỏi KHÔNG liên quan dữ liệu nội bộ → bật search
     // =========================================================
     private function needsWebSearch(string $message): bool
     {
-        $message = mb_strtolower($message);
-
-        // Từ khoá liên quan dữ liệu nội bộ → KHÔNG cần search
+        $msg = mb_strtolower($message);
         $internalKeywords = [
-            // Đặt chỗ / slot
-            'đặt', 'book', 'còn chỗ', 'hết chỗ', 'slot', 'khung giờ', 'giờ nào', 'ngày',
-            'lịch', 'trưa', 'sáng', 'chiều', 'tối', 'mai', 'hôm nay', 'tuần',
-            // Trò chơi
-            'trò', 'game', 'chơi', 'half-life', 'beat saber', 'vé', 'máy',
-            'nhiều người', 'nhóm', 'bao nhiêu người', 'lượt', 'đánh giá',
-            // Giá / chi nhánh
-            'giá', 'bao nhiêu tiền', 'phí', 'chi nhánh', 'địa chỉ', 'lotte', 'cơ sở',
-            'hotline', 'liên hệ', 'mở cửa',
+            'đặt', 'book', 'còn chỗ', 'hết chỗ', 'slot', 'khung giờ', 'giờ nào',
+            'trưa', 'sáng', 'chiều', 'tối', 'mai', 'hôm nay', 'tuần', 'ngày',
+            'trò', 'game', 'chơi', 'vé', 'máy', 'lượt', 'đánh giá',
+            'giá', 'bao nhiêu tiền', 'phí', 'chi nhánh', 'địa chỉ',
+            'hotline', 'liên hệ', 'mở cửa', 'lotte', 'nhóm', 'người',
         ];
-
         foreach ($internalKeywords as $kw) {
-            if (str_contains($message, $kw)) {
-                return false; // Câu hỏi nội bộ → không cần search
-            }
+            if (str_contains($msg, $kw)) return false;
         }
-
-        // Mọi câu hỏi còn lại → bật Google Search
         return true;
     }
 
     // =========================================================
-    //  GỌI GEMINI – CHỈ DÙNG DỮ LIỆU DB (nhanh, chính xác)
+    //  LỚP 2 – Gemini + DB + RAG (không search)
     // =========================================================
-    private function callGeminiDbOnly(string $message, array $ctx, string $apiKey): string
+    private function callGeminiDbOnly(string $message, array $ctx, $ragContext, string $apiKey): string
     {
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}";
-
         try {
             $response = Http::retry(3, 1000)
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->timeout(30)
                 ->post($url, [
                     'system_instruction' => [
-                        'parts' => [['text' => $this->buildSalesSystemPrompt($ctx)]]
+                        'parts' => [['text' => $this->buildSalesSystemPrompt($ctx, $ragContext)]]
                     ],
                     'contents' => [
                         ['role' => 'user', 'parts' => [['text' => $message]]]
                     ],
-                    'generationConfig' => [
-                        'temperature'     => 0.6,
-                        'maxOutputTokens' => 1024,
-                    ],
-                    // Không có tools → AI chỉ dùng dữ liệu trong prompt
+                    'generationConfig' => ['temperature' => 0.6, 'maxOutputTokens' => 1024],
                 ]);
-
             return $this->extractReply($response);
         } catch (\Exception $e) {
             return 'Lỗi hệ thống: ' . $e->getMessage();
@@ -117,47 +125,83 @@ class ChatAIController extends Controller
     }
 
     // =========================================================
-    //  GỌI GEMINI + GOOGLE SEARCH GROUNDING (miễn phí)
-    //  Dùng cho câu hỏi ngoài phạm vi DB
+    //  LỚP 3 – Gemini + Google Search Grounding (miễn phí)
     // =========================================================
-    private function callGeminiWithSearch(string $message, array $ctx, string $apiKey): string
+    private function callGeminiWithSearch(string $message, array $ctx, $ragContext, string $apiKey): string
     {
-        // Gemini 2.5 Flash hỗ trợ Google Search Grounding qua tham số tools
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}";
-
-        // System prompt rút gọn cho mode search (không cần nhúng toàn bộ DB)
-        $searchSystemPrompt = $this->buildSearchSystemPrompt($ctx);
-
         try {
             $response = Http::retry(3, 1000)
                 ->withHeaders(['Content-Type' => 'application/json'])
-                ->timeout(45) // Search cần thêm thời gian
+                ->timeout(45)
                 ->post($url, [
                     'system_instruction' => [
-                        'parts' => [['text' => $searchSystemPrompt]]
+                        'parts' => [['text' => $this->buildSearchSystemPrompt($ctx, $ragContext)]]
                     ],
                     'contents' => [
                         ['role' => 'user', 'parts' => [['text' => $message]]]
                     ],
                     'tools' => [
-                        // Bật Google Search Grounding – tích hợp sẵn Gemini, MIỄN PHÍ
-                        ['google_search' => (object)[]]
+                        ['google_search' => (object)[]] // Google Search Grounding – miễn phí
                     ],
-                    'generationConfig' => [
-                        'temperature'     => 0.7,
-                        'maxOutputTokens' => 1024,
-                    ],
+                    'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 1024],
                 ]);
-
             return $this->extractReply($response);
         } catch (\Exception $e) {
-            // Fallback: nếu search lỗi → trả lời thông thường không search
-            return $this->callGeminiDbOnly($message, $ctx, $apiKey);
+            // Fallback về DB-only nếu search lỗi
+            return $this->callGeminiDbOnly($message, $ctx, $ragContext, $apiKey);
         }
     }
 
     // =========================================================
-    //  EXTRACT REPLY từ response Gemini
+    //  LƯU VÀO CACHE (chờ admin duyệt)
+    // =========================================================
+    private function saveToCache(string $question, string $answer, bool $fromSearch): void
+    {
+        try {
+            $keywords = implode(',', ChatCache::extractKeywords($question));
+            $category = $this->detectCategory($question);
+
+            // Tránh lưu trùng câu hỏi giống hệt nhau
+            $exists = ChatCache::where('question', $question)->exists();
+            if ($exists) {
+                // Chỉ tăng ask_count
+                ChatCache::where('question', $question)->increment('ask_count');
+                return;
+            }
+
+            ChatCache::create([
+                'question'      => $question,
+                'keywords'      => $keywords,
+                'answer'        => $answer,
+                'source'        => 'ai_generated',
+                'approved'      => false, // Chờ admin duyệt
+                'quality_score' => 5,
+                'ask_count'     => 1,
+                'hit_count'     => 0,
+                'category'      => $category,
+            ]);
+        } catch (\Exception $e) {
+            // Không ảnh hưởng trải nghiệm khách nếu lưu cache thất bại
+            \Log::warning('ChatCache save failed: ' . $e->getMessage());
+        }
+    }
+
+    // =========================================================
+    //  DETECT CATEGORY
+    // =========================================================
+    private function detectCategory(string $question): string
+    {
+        $q = mb_strtolower($question);
+        if (preg_match('/đặt|book|slot|giờ|ngày|chỗ/', $q))      return 'booking';
+        if (preg_match('/giá|tiền|vé|game|trò|lượt|rating/', $q)) return 'game_info';
+        if (preg_match('/hoàn|chính sách|tuổi|trẻ em|quy định/', $q)) return 'policy';
+        if (preg_match('/vr|thực tế ảo|kính|oculus|meta/', $q))   return 'general_vr';
+        return 'other';
+    }
+
+    // =========================================================
+    //  EXTRACT REPLY
     // =========================================================
     private function extractReply($response): string
     {
@@ -170,9 +214,9 @@ class ChatAIController extends Controller
     }
 
     // =========================================================
-    //  SYSTEM PROMPT – MODE DB (đầy đủ dữ liệu nội bộ)
+    //  SYSTEM PROMPT – MODE DB + RAG
     // =========================================================
-    private function buildSalesSystemPrompt(array $ctx): string
+    private function buildSalesSystemPrompt(array $ctx, $ragContext): string
     {
         $gamesJson     = json_encode($ctx['all_games'],         JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $topPlayJson   = json_encode($ctx['top_by_play_count'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
@@ -180,23 +224,28 @@ class ChatAIController extends Controller
         $slotsJson     = json_encode($ctx['available_slots'],   JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $maxSeatsJson  = json_encode($ctx['game_max_seats'],    JSON_UNESCAPED_UNICODE);
         $locationsJson = json_encode($ctx['locations'],         JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-        $weekendNote = $ctx['is_weekend']
-            ? '⚠️ Hôm nay là **cuối tuần** → dùng `price_weekend` khi báo giá.'
+        $weekendNote   = $ctx['is_weekend']
+            ? '⚠️ Hôm nay là **cuối tuần** → dùng `price_weekend`.'
             : 'Hôm nay là **ngày thường** → dùng `price`.';
 
+        // Nhúng RAG knowledge nếu có
+        $ragSection = '';
+        if ($ragContext->isNotEmpty()) {
+            $ragLines   = $ragContext->map->toPromptString()->join("\n\n");
+            $ragSection = "\n\n## 📚 KIẾN THỨC BỔ SUNG (từ knowledge base)\n{$ragLines}";
+        }
+
         return <<<PROMPT
-Bạn là **Holo** – nhân viên tư vấn và bán hàng của **Holomia VR**, chuỗi trải nghiệm thực tế ảo hàng đầu Việt Nam.
+Bạn là **Holo** – nhân viên tư vấn và bán hàng của **Holomia VR**.
 
 ## NGUYÊN TẮC
-1. CHỈ dùng dữ liệu bên dưới. KHÔNG bịa, KHÔNG đoán mò.
-2. Xưng "em", gọi khách "bạn" hoặc "anh/chị". Thân thiện, nhiệt tình, dùng emoji vừa phải.
-3. Trả lời ngắn gọn, rõ ràng. Mỗi câu trả lời liên quan booking → chủ động mời đặt chỗ.
-4. Nếu hết slot → báo hết và gợi ý slot khác còn trống gần nhất.
+1. CHỈ dùng dữ liệu bên dưới. KHÔNG bịa thông tin slot/giá/chỗ trống.
+2. Xưng "em", gọi khách "bạn" hoặc "anh/chị". Thân thiện, emoji vừa phải.
+3. Trả lời ngắn gọn, rõ ràng. Câu hỏi booking → chủ động mời đặt chỗ.
+4. Nếu hết slot → gợi ý slot khác còn trống gần nhất.
 
-## THỜI GIAN THỰC
-- Bây giờ: {$ctx['now']} | {$ctx['today_label']} | Ngày mai: {$ctx['tomorrow_label']}
-- {$weekendNote}
+## THỜI GIAN: {$ctx['now']} | {$ctx['today_label']} | Ngày mai: {$ctx['tomorrow_label']}
+{$weekendNote}
 
 ## TỔNG QUAN: {$ctx['total_games']} trò chơi đang hoạt động
 
@@ -216,49 +265,53 @@ Bạn là **Holo** – nhân viên tư vấn và bán hàng của **Holomia VR**
 {$maxSeatsJson}
 
 ## CHI NHÁNH
-{$locationsJson}
+{$locationsJson}{$ragSection}
 
 ## HƯỚNG DẪN TRẢ LỜI
 - "Nhiều lượt chơi nhất?" → top_by_play_count, top 3
 - "Đánh giá cao nhất?" → top_by_rating, top 3
 - "Bao nhiêu trò?" → total_games
 - "Trò X còn chỗ?" → lọc available_slots theo game
-- "Ngày X giờ nào?" → lọc slots theo date, gợi ý giờ nhiều chỗ nhất
+- "Ngày X giờ nào?" → lọc slots theo date, gợi ý giờ nhiều chỗ
 - "Có N người chơi gì?" → lọc game_max_seats >= N, ưu tiên rating cao
-- "Tương tác nhóm?" → tìm từ khoá nhóm/đội/hợp tác trong description+notes
-- "Giá?" → ngày thường dùng price, cuối tuần dùng price_weekend
+- "Tương tác nhóm?" → tìm từ khoá nhóm/đội trong description+notes
 - "Muốn đặt" → hỏi: tên, SĐT, ngày, giờ, số người
 PROMPT;
     }
 
     // =========================================================
-    //  SYSTEM PROMPT – MODE SEARCH (rút gọn, AI tự search thêm)
+    //  SYSTEM PROMPT – MODE SEARCH + RAG
     // =========================================================
-    private function buildSearchSystemPrompt(array $ctx): string
+    private function buildSearchSystemPrompt(array $ctx, $ragContext): string
     {
-        // Chỉ cần thông tin shop cơ bản + hướng dẫn vai trò
-        // Dữ liệu chi tiết không cần vì câu hỏi này không liên quan DB
         $locationNames = collect($ctx['locations'])->pluck('name')->join(', ');
         $gameNames     = collect($ctx['all_games'])->pluck('name')->join(', ');
 
-        return <<<PROMPT
-Bạn là **Holo** – nhân viên tư vấn của **Holomia VR**, chuỗi trải nghiệm thực tế ảo tại Việt Nam.
+        $ragSection = '';
+        if ($ragContext->isNotEmpty()) {
+            $ragLines   = $ragContext->map->toPromptString()->join("\n\n");
+            $ragSection = "\n\n## 📚 KIẾN THỨC CÓ SẴN (dùng trước khi search)\n{$ragLines}";
+        }
 
-## Về Holomia VR
-- Các game hiện có: {$gameNames}
+        return <<<PROMPT
+Bạn là **Holo** – nhân viên tư vấn của **Holomia VR**.
+
+Về Holomia VR:
+- Game hiện có: {$gameNames}
 - Chi nhánh: {$locationNames}
+{$ragSection}
 
 ## Nguyên tắc
-1. Bạn có khả năng tìm kiếm Google để trả lời câu hỏi ngoài phạm vi nội bộ.
-2. Hãy **search trước** nếu câu hỏi liên quan: công nghệ VR, sức khoẻ, độ tuổi, mẹo chơi, xu hướng, so sánh...
-3. Sau khi trả lời, nếu phù hợp, hãy **kéo chủ đề về Holomia VR** (ví dụ: "Tại Holomia, mình có thể trải nghiệm điều này với game XYZ...").
-4. Xưng "em", gọi khách "bạn". Thân thiện, ngắn gọn, dùng emoji vừa phải.
-5. KHÔNG bịa thông tin nội bộ (giá, slot, chỗ trống) – những câu đó sẽ được xử lý riêng.
+1. Nếu kiến thức có sẵn ở trên đủ để trả lời → ưu tiên dùng, không cần search.
+2. Nếu cần thêm thông tin → search Google, tóm tắt ngắn gọn.
+3. Sau khi trả lời câu hỏi chung → kéo về Holomia VR nếu phù hợp.
+4. Xưng "em", gọi khách "bạn". Thân thiện, ngắn gọn, emoji vừa phải.
+5. KHÔNG bịa thông tin nội bộ (giá, slot, chỗ trống).
 PROMPT;
     }
 
     // =========================================================
-    //  BƯỚC 1 – Truy vấn DB toàn diện
+    //  TRUY VẤN DB
     // =========================================================
     private function buildDatabaseContext(): array
     {
@@ -266,7 +319,6 @@ PROMPT;
         $now   = Carbon::now();
         $today = Carbon::today();
 
-        // Tất cả game đang hoạt động
         $allTickets = Ticket::with(['category', 'locations'])
             ->where('status', 'active')
             ->orderByDesc('play_count')
@@ -282,22 +334,19 @@ PROMPT;
             'notes'         => $t->notes ?? '',
             'price'         => number_format($t->price, 0, ',', '.') . 'đ',
             'price_weekend' => $t->price_weekend
-                ? number_format($t->price_weekend, 0, ',', '.') . 'đ'
-                : null,
+                ? number_format($t->price_weekend, 0, ',', '.') . 'đ' : null,
             'duration_min'  => (int) $t->duration,
             'avg_rating'    => round($t->avg_rating, 1),
             'play_count'    => (int) $t->play_count,
             'locations'     => $t->locations->pluck('name')->join(', '),
         ])->toArray();
 
-        // Top rankings
         $ctx['top_by_play_count'] = $allTickets->sortByDesc('play_count')->take(5)->values()
             ->map(fn($t) => ['name' => $t->name, 'play_count' => (int)$t->play_count, 'avg_rating' => round($t->avg_rating, 1)])->toArray();
 
         $ctx['top_by_rating'] = $allTickets->sortByDesc('avg_rating')->take(5)->values()
             ->map(fn($t) => ['name' => $t->name, 'avg_rating' => round($t->avg_rating, 1), 'play_count' => (int)$t->play_count])->toArray();
 
-        // Slots trống 7 ngày tới (loại slot đã qua giờ hôm nay)
         $in7Days    = $today->copy()->addDays(7);
         $locationNm = Location::pluck('name', 'id');
 
@@ -327,19 +376,16 @@ PROMPT;
                 'total_capacity'  => $s->capacity,
             ])->toArray();
 
-        // Max seats mỗi game trong 7 ngày tới
         $ctx['game_max_seats'] = TimeSlot::selectRaw('ticket_id, MAX(capacity - booked_count) as max_avail')
             ->where('status', 'open')->whereRaw('capacity - booked_count > 0')
             ->whereBetween('date', [$today->toDateString(), $in7Days->toDateString()])
             ->groupBy('ticket_id')->get()
             ->mapWithKeys(fn($r) => [$r->ticket_id => (int)$r->max_avail])->toArray();
 
-        // Chi nhánh
         $ctx['locations'] = Location::active()
             ->select('id', 'name', 'address', 'hotline', 'opening_hours')
             ->get()->toArray();
 
-        // Thời gian
         $ctx['now']            = $now->format('H:i');
         $ctx['today_label']    = $this->dayOfWeekVi($today->dayOfWeek) . ' ' . $today->format('d/m/Y');
         $ctx['tomorrow_label'] = $this->dayOfWeekVi($today->copy()->addDay()->dayOfWeek)
@@ -349,9 +395,6 @@ PROMPT;
         return $ctx;
     }
 
-    // =========================================================
-    //  HELPER
-    // =========================================================
     private function dayOfWeekVi(int $dow): string
     {
         return ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][$dow] ?? '';

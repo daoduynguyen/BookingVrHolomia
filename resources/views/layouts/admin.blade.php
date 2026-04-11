@@ -313,7 +313,16 @@
                     </a>
                 </li>
             @endif
-
+            
+<a href="{{ route('admin.chatbot.index') }}"
+     class="nav-link {{ request()->routeIs('admin.chatbot.*') ? 'active' : '' }}">
+      <i class="bi bi-robot"></i>
+     <span>Chatbot AI</span>
+     @php $pendingChat = \App\Models\ChatCache::where('approved', false)->count(); @endphp
+      @if($pendingChat > 0)
+          <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingChat }}</span>
+      @endif
+  </a>
             {{-- FOOTER (LOGOUT) --}}
             <div class="logout-container">
                 <form action="{{ route('logout') }}" method="POST">
