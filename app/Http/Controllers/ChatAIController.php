@@ -13,36 +13,23 @@ use App\Models\KnowledgeBase;
 
 /**
  * ChatAIController – "Nhân viên Sales Holo" với hệ thống tự học 3 lớp
- *
- *  LỚP 1 – Cache Q&A
- *    → Tìm câu hỏi tương tự trong DB
- *    → Nếu tìm thấy (đã được admin duyệt) → trả lời ngay, 0 API call
- *
- *  LỚP 2 – RAG + DB Context
- *    → Tìm kiến thức liên quan trong knowledge_base
- *    → Kết hợp với dữ liệu DB (slot, game, giá...)
- *    → Gọi Gemini với đầy đủ context
- *
- *  LỚP 3 – Google Search Grounding (miễn phí)
- *    → Câu hỏi ngoài phạm vi shop (VR, sức khoẻ, mẹo chơi...)
- *    → Gemini tự search Google, sau đó kéo về Holomia VR
- *
- *  SAU MỖI TRẢ LỜI:
- *    → Lưu câu hỏi + câu trả lời vào chat_cache (chờ admin duyệt)
- *    → Admin duyệt → lần sau câu tương tự trả lời ngay (Lớp 1)
+ * API: Groq (miễn phí) – model llama-3.1-8b-instant
  */
 class ChatAIController extends Controller
 {
+    private string $groqUrl   = 'https://api.groq.com/openai/v1/chat/completions';
+    private string $groqModel = 'llama-3.3-70b-versatile';
+
     // =========================================================
     //  ENTRY POINT
     // =========================================================
     public function chat(Request $request)
     {
         $userMessage = trim($request->input('message', ''));
-        $apiKey      = env('GEMINI_API_KEY');
+        $apiKey      = env('GROQ_API_KEY');
 
         if (!$apiKey) {
-            return response()->json(['reply' => 'Lỗi: Chưa cấu hình GEMINI_API_KEY.']);
+            return response()->json(['reply' => 'Lỗi: Chưa cấu hình GROQ_API_KEY.']);
         }
         if (empty($userMessage)) {
             return response()->json(['reply' => 'Bạn muốn hỏi gì về Holomia VR ạ? 🎮']);
@@ -54,31 +41,25 @@ class ChatAIController extends Controller
             $cached->recordHit();
             return response()->json([
                 'reply'  => $cached->answer,
-                'source' => 'cache', // debug info, có thể bỏ ở production
+                'source' => 'cache',
             ]);
         }
 
-        // ── LỚP 2 & 3: Gọi Gemini ─────────────────────────────
+        // ── LỚP 2 & 3: Gọi Groq ───────────────────────────────
         $needsWebSearch = $this->needsWebSearch($userMessage);
         $dbContext      = $this->buildDatabaseContext();
-        $ragContext      = KnowledgeBase::search($userMessage);
+        $ragContext     = KnowledgeBase::search($userMessage);
 
-        // Ghi nhận knowledge đã dùng
         $ragContext->each(fn($k) => $k->recordUse());
 
         $reply = $needsWebSearch
-            ? $this->callGeminiWithSearch($userMessage, $dbContext, $ragContext, $apiKey)
-            : $this->callGeminiDbOnly($userMessage, $dbContext, $ragContext, $apiKey);
+            ? $this->callGroqWithSearch($userMessage, $dbContext, $ragContext, $apiKey)
+            : $this->callGroqDbOnly($userMessage, $dbContext, $ragContext, $apiKey);
 
-        // ── LƯU vào cache để admin duyệt ──────────────────────
         $this->saveToCache($userMessage, $reply, $needsWebSearch);
 
         return response()->json(['reply' => $reply]);
     }
-
-    // =========================================================
-    //  LỚP 1 – Tìm cache tương tự (xử lý trong ChatCache model)
-    // =========================================================
 
     // =========================================================
     //  PHÂN LOẠI CÂU HỎI
@@ -100,24 +81,27 @@ class ChatAIController extends Controller
     }
 
     // =========================================================
-    //  LỚP 2 – Gemini + DB + RAG (không search)
+    //  LỚP 2 – Groq + DB + RAG
     // =========================================================
-    private function callGeminiDbOnly(string $message, array $ctx, $ragContext, string $apiKey): string
+    private function callGroqDbOnly(string $message, array $ctx, $ragContext, string $apiKey): string
     {
-       $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
         try {
             $response = Http::retry(3, 1000)
-                ->withHeaders(['Content-Type' => 'application/json'])
+                ->withHeaders([
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $apiKey,
+                ])
                 ->timeout(30)
-                ->post($url, [
-                    'system_instruction' => [
-                        'parts' => [['text' => $this->buildSalesSystemPrompt($ctx, $ragContext)]]
+                ->post($this->groqUrl, [
+                    'model'       => $this->groqModel,
+                    'max_tokens'  => 1024,
+                    'temperature' => 0.6,
+                    'messages'    => [
+                        ['role' => 'system', 'content' => $this->buildSalesSystemPrompt($ctx, $ragContext)],
+                        ['role' => 'user',   'content' => $message],
                     ],
-                    'contents' => [
-                        ['role' => 'user', 'parts' => [['text' => $message]]]
-                    ],
-                    'generationConfig' => ['temperature' => 0.6, 'maxOutputTokens' => 1024],
                 ]);
+
             return $this->extractReply($response);
         } catch (\Exception $e) {
             return 'Lỗi hệ thống: ' . $e->getMessage();
@@ -125,70 +109,79 @@ class ChatAIController extends Controller
     }
 
     // =========================================================
-    //  LỚP 3 – Gemini + Google Search Grounding (miễn phí)
+    //  LỚP 3 – Groq + câu hỏi ngoài phạm vi
     // =========================================================
-    private function callGeminiWithSearch(string $message, array $ctx, $ragContext, string $apiKey): string
+    private function callGroqWithSearch(string $message, array $ctx, $ragContext, string $apiKey): string
     {
-       
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
         try {
             $response = Http::retry(3, 1000)
-                ->withHeaders(['Content-Type' => 'application/json'])
+                ->withHeaders([
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $apiKey,
+                ])
                 ->timeout(45)
-                ->post($url, [
-                    'system_instruction' => [
-                        'parts' => [['text' => $this->buildSearchSystemPrompt($ctx, $ragContext)]]
+                ->post($this->groqUrl, [
+                    'model'       => $this->groqModel,
+                    'max_tokens'  => 1024,
+                    'temperature' => 0.7,
+                    'messages'    => [
+                        ['role' => 'system', 'content' => $this->buildSearchSystemPrompt($ctx, $ragContext)],
+                        ['role' => 'user',   'content' => $message],
                     ],
-                    'contents' => [
-                        ['role' => 'user', 'parts' => [['text' => $message]]]
-                    ],
-                    'tools' => [
-                        ['google_search' => (object)[]] // Google Search Grounding – miễn phí
-                    ],
-                    'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 1024],
                 ]);
+
             return $this->extractReply($response);
         } catch (\Exception $e) {
-            // Fallback về DB-only nếu search lỗi
-            return $this->callGeminiDbOnly($message, $ctx, $ragContext, $apiKey);
+            return $this->callGroqDbOnly($message, $ctx, $ragContext, $apiKey);
         }
     }
 
     // =========================================================
-    //  LƯU VÀO CACHE (chờ admin duyệt)
+    //  EXTRACT REPLY – parse response từ Groq (OpenAI format)
     // =========================================================
- 
-private function saveToCache(string $question, string $answer, bool $fromSearch): void
-{
-    try {
-        $keywords = implode(',', ChatCache::extractKeywords($question));
-        $category = $this->detectCategory($question);
-
-        $cache = ChatCache::firstOrCreate(
-            ['question' => $question],
-            [
-                'keywords'      => $keywords,
-                'answer'        => $answer,
-                'source'        => 'ai_generated',
-                'approved'      => false,
-                'quality_score' => 5,
-                'ask_count'     => 0,
-                'hit_count'     => 0,
-                'category'      => $category,
-            ]
-        );
-
-        // Nếu đã tồn tại → cập nhật answer mới nhất
-        if (!$cache->wasRecentlyCreated) {
-            $cache->update(['answer' => $answer, 'keywords' => $keywords]);
+    private function extractReply($response): string
+    {
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['choices'][0]['message']['content']
+                ?? 'Xin lỗi, em không phản hồi được lúc này. Bạn thử lại nhé!';
         }
-
-        $cache->increment('ask_count');
-
-    } catch (\Exception $e) {
-        \Log::warning('ChatCache save failed: ' . $e->getMessage());
+        return 'Lỗi từ Groq (' . $response->status() . '). Bạn thử lại sau nhé!';
     }
-}
+
+    // =========================================================
+    //  LƯU VÀO CACHE
+    // =========================================================
+    private function saveToCache(string $question, string $answer, bool $fromSearch): void
+    {
+        try {
+            $keywords = implode(',', ChatCache::extractKeywords($question));
+            $category = $this->detectCategory($question);
+
+            $cache = ChatCache::firstOrCreate(
+                ['question' => $question],
+                [
+                    'keywords'      => $keywords,
+                    'answer'        => $answer,
+                    'source'        => 'ai_generated',
+                    'approved'      => false,
+                    'quality_score' => 5,
+                    'ask_count'     => 0,
+                    'hit_count'     => 0,
+                    'category'      => $category,
+                ]
+            );
+
+            if (!$cache->wasRecentlyCreated) {
+                $cache->update(['answer' => $answer, 'keywords' => $keywords]);
+            }
+
+            $cache->increment('ask_count');
+
+        } catch (\Exception $e) {
+            \Log::warning('ChatCache save failed: ' . $e->getMessage());
+        }
+    }
 
     // =========================================================
     //  DETECT CATEGORY
@@ -196,24 +189,11 @@ private function saveToCache(string $question, string $answer, bool $fromSearch)
     private function detectCategory(string $question): string
     {
         $q = mb_strtolower($question);
-        if (preg_match('/đặt|book|slot|giờ|ngày|chỗ/', $q))      return 'booking';
-        if (preg_match('/giá|tiền|vé|game|trò|lượt|rating/', $q)) return 'game_info';
+        if (preg_match('/đặt|book|slot|giờ|ngày|chỗ/', $q))          return 'booking';
+        if (preg_match('/giá|tiền|vé|game|trò|lượt|rating/', $q))     return 'game_info';
         if (preg_match('/hoàn|chính sách|tuổi|trẻ em|quy định/', $q)) return 'policy';
-        if (preg_match('/vr|thực tế ảo|kính|oculus|meta/', $q))   return 'general_vr';
+        if (preg_match('/vr|thực tế ảo|kính|oculus|meta/', $q))       return 'general_vr';
         return 'other';
-    }
-
-    // =========================================================
-    //  EXTRACT REPLY
-    // =========================================================
-    private function extractReply($response): string
-    {
-        if ($response->successful()) {
-            $data = $response->json();
-            return $data['candidates'][0]['content']['parts'][0]['text']
-                ?? 'Xin lỗi, em không phản hồi được lúc này. Bạn thử lại nhé!';
-        }
-        return 'Lỗi từ Google (' . $response->status() . '). Bạn thử lại sau nhé!';
     }
 
     // =========================================================
@@ -228,56 +208,55 @@ private function saveToCache(string $question, string $answer, bool $fromSearch)
         $maxSeatsJson  = json_encode($ctx['game_max_seats'],    JSON_UNESCAPED_UNICODE);
         $locationsJson = json_encode($ctx['locations'],         JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $weekendNote   = $ctx['is_weekend']
-            ? '⚠️ Hôm nay là **cuối tuần** → dùng `price_weekend`.'
-            : 'Hôm nay là **ngày thường** → dùng `price`.';
+            ? '⚠️ Hôm nay là cuối tuần → dùng price_weekend.'
+            : 'Hôm nay là ngày thường → dùng price.';
 
-        // Nhúng RAG knowledge nếu có
         $ragSection = '';
         if ($ragContext->isNotEmpty()) {
             $ragLines   = $ragContext->map->toPromptString()->join("\n\n");
-            $ragSection = "\n\n## 📚 KIẾN THỨC BỔ SUNG (từ knowledge base)\n{$ragLines}";
+            $ragSection = "\n\n## KIẾN THỨC BỔ SUNG\n{$ragLines}";
         }
 
         return <<<PROMPT
-Bạn là **Holo** – nhân viên tư vấn và bán hàng của **Holomia VR**.
+Bạn là Holo – nhân viên tư vấn và bán hàng của Holomia VR.
 
-## NGUYÊN TẮC
+NGUYÊN TẮC:
 1. CHỈ dùng dữ liệu bên dưới. KHÔNG bịa thông tin slot/giá/chỗ trống.
 2. Xưng "em", gọi khách "bạn" hoặc "anh/chị". Thân thiện, emoji vừa phải.
 3. Trả lời ngắn gọn, rõ ràng. Câu hỏi booking → chủ động mời đặt chỗ.
 4. Nếu hết slot → gợi ý slot khác còn trống gần nhất.
+5. Trả lời bằng tiếng Việt.
 
-## THỜI GIAN: {$ctx['now']} | {$ctx['today_label']} | Ngày mai: {$ctx['tomorrow_label']}
+THỜI GIAN: {$ctx['now']} | {$ctx['today_label']} | Ngày mai: {$ctx['tomorrow_label']}
 {$weekendNote}
 
-## TỔNG QUAN: {$ctx['total_games']} trò chơi đang hoạt động
+TỔNG QUAN: {$ctx['total_games']} trò chơi đang hoạt động
 
-## TOP LƯỢT CHƠI
+TOP LƯỢT CHƠI:
 {$topPlayJson}
 
-## TOP ĐÁNH GIÁ
+TOP ĐÁNH GIÁ:
 {$topRatingJson}
 
-## TẤT CẢ GAME
+TẤT CẢ GAME:
 {$gamesJson}
 
-## SLOT CÒN TRỐNG (7 ngày tới)
+SLOT CÒN TRỐNG (7 ngày tới):
 {$slotsJson}
 
-## SỐ CHỖ TỐI ĐA MỖI GAME (game_id → max ghế/slot)
+SỐ CHỖ TỐI ĐA MỖI GAME (game_id → max ghế):
 {$maxSeatsJson}
 
-## CHI NHÁNH
+CHI NHÁNH:
 {$locationsJson}{$ragSection}
 
-## HƯỚNG DẪN TRẢ LỜI
+HƯỚNG DẪN TRẢ LỜI:
 - "Nhiều lượt chơi nhất?" → top_by_play_count, top 3
 - "Đánh giá cao nhất?" → top_by_rating, top 3
 - "Bao nhiêu trò?" → total_games
 - "Trò X còn chỗ?" → lọc available_slots theo game
 - "Ngày X giờ nào?" → lọc slots theo date, gợi ý giờ nhiều chỗ
 - "Có N người chơi gì?" → lọc game_max_seats >= N, ưu tiên rating cao
-- "Tương tác nhóm?" → tìm từ khoá nhóm/đội trong description+notes
 - "Muốn đặt" → hỏi: tên, SĐT, ngày, giờ, số người
 PROMPT;
     }
@@ -293,20 +272,20 @@ PROMPT;
         $ragSection = '';
         if ($ragContext->isNotEmpty()) {
             $ragLines   = $ragContext->map->toPromptString()->join("\n\n");
-            $ragSection = "\n\n## 📚 KIẾN THỨC CÓ SẴN (dùng trước khi search)\n{$ragLines}";
+            $ragSection = "\n\nKIẾN THỨC CÓ SẴN:\n{$ragLines}";
         }
 
         return <<<PROMPT
-Bạn là **Holo** – nhân viên tư vấn của **Holomia VR**.
+Bạn là Holo – nhân viên tư vấn của Holomia VR. Trả lời bằng tiếng Việt.
 
 Về Holomia VR:
 - Game hiện có: {$gameNames}
 - Chi nhánh: {$locationNames}
 {$ragSection}
 
-## Nguyên tắc
-1. Nếu kiến thức có sẵn ở trên đủ để trả lời → ưu tiên dùng, không cần search.
-2. Nếu cần thêm thông tin → search Google, tóm tắt ngắn gọn.
+Nguyên tắc:
+1. Dùng kiến thức có sẵn ở trên nếu đủ thông tin.
+2. Với câu hỏi chung về VR, sức khoẻ, mẹo chơi → dùng kiến thức của bạn.
 3. Sau khi trả lời câu hỏi chung → kéo về Holomia VR nếu phù hợp.
 4. Xưng "em", gọi khách "bạn". Thân thiện, ngắn gọn, emoji vừa phải.
 5. KHÔNG bịa thông tin nội bộ (giá, slot, chỗ trống).
