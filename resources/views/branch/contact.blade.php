@@ -160,60 +160,6 @@
         </div>
     </div>
 
-    {{-- AI CHAT WIDGET --}}
-    <div id="ai-icon" style="position: fixed; bottom: 30px; right: 30px; cursor: pointer; z-index: 9999;">
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" width="70" class="shadow-lg rounded-circle">
-        <span class="badge rounded-pill text-dark" style="position: absolute; top: 0; right: 0; background: var(--primary);">Online</span>
-    </div>
-
-    <div id="ai-chat-box" class="bg-white shadow-lg rounded"
-        style="display: none; position: fixed; bottom: 110px; right: 30px; width: 350px; height: 450px; z-index: 10000; border: 1px solid var(--primary); overflow: hidden;">
-        <div class="p-3 d-flex justify-content-between align-items-center text-white" style="background: var(--primary);">
-            <strong>Hỗ trợ {{ $location->name }}</strong>
-            <span id="close-chat" style="cursor: pointer; font-weight: bold;">✕</span>
-        </div>
-        <div id="chat-content" class="p-3" style="height: 330px; overflow-y: auto; font-size: 14px; background: #f8f9fa;">
-            <div class="mb-2" style="color: var(--primary);">Xin chào! Tôi có thể giúp gì cho bạn tại {{ $location->name }}?</div>
-        </div>
-        <div class="p-2 border-top border-light bg-light">
-            <div class="input-group">
-                <input type="text" id="user-input" class="form-control bg-white text-dark border-1" placeholder="Nhập câu hỏi...">
-                <button class="btn btn-primary" id="send-btn"><i class="bi bi-send-fill"></i></button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#ai-icon').click(function () { $(this).fadeOut(200); $('#ai-chat-box').fadeIn(300); });
-            $('#close-chat').click(function () { $('#ai-chat-box').fadeOut(300); $('#ai-icon').fadeIn(200); });
-
-            function sendMessage() {
-                let msg = $('#user-input').val().trim();
-                if (!msg) return;
-                $('#chat-content').append('<div class="text-end mb-3"><div class="p-2 rounded d-inline-block" style="max-width: 80%; background: var(--primary); color:#fff;">' + msg + '</div></div>');
-                $('#user-input').val('');
-                $('#chat-content').scrollTop($('#chat-content')[0].scrollHeight);
-
-                $.post("{{ route('ai.chat') }}", { _token: "{{ csrf_token() }}", message: msg }, function (data) {
-                    $('#chat-content').append('<div class="mb-3 text-start"><span class="badge bg-secondary mb-1">AI</span><br><div class="p-2 rounded bg-secondary text-white d-inline-block" style="max-width: 80%">' + data.reply + '</div></div>');
-                    $('#chat-content').scrollTop($('#chat-content')[0].scrollHeight);
-                });
-            }
-            $('#send-btn').click(sendMessage);
-            $('#user-input').keypress(function (e) { if (e.which == 13) sendMessage(); });
-        });
-
-        setTimeout(function () {
-            document.querySelectorAll('.alert').forEach(function(alert) {
-                alert.style.transition = 'opacity 0.5s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 4000);
-    </script>
-
     @include('branch.partials.footer')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

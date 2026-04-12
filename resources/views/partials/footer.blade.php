@@ -111,3 +111,4 @@
         </div>
     </div>
 </footer>
+@include('partials.chatbot-widget')
