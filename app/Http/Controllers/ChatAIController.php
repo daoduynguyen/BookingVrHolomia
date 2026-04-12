@@ -18,7 +18,7 @@ use App\Models\KnowledgeBase;
 class ChatAIController extends Controller
 {
     private string $groqUrl   = 'https://api.groq.com/openai/v1/chat/completions';
-    private string $groqModel = 'llama-3.3-70b-versatile';
+    private string $groqModel = 'llama-3.1-8b-instant'; // context 128k, nhanh, miễn phí
 
     // =========================================================
     //  ENTRY POINT
@@ -312,8 +312,6 @@ PROMPT;
             'id'            => $t->id,
             'name'          => $t->name,
             'category'      => $t->category->name ?? 'Khác',
-            'description'   => $t->description ?? '',
-            'notes'         => $t->notes ?? '',
             'price'         => number_format($t->price, 0, ',', '.') . 'đ',
             'price_weekend' => $t->price_weekend
                 ? number_format($t->price_weekend, 0, ',', '.') . 'đ' : null,
@@ -329,7 +327,7 @@ PROMPT;
         $ctx['top_by_rating'] = $allTickets->sortByDesc('avg_rating')->take(5)->values()
             ->map(fn($t) => ['name' => $t->name, 'avg_rating' => round($t->avg_rating, 1), 'play_count' => (int)$t->play_count])->toArray();
 
-        $in7Days    = $today->copy()->addDays(7);
+        $in7Days    = $today->copy()->addDays(3); // chỉ lấy 3 ngày tới để giảm token
         $locationNm = Location::pluck('name', 'id');
 
         $ctx['available_slots'] = TimeSlot::with('ticket')
@@ -344,23 +342,20 @@ PROMPT;
                   });
             })
             ->orderBy('date')->orderBy('start_time')
+            ->limit(30) // tối đa 30 slot để tránh tràn token
             ->get()
             ->map(fn($s) => [
-                'slot_id'         => $s->id,
-                'game_id'         => $s->ticket_id,
                 'game'            => $s->ticket->name ?? '—',
                 'location'        => $locationNm[$s->location_id] ?? '—',
-                'date'            => Carbon::parse($s->date)->format('d/m/Y'),
-                'day_of_week'     => $this->dayOfWeekVi(Carbon::parse($s->date)->dayOfWeek),
-                'start_time'      => substr($s->start_time, 0, 5),
-                'end_time'        => substr($s->end_time, 0, 5),
-                'available_seats' => $s->capacity - $s->booked_count,
-                'total_capacity'  => $s->capacity,
+                'date'            => Carbon::parse($s->date)->format('d/m'),
+                'day'             => $this->dayOfWeekVi(Carbon::parse($s->date)->dayOfWeek),
+                'time'            => substr($s->start_time, 0, 5) . '–' . substr($s->end_time, 0, 5),
+                'seats'           => $s->capacity - $s->booked_count,
             ])->toArray();
 
         $ctx['game_max_seats'] = TimeSlot::selectRaw('ticket_id, MAX(capacity - booked_count) as max_avail')
             ->where('status', 'open')->whereRaw('capacity - booked_count > 0')
-            ->whereBetween('date', [$today->toDateString(), $in7Days->toDateString()])
+            ->whereBetween('date', [$today->toDateString(), $today->copy()->addDays(3)->toDateString()])
             ->groupBy('ticket_id')->get()
             ->mapWithKeys(fn($r) => [$r->ticket_id => (int)$r->max_avail])->toArray();
 
