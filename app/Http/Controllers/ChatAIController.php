@@ -21,8 +21,8 @@ class ChatAIController extends Controller
     private string $groqModel = 'llama-3.1-8b-instant'; // context 128k, nhanh, miễn phí
 
     public function __construct() {
-    $this->groqModel = env('GROQ_MODEL', 'gemma2-9b-it');
-}
+        $this->groqModel = env('GROQ_MODEL', 'llama-3.1-8b-instant');
+    }
     // =========================================================
     //  ENTRY POINT
     // =========================================================
