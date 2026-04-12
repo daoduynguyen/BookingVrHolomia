@@ -20,6 +20,9 @@ class ChatAIController extends Controller
     private string $groqUrl   = 'https://api.groq.com/openai/v1/chat/completions';
     private string $groqModel = 'llama-3.1-8b-instant'; // context 128k, nhanh, miễn phí
 
+    public function __construct() {
+    $this->groqModel = env('GROQ_MODEL', 'gemma2-9b-it');
+}
     // =========================================================
     //  ENTRY POINT
     // =========================================================
