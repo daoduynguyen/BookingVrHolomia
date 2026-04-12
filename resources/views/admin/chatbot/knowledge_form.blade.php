@@ -1,12 +1,12 @@
 @extends('layouts.admin')
-@section('title', isset($knowledge) ? 'Chỉnh sửa Kiến thức' : 'Thêm Kiến thức Mới')
+@section('title', isset($knowledge) ? 'Chỉnh sửa Dữ liệu huấn luyện' : 'Thêm Dữ liệu huấn luyện')
 
 @section('admin_content')
 <div class="container-fluid" style="max-width: 900px;">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h2 class="text-primary fw-bold text-uppercase mb-0">
             <i class="bi {{ isset($knowledge) ? 'bi-pencil-square' : 'bi-plus-circle' }} me-2"></i>
-            {{ isset($knowledge) ? 'Sửa Kiến thức' : 'Thêm Kiến thức mới' }}
+            {{ isset($knowledge) ? 'Sửa Dữ liệu huấn luyện' : 'Thêm Dữ liệu huấn luyện' }}
         </h2>
         <a href="{{ route('admin.chatbot.knowledge.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left"></i> Quay lại

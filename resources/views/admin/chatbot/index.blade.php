@@ -16,13 +16,13 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('admin.chatbot.knowledge.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle me-1"></i> Thêm kiến thức
+                <i class="bi bi-plus-circle me-1"></i> Thêm dữ liệu huấn luyện
             </a>
             <a href="{{ route('admin.chatbot.cache.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-database me-1"></i> Quản lý Cache
             </a>
             <a href="{{ route('admin.chatbot.knowledge.index') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-book me-1"></i> Knowledge Base
+                <i class="bi bi-book me-1"></i> Dữ liệu huấn luyện
             </a>
         </div>
     </div>
@@ -146,36 +146,6 @@
                 </div>
             </div>
 
-            {{-- Training data panel --}}
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-0 fw-bold"><i class="bi bi-gear-wide-connected me-2"></i> Dữ liệu huấn luyện</h6>
-                        <div class="small text-muted">Mẫu dữ liệu QA để import vào hệ thống hoặc copy nhanh</div>
-                    </div>
-                    <div class="text-end">
-                        <button id="copySampleBtn" class="btn btn-sm btn-outline-primary">Sao chép</button>
-                    </div>
-                </div>
-                <div class="card-body p-3">
-                    <pre id="sampleJson" class="small bg-light p-2 rounded" style="max-height:260px;overflow:auto;font-size:0.85rem;">[
-  {
-    "question": "Holomia VR mở cửa mấy giờ?",
-    "answer": "Chúng tôi hoạt động từ 9:00 đến 21:00 hàng ngày tại các cơ sở.",
-    "category": "Giờ mở cửa"
-  },
-  {
-    "question": "Làm sao để đổi vé?",
-    "answer": "Bạn có thể đổi vé tại quầy trong vòng 24 giờ trước giờ chơi, mang theo mã đơn.",
-    "category": "Chính sách"
-  }
-]</pre>
-                    <div class="d-flex gap-2 mt-2">
-                        <a id="downloadSample" href="#" class="btn btn-sm btn-outline-secondary">Tải JSON</a>
-                        <a href="{{ route('admin.chatbot.knowledge.create') }}" class="btn btn-sm btn-primary">Tạo knowledge từ mẫu</a>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

@@ -1,18 +1,18 @@
 @extends('layouts.admin')
-@section('title', 'Knowledge Base của Chatbot')
+@section('title', 'Dữ liệu huấn luyện của Chatbot')
 
 @section('admin_content')
 <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h2 class="text-primary fw-bold text-uppercase mb-0">
-            <i class="bi bi-book me-2"></i>Knowledge Base
+            <i class="bi bi-book me-2"></i>Dữ liệu huấn luyện
         </h2>
         <div>
             <a href="{{ route('admin.chatbot.index') }}" class="btn btn-outline-secondary btn-sm me-2">
                 <i class="bi bi-arrow-left"></i> Dashboard
             </a>
             <a href="{{ route('admin.chatbot.knowledge.create') }}" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-circle"></i> Thêm kiến thức mới
+                <i class="bi bi-plus-circle"></i> Thêm dữ liệu huấn luyện
             </a>
         </div>
     </div>
