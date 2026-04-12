@@ -54,7 +54,6 @@
                         <h6 class="mb-0 fw-bold text-danger"><i class="bi bi-clock-history me-2"></i> Câu hỏi chờ duyệt</h6>
                         <div class="small text-muted">Quản lý, duyệt nhanh hoặc chỉnh sửa trước khi đưa vào training</div>
                     </div>
-                    <a href="{{ route('admin.chatbot.cache.index', ['approved' => 0]) }}" class="small">Xem tất cả →</a>
                 </div>
                 <div class="card-body p-0">
                     @forelse($pendingCache as $item)
