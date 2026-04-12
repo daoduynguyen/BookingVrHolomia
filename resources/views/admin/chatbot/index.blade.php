@@ -15,12 +15,6 @@
             </div>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.chatbot.knowledge.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle me-1"></i> Thêm dữ liệu huấn luyện
-            </a>
-            <a href="{{ route('admin.chatbot.cache.index') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-database me-1"></i> Quản lý Cache
-            </a>
             <a href="{{ route('admin.chatbot.knowledge.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-book me-1"></i> Dữ liệu huấn luyện
             </a>

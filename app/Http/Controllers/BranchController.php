@@ -578,10 +578,10 @@ class BranchController extends Controller
             ->where('status', 'open')
             ->whereColumn('booked_count', '<', 'capacity');
 
-        // Nếu là ngày hiện tại, chỉ lấy khung giờ tương lai
+        // Nếu là ngày hiện tại, chỉ lấy khung giờ tương lai hoặc bắt đầu ngay
         $targetDate = Carbon::parse($date);
         if ($targetDate->isToday()) {
-            $query->where('start_time', '>', Carbon::now()->format('H:i:s'));
+            $query->where('start_time', '>=', Carbon::now()->format('H:i:s'));
         }
 
         $slots = $query->orderBy('start_time', 'asc')->get();

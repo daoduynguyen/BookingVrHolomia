@@ -245,86 +245,90 @@
             var today = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
             $('#booking_date').attr('min', today);
 
-            // ✅ TỰ ĐỘNG CHỌN NGÀY HÔM NAY
-            $('#booking_date').val(today);
+            // Giữ giá trị cũ nếu có, hoặc mặc định là hôm nay
+            var initialDate = $('#booking_date').val() || today;
+            $('#booking_date').val(initialDate);
 
-// ✅ TỰ ĐỘNG LOAD SLOT GIỜ GẦN NHẤT
-var ticket_id = $('input[name="ticket_id"]').val();
-var slotSelect = $('#slot_id');
+            var ticket_id = $('input[name="ticket_id"]').val();
+            var slotSelect = $('#slot_id');
 
-slotSelect.html('<option value="">' + '{{ __('checkout.slot_loading') }}' + '</option>');
-slotSelect.prop('disabled', true);
+            function loadSlotsForDate(date) {
+                slotSelect.html('<option value="">' + '{{ __('checkout.slot_loading') }}' + '</option>');
+                slotSelect.prop('disabled', true);
 
-$.ajax({
-    url: '{{ route("branch.slots", ["subdomain" => $subdomain]) }}',
-    data: { ticket_id: ticket_id, date: today },
-    success: function (slots) {
-        slotSelect.prop('disabled', false);
-        slotSelect.empty();
+                $.ajax({
+                    url: '{{ route("branch.slots", ["subdomain" => $subdomain]) }}',
+                    data: { ticket_id: ticket_id, date: date },
+                    success: function (slots) {
+                        slotSelect.prop('disabled', false);
+                        slotSelect.empty();
 
-        if (!slots || slots.length === 0) {
-            slotSelect.html('<option value="">' + '{{ __('checkout.slot_empty_today') }}' + '</option>');
-            return;
-        }
+                        if (!slots || slots.length === 0) {
+                            slotSelect.html('<option value="">' + (date === today ? '{{ __('checkout.slot_empty_today') }}' : '{{ __('checkout.slot_empty') }}') + '</option>');
+                            updateSummary();
+                            return;
+                        }
 
-        var now = new Date();
-        var currentMinutes = now.getHours() * 60 + now.getMinutes();
+                        var now = new Date();
+                        var currentMinutes = now.getHours() * 60 + now.getMinutes();
+                        var bestIndex = -1;
+                        var bestDiff = Infinity;
+                        var validSlotsCount = 0;
 
-        var bestIndex = -1;
-        var bestDiff = Infinity;
-        var validSlotsCount = 0;
+                        try {
+                            $.each(slots, function (i, slot) {
+                                if (!slot || !slot.start_time || !slot.end_time) return;
 
-        try {
-            $.each(slots, function (i, slot) {
-                if (!slot || !slot.start_time || !slot.end_time) return;
+                                var start = slot.start_time.substring(0, 5); // "HH:mm"
+                                var end = slot.end_time.substring(0, 5);
+                                var parts = start.split(':');
+                                var slotMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                                var diff = slotMinutes - currentMinutes;
 
-                var start = slot.start_time.substring(0, 5); // "HH:mm"
-                var end = slot.end_time.substring(0, 5);
-                var parts = start.split(':');
-                var slotMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-                var diff = slotMinutes - currentMinutes;
+                                if (date === today && diff >= 0 && diff < bestDiff) {
+                                    bestDiff = diff;
+                                    bestIndex = validSlotsCount;
+                                }
 
-                // Tìm slot gần nhất SAU giờ hiện tại (diff > 0)
-                if (diff > 0 && diff < bestDiff) {
-                    bestDiff = diff;
-                    bestIndex = validSlotsCount;
-                }
+                                var available = slot.capacity - slot.booked_count;
+                                slotSelect.append(
+                                    '<option value="' + slot.id + '" data-available="' + available + '">' +
+                                    start + ' - ' + end +
+                                    ' (Còn ' + available + ' chỗ)</option>'
+                                );
+                                validSlotsCount++;
+                            });
 
-                var available = slot.capacity - slot.booked_count;
-                slotSelect.append(
-                    '<option value="' + slot.id + '" data-available="' + available + '">' +
-                    start + ' - ' + end +
-                    ' (Còn ' + available + ' chỗ)</option>'
-                );
-                validSlotsCount++;
-            });
+                            if (validSlotsCount === 0) {
+                                slotSelect.html('<option value="">' + (date === today ? '{{ __('checkout.slot_empty_today') }}' : '{{ __('checkout.slot_empty') }}') + '</option>');
+                                updateSummary();
+                                return;
+                            }
 
-            if (validSlotsCount === 0) {
-                slotSelect.html('<option value="">' + '{{ __('checkout.slot_empty_today') }}' + '</option>');
-                return;
+                            if (bestIndex !== -1) {
+                                slotSelect.find('option').eq(bestIndex).prop('selected', true);
+                            } else if (validSlotsCount > 0) {
+                                slotSelect.find('option').eq(0).prop('selected', true);
+                            }
+                        } catch (e) {
+                            console.error('Lỗi phân tích thời gian:', e);
+                            slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
+                        }
+
+                        updateSummary();
+                        enforceSlotCapacity();
+                    },
+                    error: function () {
+                        slotSelect.prop('disabled', false);
+                        slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
+                    }
+                });
             }
 
-            // ✅ TỰ ĐỘNG CHỌN SLOT GẦN NHẤT HOẶC SLOT KHẢ DỤNG ĐẦU TIÊN
-            if (bestIndex !== -1) {
-                slotSelect.find('option').eq(bestIndex).prop('selected', true);
-            } else if (validSlotsCount > 0) {
-                slotSelect.find('option').eq(0).prop('selected', true);
-            }
-        } catch (e) {
-            console.error('Lỗi phân tích thời gian:', e);
-            slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
-        }
+            loadSlotsForDate(initialDate);
 
-        // Cập nhật tóm tắt
-        updateSummary();
-    },
-    error: function () {
-        slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
-    }
-});
-
-// Cập nhật thông báo ngày
-updateSummary();
+            // Cập nhật thông báo ngày
+            updateSummary();
 
             function updateSummary() {
                 var dateVal = $('#booking_date').val();
@@ -439,39 +443,9 @@ updateSummary();
 
             $('#booking_date').on('change', function () {
                 var date = $(this).val();
-                var ticket_id = $('input[name="ticket_id"]').val();
-                var slotSelect = $('#slot_id');
 
-                // Cập nhật phụ phí ngay khi đổi ngày
                 updateSummary();
-
-                slotSelect.html('<option value="">' + '{{ __('checkout.slot_loading') }}' + '</option>');
-                slotSelect.prop('disabled', true);
-
-                $.ajax({
-                    url: '{{ route("branch.slots", ["subdomain" => $subdomain]) }}',
-                    data: { ticket_id: ticket_id, date: date },
-                    success: function (slots) {
-                        slotSelect.prop('disabled', false);
-                        slotSelect.empty();
-                        if (slots.length === 0) {
-                            slotSelect.html('<option value="">' + '{{ __('checkout.slot_empty') }}' + '</option>');
-                        } else {
-                            $.each(slots, function (i, slot) {
-                                // Formating time to HH:mm
-                                var start = slot.start_time.substring(0, 5);
-                                var end = slot.end_time.substring(0, 5);
-                                var available = slot.capacity - slot.booked_count;
-                                slotSelect.append('<option value="' + slot.id + '" data-available="' + available + '">' + start + ' - ' + end + ' (Còn ' + available + ' chỗ)</option>');
-                            });
-                        }
-                        enforceSlotCapacity();
-                    },
-                    error: function () {
-                        slotSelect.prop('disabled', false);
-                        slotSelect.html('<option value="">' + '{{ __('checkout.slot_error') }}' + '</option>');
-                    }
-                });
+                loadSlotsForDate(date);
             });
 
             updateSummary();
