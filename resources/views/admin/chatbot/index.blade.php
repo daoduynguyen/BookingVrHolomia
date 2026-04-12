@@ -101,13 +101,6 @@
                 </div>
                 @endif
             </div>
-
-            {{-- Quick stats / actions row --}}
-            <div class="d-flex gap-3 mb-4">
-                <a href="{{ route('admin.chatbot.knowledge.create') }}" class="btn btn-outline-primary flex-grow-1">Thêm knowledge mới</a>
-                <a href="{{ route('admin.chatbot.knowledge.index') }}" class="btn btn-outline-secondary">Quản lý knowledge</a>
-                <a href="{{ route('admin.chatbot.cache.index') }}" class="btn btn-outline-secondary">Quản lý cache</a>
-            </div>
         </div>
 
         {{-- Right column: insights + training data --}}
