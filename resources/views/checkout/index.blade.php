@@ -297,7 +297,7 @@ $.ajax({
                 );
                 validSlotsCount++;
             });
-        });
+       
 
             if (validSlotsCount === 0) {
                 slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
