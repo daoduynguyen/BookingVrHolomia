@@ -47,7 +47,7 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 50px;">ID</th>
+                            <th style="width: 50px;">STT</th>
                             <th>Chủ đề (Topic)</th>
                             <th>Trích dẫn nội dung</th>
                             <th>Danh mục</th>
@@ -60,7 +60,7 @@
                     <tbody>
                         @forelse($knowledges as $k)
                         <tr>
-                            <td>{{ $k->id }}</td>
+                            <td>{{ $knowledges->firstItem() + $loop->index }}</td>
                             <td class="fw-bold text-dark">{{ Str::limit($k->topic, 60) }}</td>
                             <td class="text-muted small">{{ Str::limit($k->content, 100) }}</td>
                             <td><span class="badge bg-secondary">{{ $k->category }}</span></td>
