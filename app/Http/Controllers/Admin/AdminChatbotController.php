@@ -72,7 +72,7 @@ class AdminChatbotController extends Controller
 
         $caches = $query->orderByDesc('ask_count')
                         ->orderByDesc('created_at')
-                        ->paginate(20);
+                        ->paginate(5);
 
         return redirect()->route('admin.chatbot.index');
     }
@@ -150,7 +150,7 @@ class AdminChatbotController extends Controller
 
         $knowledges = $query->orderByDesc('priority')
                             ->orderByDesc('use_count')
-                            ->paginate(20);
+                            ->paginate(5);
 
         return view('admin.chatbot.knowledge', compact('knowledges'));
     }
