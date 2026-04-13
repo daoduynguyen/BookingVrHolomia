@@ -24,25 +24,27 @@
     {{-- Summary cards --}}
     <div class="row g-3 mb-4">
         @php
-            $cards = [
-                ['value' => $stats['total_cache'], 'label' => 'Tổng Q&A đã học', 'color' => 'info'],
-                ['value' => $stats['pending_approval'], 'label' => 'Chờ duyệt', 'color' => 'danger'],
-                ['value' => $stats['approved_cache'], 'label' => 'Đã duyệt', 'color' => 'success'],
-                ['value' => number_format($stats['total_hits']), 'label' => 'Lượt cache hit', 'color' => 'warning'],
-                ['value' => $stats['active_knowledge'], 'label' => 'Kiến thức active', 'color' => 'primary'],
-                ['value' => $stats['total_knowledge'], 'label' => 'Tổng knowledge', 'color' => 'secondary'],
-            ];
-        @endphp
-        @foreach($cards as $c)
-        <div class="col-6 col-md-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body text-center py-3">
-                    <div class="fs-3 fw-bold text-{{ $c['color'] }}">{{ $c['value'] }}</div>
-                    <div class="small text-muted">{{ $c['label'] }}</div>
-                </div>
+    $cards = [
+        ['value' => $stats['total_cache'],      'label' => 'Tổng Q&A đã học',    'color' => 'info',      'url' => route('admin.chatbot.cache.index')],
+        ['value' => $stats['pending_approval'], 'label' => 'Chờ duyệt',          'color' => 'danger',    'url' => route('admin.chatbot.cache.index', ['approved' => 0])],
+        ['value' => $stats['approved_cache'],   'label' => 'Đã duyệt',           'color' => 'success',   'url' => route('admin.chatbot.cache.index', ['approved' => 1])],
+        ['value' => $stats['total_hits'],       'label' => 'Lượt cache hit',     'color' => 'warning',   'url' => route('admin.chatbot.cache.index')],
+        ['value' => $stats['active_knowledge'], 'label' => 'Kiến thức active',   'color' => 'primary',   'url' => route('admin.chatbot.knowledge.index')],
+        ['value' => $stats['total_knowledge'],  'label' => 'Tổng knowledge',     'color' => 'secondary', 'url' => route('admin.chatbot.knowledge.index')],
+    ];
+@endphp
+@foreach($cards as $c)
+<div class="col-6 col-md-2">
+    <a href="{{ $c['url'] }}" class="text-decoration-none">
+        <div class="card shadow-sm border-0 h-100 hover-shadow" style="cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div class="card-body text-center py-3">
+                <div class="fw-bold text-{{ $c['color'] }}" style="font-size:1.75rem;line-height:1.2">{{ $c['value'] }}</div>
+                <div class="small text-muted mt-1">{{ $c['label'] }}</div>
             </div>
         </div>
-        @endforeach
+    </a>
+</div>
+@endforeach
     </div>
 
     <div class="row gy-4">
