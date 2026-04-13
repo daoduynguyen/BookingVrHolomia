@@ -183,7 +183,7 @@ class AdminChatbotController extends Controller
             'source'    => 'admin',
         ]);
 
-        return redirect()->route('admin.chatbot.knowledge')
+        return redirect()->route('admin.chatbot.knowledge.index')
             ->with('success', '✅ Đã thêm kiến thức mới vào knowledge base!');
     }
 
@@ -216,7 +216,7 @@ class AdminChatbotController extends Controller
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('admin.chatbot.knowledge')
+        return redirect()->route('admin.chatbot.knowledge.index')
             ->with('success', '✅ Đã cập nhật kiến thức!');
     }
 
