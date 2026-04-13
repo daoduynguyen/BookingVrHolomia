@@ -577,6 +577,10 @@ class CheckoutController extends Controller
             ->where('status', 'open') // Chỉ lấy slot đang mở
             ->whereColumn('booked_count', '<', 'capacity'); // Chỉ lấy slot còn chỗ
 
+        if ($request->location_id) {
+            $query->where('location_id', $request->location_id);
+        }
+
         // NGUYÊN TẮC QUAN TRỌNG: Nếu là mốc xem trong hôm nay, 
         // chỉ hiển thị những khung giờ bắt đầu sau thời điểm hiện tại.
         $targetDate = Carbon::parse($request->date);

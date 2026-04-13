@@ -39,6 +39,7 @@ $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
         <form action="{{ route('booking.confirm') }}" method="POST">
             @csrf
             <input type="hidden" name="ticket_id" value="{{ $ticket_id ?? '' }}">
+            <input type="hidden" id="location_id" value="{{ $ticket->locations->first()->id ?? '' }}">
             @if(request()->has('replace_cart_id'))
                 <input type="hidden" name="replace_cart_id" value="{{ request('replace_cart_id') }}">
             @endif
@@ -260,7 +261,7 @@ slotSelect.prop('disabled', true);
 
 $.ajax({
     url: '/api/get-slots',
-    data: { ticket_id: ticket_id, date: today },
+    data: { ticket_id: ticket_id, date: today, location_id: $('#location_id').val() },
     success: function (slots) {
         slotSelect.prop('disabled', false);
         slotSelect.empty();
@@ -576,7 +577,7 @@ updateSummary();
                 slotSelect.prop('disabled', true);
                 $.ajax({
                     url: '/api/get-slots',
-                    data: { ticket_id: ticket_id, date: date },
+                    data: { ticket_id: ticket_id, date: date, location_id: $('#location_id').val() },
                     success: function (slots) {
                         slotSelect.prop('disabled', false);
                         slotSelect.empty();
