@@ -90,7 +90,7 @@
                 </div>
                 @if($pendingCache->hasPages())
                 <div class="card-footer bg-white border-0 ">
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-center">
                     {{ $pendingCache->links() }}
                     </div>
                 </div>
