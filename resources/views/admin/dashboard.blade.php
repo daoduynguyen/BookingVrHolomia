@@ -151,45 +151,80 @@
         </div>
     </div>
 
-    {{-- 4. BẢNG XẾP HẠNG DOANH THU CƠ SỞ (CHỈ super_admin MỚI THẤY) --}}
-    @if(Auth::check() && Auth::user()->role === 'super_admin')
-        <div class="row mt-4 mb-5">
-            <div class="col-12">
-                <div class="card bg-white border-light shadow-sm">
-                    <div class="card-header bg-transparent border-bottom border-light mt-2 ms-2">
-                        <h5 class="text-primary fw-bold"><i class="bi bi-trophy-fill me-2 text-warning"></i>Bảng xếp hạng
-                            doanh thu theo chi nhánh</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead>
-                                    <tr class="text-muted">
-                                        <th class="text-center" width="10%">Top</th>
-                                        <th>Tên cơ sở</th>
-                                        <th class="text-end">Tổng doanh thu</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($revenueByLocation as $index => $item)
-                                        <tr>
-                                            <td class="text-center fw-bold text-primary">{{ $index + 1 }}</td>
-                                            <td class="fw-bold text-dark">{{ $item->name }}</td>
-                                            <td class="text-end text-success fw-bold">{{ number_format($item->total) }} đ</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="3" class="text-center text-muted py-4">Chưa có dữ liệu doanh thu</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+   {{-- 4. BẢNG XẾP HẠNG DOANH THU CƠ SỞ (CHỈ super_admin MỚI THẤY) --}}
+@if(Auth::check() && Auth::user()->role === 'super_admin')
+<div class="row mt-4 mb-5">
+    <div class="col-12">
+        <div class="card bg-white border-light shadow-sm">
+            <div class="card-header bg-transparent border-bottom border-light mt-2 ms-2">
+                <h5 class="text-primary fw-bold">
+                    <i class="bi bi-trophy-fill me-2 text-warning"></i>Bảng xếp hạng doanh thu
+                </h5>
+            </div>
+            <div class="card-body">
+
+                {{-- Trang chính --}}
+                <h6 class="fw-bold text-muted mb-2 mt-1">
+                    <i class="bi bi-globe me-1"></i> Doanh thu trang chính
+                </h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="text-muted">
+                                <th class="text-center" width="10%">Top</th>
+                                <th>Tên cơ sở</th>
+                                <th class="text-end">Tổng doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center fw-bold text-warning">1</td>
+                                <td class="fw-bold text-dark">Trang chính (holomia.shop)</td>
+                                <td class="text-end text-success fw-bold">
+                                    {{ number_format($revenueMain) }} đ
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+
+                {{-- Chi nhánh --}}
+                <h6 class="fw-bold text-muted mb-2">
+                    <i class="bi bi-building me-1"></i> Doanh thu chi nhánh
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="text-muted">
+                                <th class="text-center" width="10%">Top</th>
+                                <th>Tên cơ sở</th>
+                                <th class="text-end">Tổng doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($revenueByLocation as $index => $item)
+                            <tr>
+                                <td class="text-center fw-bold fs-5
+                                    {{ $index === 0 ? 'text-warning' : ($index === 1 ? 'text-secondary' : ($index === 2 ? 'text-danger' : 'text-primary')) }}">
+                                    {{ $index + 1 }}
+                                </td>
+                                <td class="fw-bold text-dark">{{ $item->name }}</td>
+                                <td class="text-end text-success fw-bold">{{ number_format($item->total) }} đ</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">Chưa có dữ liệu doanh thu</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
-    @endif
+    </div>
+</div>
+@endif
 
     </div>{{-- end .container-fluid --}}
 

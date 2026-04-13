@@ -75,7 +75,7 @@ class AdminController extends Controller
 
         //  4. BẢNG XẾP HẠNG DOANH THU THEO CƠ SỞ (CHỈ SUPER ADMIN CÓ)
         $revenueByLocation = collect(); // Mặc định là rỗng (để Admin cơ sở không bị lỗi biến)
-
+        $revenueMain = 0;
         if ($user && $user->role === 'super_admin') {
             $revenueByLocation = Order::where('status', 'paid')
                 ->join('locations', 'orders.location_id', '=', 'locations.id')
@@ -83,6 +83,10 @@ class AdminController extends Controller
                 ->groupBy('locations.id', 'locations.name')
                 ->orderBy('total', 'desc') // Đứa nào doanh thu cao xếp lên đầu
                 ->get();
+
+            $revenueMain = Order::where('status', 'paid')
+                ->whereNull('location_id')
+                ->sum('total_amount');
         }
 
         return view('admin.dashboard', compact(
@@ -99,6 +103,7 @@ class AdminController extends Controller
             'revenueByLocation',
             'orderCountData'
         ));
+
     }
 
     public function manageTickets()

@@ -1,6 +1,6 @@
 @php
-    $locale     = app()->getLocale();
-    $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
+$locale = app()->getLocale();
+$langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $langConfig['html_lang'] }}">
@@ -91,7 +91,7 @@
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-primary"><i class="bi bi-ticket-detailed me-1"></i> Chọn số lượng vé</label>
                                 @php
-                                    $selectedType = request()->query('selected_ticket_type');
+    $selectedType = request()->query('selected_ticket_type');
                                 @endphp
                                 @foreach($ticket->ticket_types as $index => $type)
                                     <div class="d-flex justify-content-between align-items-center p-3 border border-light rounded mb-2 bg-white shadow-sm hover-scale">
@@ -278,29 +278,25 @@ $.ajax({
         var validSlotsCount = 0;
 
         try {
-            $.each(slots, function (i, slot) {
-                if (!slot || !slot.start_time || !slot.end_time) return;
+           $.each(slots, function (i, slot) {
+                if (!slot || !slot.label) return;
 
-                var start = slot.start_time.substring(0, 5);
-                var end = slot.end_time.substring(0, 5);
-                var parts = start.split(':');
+                var parts = slot.label.split(' - ')[0].split(':');
                 var slotMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
                 var diff = slotMinutes - currentMinutes;
 
-                // Tìm slot gần nhất SAU giờ hiện tại
                 if (diff > 0 && diff < bestDiff) {
                     bestDiff = diff;
                     bestIndex = validSlotsCount;
                 }
 
-                var available = slot.capacity - slot.booked_count;
                 slotSelect.append(
-                    '<option value="' + slot.id + '" data-available="' + available + '">' +
-                    start + ' - ' + end +
-                    ' (Còn ' + available + ' chỗ)</option>'
+                    '<option value="' + slot.id + '" data-available="' + slot.available + '">' +
+                    slot.label + ' (Còn ' + slot.available + ' chỗ)</option>'
                 );
                 validSlotsCount++;
             });
+        });
 
             if (validSlotsCount === 0) {
                 slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
