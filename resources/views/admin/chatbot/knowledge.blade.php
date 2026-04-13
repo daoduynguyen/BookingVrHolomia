@@ -97,7 +97,7 @@
                 </table>
             </div>
             
-            <div class="mt-3">
+            <div class="mt-3 d-flex justify-content-center">
                 {{ $knowledges->links() }}
             </div>
         </div>
