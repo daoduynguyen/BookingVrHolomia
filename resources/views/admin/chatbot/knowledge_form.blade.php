@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Nội dung chi tiết (Content) <span class="text-danger">*</span></label>
+                    <label class="form-label fw-bold">Nội dung chi tiết <span class="text-danger">*</span></label>
                     <textarea name="content" class="form-control" rows="8" required placeholder="Nhập đầy đủ kiến thức cung cấp cho AI... Tối thiểu 20 ký tự.">{{ old('content', $knowledge->content ?? '') }}</textarea>
                     <small class="text-muted">Càng chi tiết, AI trả lời càng chính xác.</small>
                 </div>
@@ -46,7 +46,7 @@
                         <label class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
                         <select name="category" class="form-select" required>
                             @php $cat = old('category', $knowledge->category ?? 'faq'); @endphp
-                            <option value="faq" {{ $cat == 'faq' ? 'selected' : '' }}>Câu hỏi thường gặp (FAQ)</option>
+                            <option value="faq" {{ $cat == 'faq' ? 'selected' : '' }}>Câu hỏi thường gặp</option>
                             <option value="policy" {{ $cat == 'policy' ? 'selected' : '' }}>Chính sách, Hoàn tiền</option>
                             <option value="game_guide" {{ $cat == 'game_guide' ? 'selected' : '' }}>Hướng dẫn trò chơi</option>
                             <option value="vr_knowledge" {{ $cat == 'vr_knowledge' ? 'selected' : '' }}>Kiến thức công nghệ VR</option>
@@ -63,7 +63,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Từ khóa nhận diện (Keywords)</label>
+                    <label class="form-label fw-bold">Từ khóa nhận diện</label>
                     <input type="text" name="keywords" class="form-control" value="{{ old('keywords', $knowledge->keywords ?? '') }}" placeholder="VD: dang ky, the thanh vien, dang nhap...">
                 </div>
 

@@ -5,7 +5,7 @@
 <div class="container-fluid" style="max-width: 900px;">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h2 class="text-info fw-bold text-uppercase mb-0">
-            <i class="bi bi-pencil-square me-2"></i>Sửa Cache / Học thêm
+            <i class="bi bi-pencil-square me-2"></i>Sửa Cache
         </h2>
         <a href="{{ route('admin.chatbot.cache.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left"></i> Quay lại
