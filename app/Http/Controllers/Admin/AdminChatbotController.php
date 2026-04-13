@@ -42,7 +42,7 @@ class AdminChatbotController extends Controller
         $pendingCache = ChatCache::where('approved', false)
             ->orderByDesc('ask_count')
             ->orderByDesc('created_at')
-            ->paginate(10, ['*'], 'pending_page')
+            ->paginate(5, ['*'], 'pending_page')
             ->withQueryString();
         return view('admin.chatbot.index', compact(
             'stats', 'topAsked', 'topHit', 'pendingCache'
