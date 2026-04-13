@@ -101,6 +101,7 @@ class AdminController extends Controller
             'revenueData',
             'pieData',
             'revenueByLocation',
+            'revenueMain', 
             'orderCountData'
         ));
 
