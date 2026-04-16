@@ -94,6 +94,16 @@ class AuthController extends Controller
                 return redirect()->route('admin.dashboard')->with('success', 'Chào mừng Quản trị viên trở lại!');
             }
 
+            // Nếu là nhân viên -> Chuyển hướng tới trang POS của chi nhánh
+            if ($userRole === 'staff') {
+                if (Auth::user()->location_id) {
+                    $location = \App\Models\Location::find(Auth::user()->location_id);
+                    if ($location && $location->slug) {
+                        return redirect()->route('pos.dashboard', ['subdomain' => $location->slug])->with('success', 'Đăng nhập ca làm việc!');
+                    }
+                }
+            }
+
             // Nếu là khách hàng bình thường -> Quay lại trang trước đó hoặc ra trang chủ
             return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
         }
