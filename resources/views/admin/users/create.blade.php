@@ -38,11 +38,12 @@
                     <select name="role" id="role_select" class="form-select bg-light text-dark border-light" required>
                         <option value="customer" {{ old('role') == 'customer' ? 'selected' : '' }}>Khách hàng</option>
                         <option value="branch_admin" {{ old('role') == 'branch_admin' ? 'selected' : '' }}>Quản lý Cơ sở</option>
-                        <option value="super_admin" {{ old('role') == 'super_admin' ? 'selected' : '' }}>Sếp tổng (Super Admin)</option>
+                        <option value="super_admin" {{ old('role') == 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                        <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>Nhân viên (Staff)</option>
                     </select>
                 </div>
 
-                <div class="col-md-12 mb-4" id="location_box" style="display: {{ old('role') == 'branch_admin' ? 'block' : 'none' }};">
+                <div class="col-md-12 mb-4" id="location_box" style="display: {{ in_array(old('role'), ['branch_admin', 'staff']) ? 'block' : 'none' }};"
                     <label class="text-primary fw-bold">Gắn vào cơ sở quản lý</label>
                     <select name="location_id" class="form-select bg-light text-dark border-light">
                         <option value="">-- Chọn cơ sở --</option>
@@ -61,7 +62,7 @@
 
 <script>
     document.getElementById('role_select').addEventListener('change', function() {
-        document.getElementById('location_box').style.display = (this.value === 'branch_admin') ? 'block' : 'none';
+        document.getElementById('location_box').style.display = (['branch_admin', 'staff'].includes(this.value)) ? 'block' : 'none'
     });
 </script>
 @endsection

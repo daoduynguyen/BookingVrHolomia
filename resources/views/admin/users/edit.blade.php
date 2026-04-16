@@ -68,13 +68,14 @@
                     <select name="role" id="role_select_edit" class="form-select bg-light border-light" required>
                         <option value="customer"     {{ old('role', $user->role) == 'customer'     ? 'selected' : '' }}>👤 Thành viên</option>
                         <option value="branch_admin" {{ old('role', $user->role) == 'branch_admin' ? 'selected' : '' }}>🏢 Quản lý cơ sở</option>
-                        <option value="super_admin"  {{ old('role', $user->role) == 'super_admin'  ? 'selected' : '' }}>👑 Sếp tổng</option>
+                        <option value="super_admin"  {{ old('role', $user->role) == 'super_admin'  ? 'selected' : '' }}>👑 Super admin</option>
+                        <option value="staff" {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}>🧑‍💼 Nhân viên</option>
                     </select>
                 </div>
 
                 {{-- Cơ sở (chỉ hiện khi là branch_admin) --}}
                 <div class="col-md-6" id="location_box_edit"
-                    style="display: {{ old('role', $user->role) == 'branch_admin' ? 'block' : 'none' }};">
+                    style="display: {{ in_array(old('role', $user->role), ['branch_admin', 'staff']) ? 'block' : 'none' }};">
                     <label class="form-label fw-bold small text-uppercase text-muted">Trực thuộc cơ sở</label>
                     <select name="location_id" class="form-select bg-light border-light">
                         <option value="">-- Chọn cơ sở --</option>
@@ -114,7 +115,7 @@
 <script>
     document.getElementById('role_select_edit').addEventListener('change', function () {
         document.getElementById('location_box_edit').style.display =
-            (this.value === 'branch_admin') ? 'block' : 'none';
+            (['branch_admin', 'staff'].includes(this.value)) ? 'block' : 'none';
     });
 </script>
 @endsection

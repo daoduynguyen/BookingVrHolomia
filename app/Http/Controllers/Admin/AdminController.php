@@ -239,10 +239,10 @@ class AdminController extends Controller
         $user->role = $request->role;
 
         // Nếu là Admin chi nhánh thì bắt buộc phải gắn location_id, ngược lại thì xóa location_id
-        if ($request->role === 'branch_admin') {
+        if (in_array($request->role, ['branch_admin', 'staff'])) {
             $user->location_id = $request->location_id;
         } else {
-            $user->location_id = null; // super_admin hoặc customer thì không ghim cứng 1 cơ sở
+            $user->location_id = null;
         }
 
         $user->save();
@@ -272,7 +272,7 @@ class AdminController extends Controller
             'email' => $request->email,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'role' => $request->role,
-            'location_id' => $request->role === 'branch_admin' ? $request->location_id : null,
+           'location_id' => in_array($request->role, ['branch_admin', 'staff']) ? $request->location_id : null,
         ]);
 
         return redirect()->route('admin.users')->with('success', 'Đã thêm tài khoản mới thành công!');
