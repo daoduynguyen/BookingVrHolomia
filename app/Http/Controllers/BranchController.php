@@ -78,10 +78,17 @@ class BranchController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route('branch.profile', ['subdomain' => $subdomain]);
-        }
+       if (Auth::attempt($credentials)) {
+    $request->session()->regenerate();
+
+    $user = Auth::user();
+
+    if (in_array($user->role, ['staff', 'branch_admin', 'admin', 'super_admin'])) {
+        return redirect()->route('pos.dashboard', ['subdomain' => $subdomain]);
+    }
+
+    return redirect()->route('branch.profile', ['subdomain' => $subdomain]);
+}
 
         return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng.'])->withInput();
     }
