@@ -130,15 +130,18 @@
         {{-- LỆCH TIỀN --}}
         <div class="diff-highlight {{ $diffClass }}">
             <div>
-                <div style="font-size:0.78rem;color:var(--pos-text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Chênh lệch két</div>
-                <div style="font-size:0.82rem;color:var(--pos-text-muted)">
-                    Đếm được: <strong>{{ number_format($shift->closing_cash, 0, ',', '.') }}₫</strong>
-                    &nbsp;/&nbsp;
-                    Lý thuyết: <strong>{{ number_format(($shift->opening_cash + $summary['cash']), 0, ',', '.') }}₫</strong>
+                <div style="font-size:0.75rem;color:var(--pos-text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Tình trạng kiểm két</div>
+                <div style="font-size:0.9rem;color:var(--pos-text)">
+                    Thực tế: <strong class="text-white">{{ number_format($shift->closing_cash, 0, ',', '.') }}₫</strong>
+                    <span style="color:var(--pos-text-muted);margin:0 8px">|</span>
+                    Số liệu: <strong class="text-white">{{ number_format(($shift->opening_cash + $summary['cash']), 0, ',', '.') }}₫</strong>
                 </div>
             </div>
-            <div class="diff-val">
-                {{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 0, ',', '.') }}₫
+            <div style="text-align:right">
+                <div class="diff-val">
+                    {{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 0, ',', '.') }}₫
+                </div>
+                <div style="font-size:0.7rem;opacity:0.8;font-weight:600">{{ $diffLabel }}</div>
             </div>
         </div>
 

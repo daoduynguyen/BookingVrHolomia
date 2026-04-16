@@ -215,19 +215,34 @@
     <div class="close-sidebar">
         <div class="pos-card">
             <div class="pos-card-title" style="font-size:0.9rem;font-weight:800;color:var(--pos-text)">
-                <i class="bi bi-door-closed me-1"></i>Đóng ca & Kiểm két
+                <i class="bi bi-calculator me-1"></i>Kiểm đếm tiền mặt
+            </div>
+            
+            <div class="confirm-warning mb-3">
+                <i class="bi bi-info-circle me-1"></i>
+                Nhập số tờ của mỗi mệnh giá để hệ thống tự động tính tổng.
             </div>
 
-            <div class="confirm-warning">
-                <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                Hãy đếm toàn bộ tiền mặt trong két và nhập số thực tế vào đây.
+            <div class="denomination-list mb-3" style="display:grid;gap:8px">
+                @foreach([500000, 200000, 100000, 50000, 20000, 10000, 5000, 2000, 1000] as $den)
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02);padding:6px 12px;border-radius:8px">
+                    <span style="flex:1;font-size:0.8rem;font-weight:600;color:var(--pos-text-muted)">{{ number_format($den, 0, ',', '.') }}₫</span>
+                    <input type="number" 
+                           class="den-input" 
+                           data-den="{{ $den }}" 
+                           placeholder="0" 
+                           min="0"
+                           style="width:70px;background:rgba(255,255,255,.05);border:1px solid var(--pos-card-border);border-radius:6px;padding:4px 8px;color:#fff;font-size:0.85rem;text-align:right"
+                           oninput="updateClosingCash()">
+                </div>
+                @endforeach
             </div>
 
             <form action="{{ route('pos.shift.close', $subdomain) }}" method="POST" id="closeShiftForm">
                 @csrf
 
                 <div class="pos-form-group">
-                    <label>Tiền mặt đếm được (thực tế)</label>
+                    <label>Tổng tiền mặt cuối ca</label>
                     <div class="cash-input-wrap">
                         <input type="number"
                                name="closing_cash"
@@ -244,26 +259,26 @@
                 {{-- HIỂN THỊ LỆCH TIỀN REALTIME --}}
                 <div class="diff-card ok" id="diff-card">
                     <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em">
-                        <span id="diff-label">Nhập số tiền thực tế để tính lệch</span>
+                        <span id="diff-label">Két khớp hoàn toàn</span>
                     </div>
-                    <div class="diff-amount" id="diff-amount">—</div>
+                    <div class="diff-amount" id="diff-amount">0₫</div>
                 </div>
 
                 <div class="pos-form-group" style="margin-top:14px">
-                    <label>Ghi chú (tuỳ chọn)</label>
+                    <label>Ghi chú đóng ca</label>
                     <textarea name="closing_note" rows="2"
-                              placeholder="VD: Máy in kẹt giấy, khách đổi giờ..."></textarea>
+                              placeholder="VD: Nhập thêm tiền lẻ, kẹt giấy in..."></textarea>
                 </div>
 
-                <button type="submit" class="btn-danger-pos w-100" style="justify-content:center;padding:13px;font-size:0.95rem;margin-top:4px"
+                <button type="submit" class="btn-danger-pos w-100" style="justify-content:center;padding:14px;font-size:1rem;margin-top:4px"
                         onclick="return confirmClose()">
-                    <i class="bi bi-door-closed"></i> Đóng ca & Xuất báo cáo
+                    <i class="bi bi-lock-fill me-1"></i> ĐÓNG CA & KẾT THÚC
                 </button>
             </form>
 
-            <div style="margin-top:10px">
-                <a href="{{ route('pos.dashboard', $subdomain) }}" class="btn-pos-outline w-100" style="justify-content:center">
-                    Chưa đóng, quay lại
+            <div style="margin-top:12px">
+                <a href="{{ route('pos.dashboard', $subdomain) }}" class="btn-pos-outline w-100" style="justify-content:center; font-size: 0.85rem">
+                    Quay lại Dashboard
                 </a>
             </div>
         </div>
@@ -275,6 +290,19 @@
 @section('scripts')
 <script>
 const expectedCash = {{ $expectedCash }};
+
+function updateClosingCash() {
+    let total = 0;
+    document.querySelectorAll('.den-input').forEach(input => {
+        const den = parseInt(input.dataset.den);
+        const qty = parseInt(input.value) || 0;
+        total += den * qty;
+    });
+    
+    const closingInput = document.getElementById('closing_cash');
+    closingInput.value = total;
+    calcDiff(total);
+}
 
 function calcDiff(val) {
     const closing = parseInt(val) || 0;

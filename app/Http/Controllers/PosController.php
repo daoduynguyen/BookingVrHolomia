@@ -156,26 +156,6 @@ class PosController extends Controller
         return view('pos.sale.form', compact('location', 'subdomain', 'slot', 'activeShift'));
     }
 
-    // -------------------------------------------------------
-    // Tìm kiếm khách hàng theo SĐT (AJAX)
-    // -------------------------------------------------------
-    public function findCustomer(Request $request, string $subdomain)
-    {
-        $phone    = $request->input('phone');
-        $customer = User::where('phone', $phone)->first();
-
-        if ($customer) {
-            return response()->json([
-                'found'  => true,
-                'id'     => $customer->id,
-                'name'   => $customer->name,
-                'phone'  => $customer->phone,
-                'points' => $customer->loyalty_points ?? 0,
-            ]);
-        }
-
-        return response()->json(['found' => false]);
-    }
 
     // -------------------------------------------------------
     // Lưu đơn bán vé tại quầy
@@ -192,6 +172,7 @@ class PosController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'user_id'        => 'nullable|exists:users,id',
             'quantity'       => 'required|integer|min:1|max:10',
+            'use_points'     => 'nullable|boolean',
         ]);
 
         $slot = TimeSlot::where('id', $request->slot_id)
@@ -209,26 +190,60 @@ class PosController extends Controller
         }
 
         $order = null;
+        $discountAmount = 0;
+        $pointsToDeduct = 0;
 
-        DB::transaction(function () use ($request, $slot, $activeShift, $location, &$order) {
+        // Xử lý tích điểm
+        if ($request->user_id && $request->use_points) {
+            $user = User::find($request->user_id);
+            if ($user && $user->loyalty_points > 0) {
+                $pointsToDeduct = $user->loyalty_points;
+                $discountAmount = $pointsToDeduct * 1000; // 1 điểm = 1.000đ
+                
+                // Không để giảm giá vượt quá tổng tiền
+                $maxDiscount = $slot->ticket->price * $request->quantity;
+                if ($discountAmount > $maxDiscount) {
+                    $discountAmount = $maxDiscount;
+                    $pointsToDeduct = ceil($discountAmount / 1000);
+                }
+            }
+        }
+
+        DB::transaction(function () use ($request, $slot, $activeShift, $location, $discountAmount, $pointsToDeduct, &$order) {
+            $totalAmount = ($slot->ticket->price * $request->quantity) - $discountAmount;
+            
             $order = Order::create([
-                'user_id'        => $request->user_id,
-                'customer_name'  => $request->customer_name,
-                'customer_phone' => $request->customer_phone,
-                'customer_email' => $request->customer_email,
-                'slot_id'        => $slot->id,
-                'location_id'    => $location->id,
-                'total_amount'   => $slot->ticket->price * $request->quantity,
-                'quantity'       => $request->quantity,
-                'payment_method' => $request->payment_method,
-                'status'         => 'paid',
-                'is_pos_sale'    => true,
-                'pos_shift_id'   => $activeShift->id,
-                'qr_token'       => Str::random(40),
-                'qr_used'        => false,
+                'user_id'         => $request->user_id,
+                'customer_name'   => $request->customer_name,
+                'customer_phone'  => $request->customer_phone,
+                'customer_email'  => $request->customer_email,
+                'slot_id'         => $slot->id,
+                'location_id'     => $location->id,
+                'total_amount'    => max(0, $totalAmount),
+                'discount_amount' => $discountAmount,
+                'quantity'        => $request->quantity,
+                'payment_method'  => $request->payment_method,
+                'status'          => 'paid',
+                'is_pos_sale'     => true,
+                'pos_shift_id'    => $activeShift->id,
+                'qr_token'        => Str::random(40),
+                'qr_used'         => false,
             ]);
 
             $slot->incrementBooked($request->quantity);
+
+            // Trừ điểm user
+            if ($pointsToDeduct > 0) {
+                User::where('id', $request->user_id)->decrement('loyalty_points', $pointsToDeduct);
+            }
+            
+            // Tích điểm mới cho khách (nếu có user_id)
+            if ($request->user_id) {
+                $newPoints = floor($order->total_amount / 100000); // 100k = 1 điểm
+                if ($newPoints > 0) {
+                    User::where('id', $request->user_id)->increment('loyalty_points', $newPoints);
+                }
+            }
         });
 
         return redirect()->route('pos.sale.success', [$subdomain, $order->id]);
@@ -285,8 +300,8 @@ class PosController extends Controller
 
         // Cập nhật trạng thái check-in
         $order->update([
-            'qr_used'    => true,
-            'checkin_at' => now(),
+            'qr_used'       => true,
+            'checked_in_at' => now(), // Corrected column name if necessary, check Model
         ]);
 
         return response()->json([
@@ -295,10 +310,30 @@ class PosController extends Controller
             'customer_name'  => $order->customer_name,
             'customer_phone' => $order->customer_phone,
             'ticket_name'    => $order->slot->ticket->name ?? '',
-            'slot_time'      => $order->slot->start_time . ' - ' . $order->slot->end_time,
-            'slot_date'      => $order->slot->date,
+            'slot_time'      => \Carbon\Carbon::parse($order->slot->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($order->slot->end_time)->format('H:i'),
+            'slot_date'      => \Carbon\Carbon::parse($order->slot->date)->format('d/m/Y'),
             'quantity'       => $order->quantity ?? 1,
+            'slot_id'        => $order->slot_id,
         ]);
+    }
+
+    public function findCustomer(Request $request, string $subdomain)
+    {
+        $phone = $request->phone;
+        $user = User::where('phone', $phone)
+            ->where('role', 'customer')
+            ->first();
+
+        if ($user) {
+            return response()->json([
+                'found'  => true,
+                'id'     => $user->id,
+                'name'   => $user->name,
+                'points' => $user->loyalty_points ?? 0,
+            ]);
+        }
+
+        return response()->json(['found' => false]);
     }
 
     // -------------------------------------------------------

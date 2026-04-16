@@ -87,9 +87,7 @@
 <div class="sale-layout">
 
     {{-- FORM LEFT --}}
-    <div>
-
-        {{-- THÔNG TIN KHÁCH --}}
+         {{-- THÔNG TIN KHÁCH --}}
         <div class="pos-card mb-4">
             <div class="pos-card-title"><i class="bi bi-person me-1"></i>Thông tin khách hàng</div>
 
@@ -106,16 +104,22 @@
                     </button>
                 </div>
                 <div class="customer-found-card" id="customer-card">
-                    <div style="display:flex;align-items:center;gap:8px">
-                        <i class="bi bi-person-check-fill" style="color:#34d399"></i>
-                        <div>
-                            <div style="font-weight:700" id="cust-name-display"></div>
-                            <div style="color:var(--pos-text-muted);font-size:0.72rem">
-                                Tích điểm: <span id="cust-points">0</span> điểm
-                                <span id="cust-redeem-info"></span>
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:40px;height:40px;background:var(--pos-success);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff">
+                            <i class="bi bi-person-check-fill fs-5"></i>
+                        </div>
+                        <div style="flex:1">
+                            <div style="font-weight:700;font-size:0.95rem" id="cust-name-display"></div>
+                            <div style="color:var(--pos-text-muted);font-size:0.75rem">
+                                Điểm: <strong class="text-success" id="cust-points">0</strong>
+                                <span id="cust-redeem-info" style="margin-left:5px"></span>
                             </div>
                         </div>
-                        <button type="button" onclick="clearCustomer()" style="margin-left:auto;background:none;border:none;color:#f87171;cursor:pointer;font-size:1rem">✕</button>
+                        <div class="form-check form-switch pt-1">
+                            <input class="form-check-input" type="checkbox" name="use_points" id="use_points_toggle" value="1" onchange="updateSummary()">
+                            <label class="form-check-label fs-7 fw-bold text-success" for="use_points_toggle">Dùng điểm</label>
+                        </div>
+                        <button type="button" onclick="clearCustomer()" style="background:none;border:none;color:var(--pos-text-muted);cursor:pointer;font-size:1.2rem;padding:0 5px">✕</button>
                     </div>
                 </div>
             </div>
@@ -171,7 +175,7 @@
     {{-- ORDER SUMMARY --}}
     <div>
         <div class="order-summary">
-            <div class="order-summary-title"><i class="bi bi-receipt me-1"></i>Thông tin vé</div>
+            <div class="order-summary-title"><i class="bi bi-receipt me-1"></i>Hóa đơn tạm tính</div>
 
             <div class="summary-row">
                 <span class="label">Loại vé</span>
@@ -182,16 +186,19 @@
                 <span>{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</span>
             </div>
             <div class="summary-row">
-                <span class="label">Ngày</span>
-                <span>{{ \Carbon\Carbon::parse($slot->date)->format('d/m/Y') }}</span>
-            </div>
-            <div class="summary-row">
                 <span class="label">Đơn giá</span>
                 <span>{{ number_format($slot->ticket->price ?? 0, 0, ',', '.') }}₫</span>
             </div>
             <div class="summary-row">
                 <span class="label">Số lượng</span>
                 <span id="summary-qty">1</span>
+            </div>
+            
+            <div id="discount-row" style="display:none">
+                <div class="summary-row text-danger">
+                    <span class="label text-danger">Giảm giá (điểm)</span>
+                    <span id="summary-discount">-0₫</span>
+                </div>
             </div>
 
             <hr class="summary-divider">
@@ -200,16 +207,20 @@
                 <span class="label" style="font-weight:700">Tổng cộng</span>
                 <span class="summary-total" id="summary-total">{{ number_format($slot->ticket->price ?? 0, 0, ',', '.') }}₫</span>
             </div>
+            
+            <div style="margin-top:10px; font-size: 0.75rem; color: var(--pos-text-muted); text-align: center;">
+                Tích lũy mới: <span id="new-points-calc" class="text-success fw-bold">0</span> điểm
+            </div>
 
             <div style="margin-top:20px">
                 <button type="submit" class="btn-pos w-100" style="justify-content:center;padding:12px;font-size:0.95rem">
-                    <i class="bi bi-check2-all"></i> Xác nhận thanh toán
+                    <i class="bi bi-check2-all"></i> Xác nhận & In vé
                 </button>
             </div>
 
             <div style="margin-top:10px">
                 <a href="{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}" class="btn-pos-outline w-100" style="justify-content:center">
-                    Huỷ
+                    Huỷ quay lại
                 </a>
             </div>
         </div>
@@ -224,14 +235,39 @@
 const unitPrice = {{ $slot->ticket->price ?? 0 }};
 const maxQty    = {{ $slot->capacity - $slot->booked_count }};
 let currentQty  = 1;
+let userPoints  = 0;
 
 function changeQty(delta) {
     currentQty = Math.max(1, Math.min(maxQty, currentQty + delta));
     document.getElementById('qty-display').textContent = currentQty;
     document.getElementById('qty_input').value = currentQty;
     document.getElementById('summary-qty').textContent = currentQty;
-    const total = unitPrice * currentQty;
-    document.getElementById('summary-total').textContent = total.toLocaleString('vi-VN') + '₫';
+    updateSummary();
+}
+
+function updateSummary() {
+    const subtotal = unitPrice * currentQty;
+    let discount = 0;
+    
+    const usePoints = document.getElementById('use_points_toggle').checked;
+    if (usePoints && userPoints > 0) {
+        discount = userPoints * 1000;
+        if (discount > subtotal) {
+            discount = subtotal;
+        }
+        document.getElementById('discount-row').style.display = 'block';
+        document.getElementById('summary-discount').textContent = '-' + discount.toLocaleString('vi-VN') + '₫';
+    } else {
+        document.getElementById('discount-row').style.display = 'none';
+        discount = 0;
+    }
+    
+    const finalTotal = subtotal - discount;
+    document.getElementById('summary-total').textContent = finalTotal.toLocaleString('vi-VN') + '₫';
+    
+    // Tích điểm mới: 100k = 1 điểm
+    const newPoints = Math.floor(finalTotal / 100000);
+    document.getElementById('new-points-calc').textContent = newPoints;
 }
 
 function selectPayment(method) {
@@ -259,10 +295,19 @@ function searchCustomer() {
                 document.getElementById('user_id_input').value = data.id;
                 document.getElementById('cust-name-display').textContent = data.name;
                 document.getElementById('cust-points').textContent = data.points;
+                userPoints = data.points;
+                
                 if (data.points > 0) {
-                    document.getElementById('cust-redeem-info').textContent = ` (tương đương ${(data.points * 1000).toLocaleString('vi-VN')}₫)`;
+                    document.getElementById('cust-redeem-info').textContent = `(~${(data.points * 1000).toLocaleString('vi-VN')}₫)`;
+                    document.getElementById('use_points_toggle').disabled = false;
+                } else {
+                    document.getElementById('cust-redeem-info').textContent = '';
+                    document.getElementById('use_points_toggle').disabled = true;
+                    document.getElementById('use_points_toggle').checked = false;
                 }
+                
                 document.getElementById('customer-card').style.display = 'block';
+                updateSummary();
             }
         });
 }
@@ -270,6 +315,9 @@ function searchCustomer() {
 function clearCustomer() {
     document.getElementById('user_id_input').value = '';
     document.getElementById('customer-card').style.display = 'none';
+    document.getElementById('use_points_toggle').checked = false;
+    userPoints = 0;
+    updateSummary();
 }
 </script>
-@endsection
+@endsection

@@ -86,20 +86,48 @@
         position: sticky;
         top: 80px;
     }
-    .action-panel .pos-card { margin-bottom: 12px; }
-
-    /* PRINT RECEIPT */
+    .action-panel .pos-card { margin-bottom: 12px    /* PRINT RECEIPT */
     @media print {
+        @page { 
+            margin: 0; 
+            size: 80mm auto; 
+        }
         .pos-sidebar, .pos-topbar, .action-panel, .no-print { display: none !important; }
-        .pos-main { margin: 0 !important; }
+        .pos-main { margin: 0 !important; width: 80mm !important; }
         .pos-content { padding: 0 !important; }
-        .success-layout { grid-template-columns: 1fr !important; }
-        body { background: #fff !important; color: #000 !important; }
-        .bill-header { background: #333 !important; -webkit-print-color-adjust: exact; }
-        .bill-row .label { color: #666 !important; }
-        .bill-total { background: #f5f5f5 !important; border-color: #ddd !important; }
-        .bill-total .label { color: #666 !important; }
-        .bill-total .val { color: #333 !important; }
+        .success-layout { display: block !important; }
+        body { 
+            background: #fff !important; 
+            color: #000 !important; 
+            width: 80mm !important; 
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 11pt !important;
+        }
+        .bill-card { 
+            border: none !important; 
+            border-radius: 0 !important; 
+            width: 100% !important;
+            box-shadow: none !important;
+        }
+        .bill-header { 
+            background: #fff !important; 
+            padding: 10mm 5mm !important; 
+            border-bottom: 2px dashed #000 !important; 
+            color: #000 !important;
+        }
+        .bill-header h2 { font-size: 14pt !important; }
+        .bill-row { padding: 2mm 0 !important; border-bottom: 1px dotted #ccc !important; }
+        .bill-row .label { color: #000 !important; }
+        .bill-total { 
+            background: #fff !important; 
+            border: 2px solid #000 !important; 
+            color: #000 !important;
+            margin-top: 5mm !important;
+        }
+        .bill-total .val { color: #000 !important; font-size: 16pt !important; }
+        .qr-section { border-top: 2px dashed #000 !important; margin-top: 5mm !important; }
+        .qr-section img { border: 1px solid #000 !important; width: 40mm !important; height: 40mm !important; }
     }
 </style>
 @endsection
@@ -112,25 +140,26 @@
     <div>
         <div class="bill-card" id="print-area">
             <div class="bill-header">
-                <span class="success-icon">✅</span>
-                <h2>Thanh toán thành công</h2>
-                <p>Đơn hàng #{{ $order->id }} · {{ now()->format('H:i d/m/Y') }}</p>
+                <span class="success-icon no-print">✅</span>
+                <h2>THÔNG TIN VÉ</h2>
+                <p>Mã đơn #{{ $order->id }}</p>
+                <div class="fs-7 mt-1">{{ now()->format('H:i d/m/Y') }}</div>
             </div>
             <div class="bill-body">
                 <div class="bill-row">
-                    <span class="label">Tên khách</span>
+                    <span class="label">Khách hàng</span>
                     <span class="val">{{ $order->customer_name }}</span>
                 </div>
                 <div class="bill-row">
-                    <span class="label">Số điện thoại</span>
+                    <span class="label">SĐT</span>
                     <span class="val">{{ $order->customer_phone }}</span>
                 </div>
                 <div class="bill-row">
-                    <span class="label">Loại vé</span>
+                    <span class="label">Vé</span>
                     <span class="val">{{ $order->slot->ticket->name ?? '' }}</span>
                 </div>
                 <div class="bill-row">
-                    <span class="label">Thời gian chơi</span>
+                    <span class="label">Giờ chơi</span>
                     <span class="val">
                         {{ \Carbon\Carbon::parse($order->slot->start_time)->format('H:i') }} –
                         {{ \Carbon\Carbon::parse($order->slot->end_time)->format('H:i') }}
@@ -142,8 +171,16 @@
                 </div>
                 <div class="bill-row">
                     <span class="label">Số lượng</span>
-                    <span class="val">{{ $order->quantity ?? 1 }} vé</span>
+                    <span class="val">{{ $order->quantity ?? 1 }} người</span>
                 </div>
+                
+                @if($order->discount_amount > 0)
+                <div class="bill-row text-danger">
+                    <span class="label text-danger">Giảm giá</span>
+                    <span class="val">-{{ number_format($order->discount_amount, 0, ',', '.') }}₫</span>
+                </div>
+                @endif
+                
                 <div class="bill-row">
                     <span class="label">Thanh toán</span>
                     <span>
@@ -158,17 +195,17 @@
                 </div>
 
                 <div class="bill-total">
-                    <div class="label">Tổng thanh toán</div>
+                    <div class="label">TỔNG TIỀN</div>
                     <div class="val">{{ number_format($order->total_amount, 0, ',', '.') }}₫</div>
                 </div>
             </div>
 
             {{-- QR CODE --}}
             <div class="qr-section">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $order->qr_token }}&bgcolor=ffffff&color=1a1530"
-                     alt="QR Check-in" width="120" height="120">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ $order->qr_token }}&bgcolor=ffffff&color=000000"
+                     alt="QR Check-in" width="150" height="150">
                 <div class="qr-label">
-                    Mã QR check-in · Xuất trình khi bắt đầu chơi
+                    QUÉT QR ĐỂ CHECK-IN VÀO CHƠI
                 </div>
             </div>
         </div>
@@ -176,50 +213,33 @@
 
     {{-- ACTIONS --}}
     <div class="action-panel no-print">
-        <div class="pos-card">
-            <div class="pos-card-title"><i class="bi bi-printer me-1"></i>In hoá đơn</div>
-            <button onclick="window.print()" class="btn-pos w-100 mb-2" style="justify-content:center">
-                <i class="bi bi-printer"></i> In bill nhiệt
+        <div class="pos-card shadow-sm">
+            <div class="pos-card-title"><i class="bi bi-printer me-1"></i>Hành động</div>
+            <button onclick="window.print()" class="btn-pos w-100 mb-3" style="justify-content:center; padding: 12px">
+                <i class="bi bi-printer"></i> IN VÉ (80MM)
             </button>
-            <div style="font-size:0.72rem;color:var(--pos-text-muted);text-align:center">
-                Kết nối máy in nhiệt qua trình duyệt
+            <div style="font-size:0.75rem;color:var(--pos-text-muted);text-align:center">
+                <i class="bi bi-info-circle me-1"></i>
+                Hỗ trợ in qua máy in nhiệt Bluetooth/USB
             </div>
         </div>
 
-        <div class="pos-card">
-            <div class="pos-card-title"><i class="bi bi-arrow-right-circle me-1"></i>Bước tiếp theo</div>
+        <div class="pos-card shadow-sm">
+            <div class="pos-card-title"><i class="bi bi-arrow-right-circle me-1"></i>Tiếp theo</div>
 
-            <a href="{{ route('pos.checkin', $subdomain) }}" class="btn-success-pos w-100 mb-2" style="justify-content:center">
-                <i class="bi bi-qr-code-scan"></i> Quét QR để check-in ngay
+            <a href="{{ route('pos.dashboard', $subdomain) }}" class="btn-success-pos w-100 mb-2" style="justify-content:center">
+                <i class="bi bi-grid-1x2"></i> VỀ TRANG CHỦ
             </a>
 
-            <a href="{{ route('pos.dashboard', $subdomain) }}" class="btn-pos-outline w-100 mb-2" style="justify-content:center">
-                <i class="bi bi-grid-1x2"></i> Về trang chủ
+            <a href="{{ route('pos.checkin', $subdomain) }}" class="btn-pos-outline w-100 mb-2" style="justify-content:center">
+                <i class="bi bi-qr-code-scan"></i> QUÉT QR CHECK-IN
             </a>
 
             <a href="{{ route('pos.sale.form', [$subdomain, $order->slot_id]) }}" class="btn-pos-outline w-100" style="justify-content:center">
-                <i class="bi bi-plus-circle"></i> Bán thêm cùng slot
+                <i class="bi bi-plus-circle"></i> TIẾP TỤC BÁN VÉ
             </a>
         </div>
-
-        @if($order->slot)
-        <div class="pos-card">
-            <div class="pos-card-title"><i class="bi bi-clock me-1"></i>Slot vừa bán</div>
-            <div style="font-size:0.85rem">
-                <strong>{{ $order->slot->ticket->name ?? '' }}</strong><br>
-                <span style="color:var(--pos-text-muted)">
-                    {{ \Carbon\Carbon::parse($order->slot->start_time)->format('H:i') }} –
-                    {{ \Carbon\Carbon::parse($order->slot->end_time)->format('H:i') }}
-                </span>
-            </div>
-            <div style="margin-top:10px">
-                <a href="{{ route('pos.slot.detail', [$subdomain, $order->slot_id]) }}" class="btn-pos-outline w-100" style="justify-content:center;font-size:0.78rem">
-                    <i class="bi bi-eye"></i> Xem slot
-                </a>
-            </div>
-        </div>
-        @endif
     </div>
 </div>
 
-@endsection
+@endsection
