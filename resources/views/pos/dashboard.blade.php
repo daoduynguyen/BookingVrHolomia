@@ -357,13 +357,4 @@ function refreshData() {
 
 setInterval(autoRefresh, 1000);
 </script>
-@endsection
-: newStatus })
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.success) location.reload();
-    });
-}
-</script>
-@endsection
+@endsection

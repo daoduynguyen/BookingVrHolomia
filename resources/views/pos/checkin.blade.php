@@ -289,11 +289,4 @@ function playBeep(success) {
     } catch(e) {}
 }
 </script>
-@endsection
-
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.3);
-    } catch(e) {}
-}
-</script>
-@endsection
+@endsection

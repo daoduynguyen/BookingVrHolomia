@@ -86,48 +86,88 @@
         position: sticky;
         top: 80px;
     }
-    .action-panel .pos-card { margin-bottom: 12px    /* PRINT RECEIPT */
+    .action-panel .pos-card { margin-bottom: 12px; }
+
+    /* PRINT RECEIPT */
     @media print {
         @page { 
             margin: 0; 
             size: 80mm auto; 
         }
-        .pos-sidebar, .pos-topbar, .action-panel, .no-print { display: none !important; }
-        .pos-main { margin: 0 !important; width: 80mm !important; }
-        .pos-content { padding: 0 !important; }
-        .success-layout { display: block !important; }
+        .pos-sidebar, .pos-topbar, .action-panel, .no-print, .btn-pos, .btn-pos-outline, .btn-success-pos { 
+            display: none !important; 
+        }
+        .pos-main { 
+            margin: 0 !important; 
+            padding: 0 !important;
+            width: 80mm !important; 
+            height: auto !important;
+            overflow: visible !important;
+        }
+        .pos-content { 
+            padding: 0 !important; 
+            margin: 0 !important;
+        }
+        .success-layout { 
+            display: block !important; 
+            width: 80mm !important;
+        }
         body { 
             background: #fff !important; 
             color: #000 !important; 
             width: 80mm !important; 
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 11pt !important;
+            height: auto !important;
+            overflow: visible !important;
+            font-size: 10pt !important;
         }
         .bill-card { 
             border: none !important; 
             border-radius: 0 !important; 
-            width: 100% !important;
+            width: 80mm !important;
             box-shadow: none !important;
+            background: #fff !important;
+            color: #000 !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         .bill-header { 
             background: #fff !important; 
-            padding: 10mm 5mm !important; 
-            border-bottom: 2px dashed #000 !important; 
+            padding: 5mm 0 !important; 
+            border-bottom: 1px dashed #000 !important; 
+            color: #000 !important;
+            text-align: center !important;
+        }
+        .bill-header h2 { font-size: 14pt !important; margin-bottom: 2mm !important; }
+        .bill-body { padding: 5mm 2.5mm !important; }
+        .bill-row { 
+            padding: 1.5mm 0 !important; 
+            border-bottom: 0.5px dotted #ccc !important; 
             color: #000 !important;
         }
-        .bill-header h2 { font-size: 14pt !important; }
-        .bill-row { padding: 2mm 0 !important; border-bottom: 1px dotted #ccc !important; }
         .bill-row .label { color: #000 !important; }
         .bill-total { 
             background: #fff !important; 
             border: 2px solid #000 !important; 
             color: #000 !important;
             margin-top: 5mm !important;
+            padding: 3mm !important;
         }
         .bill-total .val { color: #000 !important; font-size: 16pt !important; }
-        .qr-section { border-top: 2px dashed #000 !important; margin-top: 5mm !important; }
-        .qr-section img { border: 1px solid #000 !important; width: 40mm !important; height: 40mm !important; }
+        .qr-section { 
+            border-top: 1px dashed #000 !important; 
+            margin-top: 5mm !important; 
+            padding-top: 5mm !important;
+            text-align: center !important; 
+        }
+        .qr-section img { 
+            border: 1px solid #000 !important; 
+            width: 45mm !important; 
+            height: 45mm !important; 
+        }
+        .qr-label { color: #000 !important; font-size: 8pt !important; }
     }
 </style>
 @endsection
