@@ -47,8 +47,9 @@ class PosController extends Controller
         // Vé thuộc chi nhánh
         $tickets = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
-        })->with(['timeSlots' => function ($q) {
-            $q->whereDate('date', today())
+        })->with(['timeSlots' => function ($q) use ($location) {
+            $q->where('location_id', $location->id)
+              ->whereDate('date', today())
               ->orderBy('start_time');
         }])->get();
 

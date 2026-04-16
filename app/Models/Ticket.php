@@ -51,4 +51,10 @@ class Ticket extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    // Quan hệ: 1 Vé có nhiều khung giờ (TimeSlots)
+    public function timeSlots()
+    {
+        return $this->hasMany(TimeSlot::class);
+    }
 }
