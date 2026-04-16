@@ -14,6 +14,8 @@ class Order extends Model
         'total_amount', 'status', 'payment_method', 'note', 'notes',
         'shipping_address', 'booking_date', 'slot_id',
         'quantity', 'location_id', 'coupon_code', 'discount_amount',
+        'pos_shift_id', 'device_id', 'is_pos_sale', 'checkin_at',
+        'qr_token', 'qr_used',
     ];
 
     // Quan hệ với coupon (nếu cần)

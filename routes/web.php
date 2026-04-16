@@ -388,3 +388,67 @@ Route::middleware('auth')->group(function () {
 */
 Route::get('auth/{provider}/redirect', [\App\Http\Controllers\SocialLoginController::class, 'redirect'])->name('social.redirect');
 Route::get('auth/{provider}/callback', [\App\Http\Controllers\SocialLoginController::class, 'callback'])->name('social.callback');
+
+/*
+|--------------------------------------------------------------------------
+| 7. POS — Bán vé tại quầy
+|--------------------------------------------------------------------------
+*/
+Route::prefix('chi-nhanh/{subdomain}/pos')
+    ->middleware(['auth', 'pos.role'])
+    ->group(function () {
+
+    // Dashboard
+    Route::get('/', [\App\Http\Controllers\PosController::class, 'dashboard'])
+        ->name('pos.dashboard');
+
+    // Bán vé
+    Route::get('/ban-ve/{slotId}', [\App\Http\Controllers\PosController::class, 'saleForm'])
+        ->name('pos.sale.form');
+    Route::post('/ban-ve', [\App\Http\Controllers\PosController::class, 'storeSale'])
+        ->name('pos.sale.store');
+    Route::get('/ban-ve-thanh-cong/{orderId}', [\App\Http\Controllers\PosController::class, 'saleSuccess'])
+        ->name('pos.sale.success');
+
+    // Slot detail + polling API
+    Route::get('/slot/{slotId}', [\App\Http\Controllers\PosController::class, 'slotDetail'])
+        ->name('pos.slot.detail');
+    Route::get('/slot/{slotId}/status', [\App\Http\Controllers\PosController::class, 'slotStatus'])
+        ->name('pos.slot.status');
+
+    // Check-in QR
+    Route::get('/check-in', [\App\Http\Controllers\PosController::class, 'checkinForm'])
+        ->name('pos.checkin');
+    Route::post('/check-in', [\App\Http\Controllers\PosController::class, 'checkinProcess'])
+        ->name('pos.checkin.process');
+
+    // Thiết bị VR
+    Route::get('/thiet-bi', [\App\Http\Controllers\PosController::class, 'devices'])
+        ->name('pos.devices');
+    Route::post('/thiet-bi/{deviceId}/trang-thai', [\App\Http\Controllers\PosController::class, 'updateDeviceStatus'])
+        ->name('pos.device.status');
+
+    // Lịch sử giao dịch
+    Route::get('/lich-su', [\App\Http\Controllers\PosController::class, 'history'])
+        ->name('pos.history');
+
+    // Huỷ vé
+    Route::post('/huy-ve/{orderId}', [\App\Http\Controllers\PosController::class, 'cancelOrder'])
+        ->name('pos.cancel');
+
+    // Tìm khách hàng (AJAX)
+    Route::get('/tim-khach', [\App\Http\Controllers\PosController::class, 'findCustomer'])
+        ->name('pos.find.customer');
+
+    // Ca làm việc
+    Route::get('/mo-ca', [\App\Http\Controllers\PosShiftController::class, 'openForm'])
+        ->name('pos.shift.open.form');
+    Route::post('/mo-ca', [\App\Http\Controllers\PosShiftController::class, 'open'])
+        ->name('pos.shift.open');
+    Route::get('/dong-ca', [\App\Http\Controllers\PosShiftController::class, 'closeForm'])
+        ->name('pos.shift.close.form');
+    Route::post('/dong-ca', [\App\Http\Controllers\PosShiftController::class, 'close'])
+        ->name('pos.shift.close');
+    Route::get('/bao-cao-ca/{shiftId}', [\App\Http\Controllers\PosShiftController::class, 'report'])
+        ->name('pos.shift.report');
+});

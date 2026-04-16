@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\CheckAdminRole::class,
             'sepay.ip' => \App\Http\Middleware\VerifySepayIp::class,
             'check.banned' => \App\Http\Middleware\CheckBanned::class,
+            'pos.role' => \App\Http\Middleware\PosRoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -41,6 +42,3 @@ return Application::configure(basePath: dirname(__DIR__))
             // Không return null để Laravel tự xử lý view lỗi
         });
     })->create();
-
-
-
