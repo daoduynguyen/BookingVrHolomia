@@ -145,6 +145,47 @@
                 {{ $location->color ?? '#0dcaf0' }}
             ;
         }
+
+        /* SWEETALERT PRINT RECEIPT */
+        @media print {
+            body > *:not(.swal2-container) {
+                display: none !important;
+            }
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                background: #fff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .swal2-container {
+                position: static !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: transparent !important;
+            }
+            .swal2-popup {
+                box-shadow: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                color: #000 !important;
+                transform: none !important;
+            }
+            .swal2-actions, .swal2-close {
+                display: none !important;
+            }
+            .swal2-html-container {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+        }
     </style>
 </head>
 

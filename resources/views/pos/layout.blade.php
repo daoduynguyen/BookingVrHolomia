@@ -351,8 +351,25 @@
 
         @media print {
             .pos-sidebar, .pos-topbar, .no-print { display: none !important; }
-            .pos-main { margin-left: 0 !important; }
-            body { background: #fff !important; color: #000 !important; }
+            html, body { 
+                height: auto !important; 
+                overflow: visible !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background: #fff !important; 
+                color: #000 !important; 
+            }
+            .pos-main { 
+                margin-left: 0 !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+                display: block !important; 
+            }
+            .pos-content { 
+                padding: 0 !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+            }
         }
     </style>
 
