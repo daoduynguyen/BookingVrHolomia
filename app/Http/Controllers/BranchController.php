@@ -83,7 +83,17 @@ class BranchController extends Controller
 
     $user = Auth::user();
 
-    if (in_array($user->role, ['staff', 'branch_admin', 'admin', 'super_admin'])) {
+    if (in_array($user->role, ['staff', 'branch_admin'])) {
+        if ((int)$user->location_id !== (int)$location->id) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return back()->withErrors(['email' => 'Tài khoản của bạn không thuộc chi nhánh này!']);
+        }
+        return redirect()->route('pos.dashboard', ['subdomain' => $subdomain]);
+    }
+
+    if (in_array($user->role, ['admin', 'super_admin'])) {
         return redirect()->route('pos.dashboard', ['subdomain' => $subdomain]);
     }
 

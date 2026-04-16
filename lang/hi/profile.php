@@ -70,4 +70,27 @@ return [
     'total_label' => 'कुल राशि:',
     'deducted_label' => 'वॉलेट से कटौती:',
     'see_you_soon' => 'टिकट पुष्टि हो गया। वेन्यू पर मिलते हैं!',
+
+    // Missing Invoice & Orders keys
+    'customer' => 'ग्राहक',
+    'location' => 'शाखा',
+    'payment_method' => 'भुगतान विधि',
+    'payment_wallet' => 'Holomia वॉलेट',
+    'payment_cash' => 'कैश',
+    'payment_banking' => 'बैंक ट्रांसफर',
+    'ticket_type' => 'गेम/टिकट का प्रकार',
+    'quantity' => 'मात्रा',
+    'amount' => 'राशि',
+    'review' => 'समीक्षा',
+    'subtotal' => 'उप-कुल',
+    'click_to_get_qr' => 'चेक-इन QR दिखाने के लिए क्लिक करें',
+    'show_qr_to_staff' => 'कर्मचारियों को QR कोड दिखाएं',
+    'refund_ticket' => 'टिकट वापस करें',
+
+    // Missing Tiers keys
+    'tier_thanh_vien' => 'सदस्य',
+    'tier_bac' => 'सिल्वर',
+    'tier_vang' => 'गोल्ड',
+    'tier_kim_cuong' => 'डायमंड',
+    'tier_vip' => 'VIP',
 ];

@@ -102,6 +102,14 @@ class AuthController extends Controller
                         return redirect()->route('pos.dashboard', ['subdomain' => $location->slug])->with('success', 'Đăng nhập ca làm việc!');
                     }
                 }
+                
+                // Nếu nhân viên chưa được gán chi nhánh
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->withErrors([
+                    'email' => 'Tài khoản nhân viên của bạn chưa được gán chi nhánh. Vui lòng liên hệ Admin.',
+                ]);
             }
 
             // Nếu là khách hàng bình thường -> Quay lại trang trước đó hoặc ra trang chủ

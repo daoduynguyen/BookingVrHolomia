@@ -25,7 +25,7 @@ class PosRoleMiddleware
         $location  = \App\Models\Location::where('slug', $subdomain)->firstOrFail();
 
         // Admin tổng: được phép vào mọi chi nhánh
-        if ($user->role === 'admin') {
+        if (in_array($user->role, ['super_admin', 'admin'])) {
             $request->merge(['_pos_location_id' => $location->id]);
             return $next($request);
         }
