@@ -43,7 +43,7 @@
                     </select>
                 </div>
 
-                <div class="col-md-12 mb-4" id="location_box" style="display: {{ in_array(old('role'), ['branch_admin', 'staff']) ? 'block' : 'none' }};"
+                <div class="col-md-12 mb-4" id="location_box" style="display: {{ in_array(old('role'), ['branch_admin', 'staff']) ? 'block' : 'none' }};">
                     <label class="text-primary fw-bold">Gắn vào cơ sở quản lý</label>
                     <select name="location_id" class="form-select bg-light text-dark border-light">
                         <option value="">-- Chọn cơ sở --</option>

@@ -75,6 +75,13 @@
                                         <div class="small text-muted mt-1"><i class="bi bi-geo-alt-fill me-1"></i>{{ $user->location->name }}</div>
                                     @endif
                                 </div>
+                            @elseif($user->role === 'staff')
+                                <div>
+                                    <span class="badge bg-info text-dark rounded-pill px-3 py-2">🧑‍💼 Nhân viên</span>
+                                    @if($user->location)
+                                        <div class="small text-muted mt-1"><i class="bi bi-geo-alt-fill me-1"></i>{{ $user->location->name }}</div>
+                                    @endif
+                                </div>
                             @else
                                 <span class="badge bg-secondary rounded-pill px-3 py-2">👤 Thành viên</span>
                             @endif
@@ -168,11 +175,12 @@
                             <option value="customer"     {{ $user->role == 'customer'     ? 'selected' : '' }}>👤 Thành viên</option>
                             <option value="branch_admin" {{ $user->role == 'branch_admin' ? 'selected' : '' }}>🏢 Quản lý cơ sở</option>
                             <option value="super_admin"  {{ $user->role == 'super_admin'  ? 'selected' : '' }}>👑 Sếp tổng</option>
+                            <option value="staff"        {{ $user->role == 'staff'        ? 'selected' : '' }}>🧑‍💼 Nhân viên</option>
                         </select>
                     </div>
 
                     <div class="mb-3 location-group" id="locationGroup{{ $user->id }}"
-                         style="display: {{ $user->role == 'branch_admin' ? 'block' : 'none' }};">
+                         style="display: {{ in_array($user->role, ['branch_admin', 'staff']) ? 'block' : 'none' }};">
                         <label class="form-label fw-bold small text-uppercase text-dark">Trực thuộc cơ sở</label>
                         <select name="location_id" class="form-select border-light">
                             <option value="">-- Chọn cơ sở --</option>
@@ -199,7 +207,7 @@
         document.querySelectorAll('.role-select').forEach(select => {
             select.addEventListener('change', function () {
                 const group = document.getElementById('locationGroup' + this.dataset.userid);
-                if (this.value === 'branch_admin') {
+                if (['branch_admin', 'staff'].includes(this.value)) {
                     group.style.display = 'block';
                     group.querySelector('select').setAttribute('required', 'required');
                 } else {

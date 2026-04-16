@@ -302,7 +302,7 @@ class AdminController extends Controller
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->role  = $request->role;
-        $user->location_id = $request->role === 'branch_admin' ? $request->location_id : null;
+        $user->location_id = in_array($request->role, ['branch_admin', 'staff']) ? $request->location_id : null;
  
         if ($request->filled('password')) {
             $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
