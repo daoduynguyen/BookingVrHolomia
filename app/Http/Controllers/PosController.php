@@ -59,10 +59,26 @@ class PosController extends Controller
               ->orderBy('start_time');
         }])->paginate(10)->withQueryString();
 
+        $totalDevicesConfig = $location->total_devices ?? 20;
+
         // Thiết bị VR
-        $devices = PosDevice::where('location_id', $location->id)
-            ->orderBy('name')
+        $devices = \App\Models\PosDevice::where('location_id', $location->id)
+            ->orderBy('id')
             ->get();
+
+        if ($devices->count() < $totalDevicesConfig) {
+            $currentCount = $devices->count();
+            for ($i = $currentCount + 1; $i <= $totalDevicesConfig; $i++) {
+                \App\Models\PosDevice::create([
+                    'location_id' => $location->id,
+                    'name'        => 'Kính ' . str_pad($i, 2, '0', STR_PAD_LEFT),
+                    'status'      => 'available'
+                ]);
+            }
+            $devices = \App\Models\PosDevice::where('location_id', $location->id)
+                ->orderBy('id')
+                ->get();
+        }
 
         $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, today()->format('Y-m-d'));
 
