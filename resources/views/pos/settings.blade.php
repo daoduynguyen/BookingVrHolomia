@@ -138,6 +138,23 @@
         
     </div>
 
+    {{-- CÀI ĐẶT HIỂN THỊ TRANG CHỦ --}}
+    <div class="pos-card shadow-sm mt-4">
+        <h3 class="pos-card-title"><i class="bi bi-display me-2"></i>Cài đặt bảng điều khiển</h3>
+        
+        <div class="form-check form-switch mt-3 d-flex align-items-center">
+            <input class="form-check-input me-3" type="checkbox" role="switch" id="pos_show_past_slots" name="pos_show_past_slots" value="1"
+                   style="width: 50px; height: 25px; cursor:pointer;"
+                   {{ (!empty($uiSettings['pos_show_past_slots']) && $uiSettings['pos_show_past_slots']) ? 'checked' : '' }}>
+            <label class="form-check-label fw-bold" for="pos_show_past_slots" style="cursor:pointer; font-size:1.05rem;">
+                Hiển thị khung giờ đã qua trong ngày (Giờ cũ)
+            </label>
+        </div>
+        <div class="text-muted small mt-2 ms-5">
+            Mặc định hệ thống sẽ ẩn các giờ chơi cũ trong ngày để giao diện gọn gàng hơn. Bật tuỳ chọn này nếu bạn muốn xem lại các ca cũ trong Dashboard hôm nay.
+        </div>
+    </div>
+
     <div class="pos-card mt-4 d-flex justify-content-between align-items-center">
         <div class="text-muted small">
             <i class="bi bi-info-circle me-1"></i>

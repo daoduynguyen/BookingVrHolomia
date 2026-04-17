@@ -183,45 +183,72 @@ $totalDevices = $devices->count();
         Chưa có vé nào được thiết lập cho hôm nay. Vui lòng tạo slot trong trang Admin.
     </div>
 @else
+@php
+    $showPastSlots = auth()->user()->ui_settings['pos_show_past_slots'] ?? false;
+@endphp
 <div class="ticket-grid" id="ticket-grid">
     @foreach($tickets as $ticket)
     <div class="ticket-card" data-ticket-id="{{ $ticket->id }}">
         <div class="ticket-card-header">
             <div class="ticket-card-title">{{ $ticket->name }}</div>
             <div class="ticket-card-price">{{ number_format($ticket->price,0,',','.') }}₫ / người</div>
+            
+            <button class="btn-pos w-100 mt-3" style="padding: 8px;" onclick="openTicketModal({{ $ticket->id }}, '{{ htmlspecialchars($ticket->name) }}')">
+                Xem trò chơi <i class="bi bi-chevron-right ms-1 text-white-50"></i>
+            </button>
         </div>
-        <div class="slot-list">
-            @forelse($ticket->timeSlots as $slot)
-            @php
-                $available = $slot->capacity - $slot->booked_count;
-                $isFull = $available <= 0;
-            @endphp
-            <a href="{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}" 
-               class="slot-item {{ $isFull ? 'slot-full' : '' }}" 
-               data-slot-id="{{ $slot->id }}">
-                <div>
-                    <div class="slot-time">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</div>
-                    <div class="slot-time date-tag">{{ \Carbon\Carbon::parse($slot->date)->format('d/m') }} · <span class="booked-count">{{ $slot->booked_count }}</span>/{{ $slot->capacity }} chỗ</div>
-                </div>
-                <div class="slot-avail">
-                    @if(!$isFull)
-                        <span class="avail-text" style="color:var(--pos-text-muted)">còn {{ $available }}</span>
-                        <a href="{{ route('pos.sale.form', [$subdomain, $slot->id]) }}" 
-                           class="add-btn" 
-                           onclick="event.stopPropagation()"
-                           title="Bán vé cho slot này">+</a>
-                    @else
-                        <span class="avail-text" style="color:#f87171;font-size:0.72rem">Hết chỗ</span>
-                        <div class="add-btn disabled">–</div>
-                    @endif
-                </div>
-            </a>
-            @empty
-            <div style="color:var(--pos-text-muted);font-size:0.78rem;padding:6px 0">Chưa có slot hôm nay</div>
-            @endforelse
+
+        {{-- DOM ẩn chứa danh sách Slot để Load vào Modal --}}
+        <div id="slots-data-{{ $ticket->id }}" class="d-none">
+            <div class="slot-list p-0">
+                @php $hasVisibleSlots = false; @endphp
+                @foreach($ticket->timeSlots as $slot)
+                @php
+                    // Lọc giờ cũ
+                    if (!$showPastSlots) {
+                        $targetDate = \Carbon\Carbon::parse($slot->date)->startOfDay();
+                        $today = \Carbon\Carbon::today();
+                        if ($targetDate->lt($today)) continue;
+                        if ($targetDate->equalTo($today) && $slot->start_time <= \Carbon\Carbon::now()->format('H:i:s')) continue;
+                    }
+                    $hasVisibleSlots = true;
+                    
+                    $available = $slot->capacity - $slot->booked_count;
+                    $isFull = $available <= 0 || $slot->status !== 'open';
+                @endphp
+                <a href="{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}" 
+                   class="slot-item {{ $isFull ? 'slot-full' : '' }}" 
+                   data-slot-id="{{ $slot->id }}" style="margin-bottom: 8px;">
+                    <div>
+                        <div class="slot-time">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</div>
+                        <div class="slot-time date-tag">{{ \Carbon\Carbon::parse($slot->date)->format('d/m') }} · <span class="booked-count">{{ $slot->booked_count }}</span>/{{ $slot->capacity }} chỗ</div>
+                    </div>
+                    <div class="slot-avail">
+                        @if(!$isFull)
+                            <span class="avail-text" style="color:var(--pos-text-muted)">còn {{ $available }}</span>
+                            <a href="{{ route('pos.sale.form', [$subdomain, $slot->id]) }}" 
+                               class="add-btn" 
+                               onclick="event.stopPropagation()"
+                               title="Bán vé cho slot này">+</a>
+                        @else
+                            <span class="avail-text" style="color:#f87171;font-size:0.72rem">Hết chỗ</span>
+                            <div class="add-btn disabled">–</div>
+                        @endif
+                    </div>
+                </a>
+                @endforeach
+                
+                @if(!$hasVisibleSlots)
+                <div style="color:var(--pos-text-muted);font-size:0.85rem;padding:16px;text-align:center;">Không có giờ chơi nào phù hợp hôm nay.</div>
+                @endif
+            </div>
         </div>
     </div>
     @endforeach
+</div>
+
+<div class="mt-4">
+    {{ $tickets->links('pagination::bootstrap-5') }}
 </div>
 @endif
 
@@ -258,14 +285,43 @@ $totalDevices = $devices->count();
     </div>
 </div>
 
+{{-- MODAL XEM CHI TIẾT GAME --}}
+<div class="modal fade" id="ticketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background:var(--pos-card); border:1px solid var(--pos-card-border); color:var(--pos-text)">
+            <div class="modal-header" style="border-bottom:1px solid var(--pos-card-border)">
+                <h5 class="modal-title fs-5 fw-bold" id="ticketModalName">Tên Trò Chơi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                <div class="d-flex align-items-center justify-content-between mb-3 text-muted" style="font-size:0.9rem;">
+                    <div><i class="bi bi-clock-history me-1"></i> Danh sách giờ chơi hôm nay</div>
+                    <div><span class="badge bg-secondary">Tối đa 15 người / slot</span></div>
+                </div>
+                {{-- Container dể JS load html các slots vào đây --}}
+                <div id="ticketModalContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script>
 let deviceModal;
+let ticketModal;
 document.addEventListener('DOMContentLoaded', function() {
     deviceModal = new bootstrap.Modal(document.getElementById('deviceModal'));
+    ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
 });
+
+function openTicketModal(ticketId, ticketName) {
+    document.getElementById('ticketModalName').textContent = ticketName;
+    const slotsHtml = document.getElementById('slots-data-' + ticketId).innerHTML;
+    document.getElementById('ticketModalContent').innerHTML = slotsHtml;
+    ticketModal.show();
+}
 
 function openDeviceModal(el) {
     const id = el.dataset.id;

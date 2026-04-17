@@ -51,7 +51,7 @@ class PosController extends Controller
             $q->where('location_id', $location->id)
               ->whereDate('date', today())
               ->orderBy('start_time');
-        }])->get();
+        }])->paginate(10);
 
         // Thiết bị VR
         $devices = PosDevice::where('location_id', $location->id)
@@ -455,6 +455,7 @@ class PosController extends Controller
         // Cập nhật cài đặt mới vào mảng hiện tại
         $uiSettings['pos_theme']         = $request->pos_theme;
         $uiSettings['pos_primary_color'] = $request->pos_primary_color;
+        $uiSettings['pos_show_past_slots'] = $request->has('pos_show_past_slots');
 
         $user->update([
             'ui_settings' => $uiSettings
