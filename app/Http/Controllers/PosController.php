@@ -445,8 +445,8 @@ class PosController extends Controller
     public function updateSettings(Request $request, string $subdomain)
     {
         $request->validate([
-            'pos_theme'         => 'required|in:dark,light',
-            'pos_primary_color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'pos_theme'         => ['required', 'in:dark,light'],
+            'pos_primary_color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
         ]);
 
         $user = auth()->user();
