@@ -43,7 +43,7 @@ class TimeSlot extends Model
         // 1.3 Kiểm tra tổng tài nguyên thiết bị của TẤT CẢ các trò chơi tại chi nhánh có GIAO NHAU về mặt thời gian
         if ($hasCapacity) {
             $location = \App\Models\Location::find($this->location_id);
-            $maxDevices = $location ? ($location->total_devices ?? 20) : 20;
+            $maxDevices = $location ? ($location->total_devices ?: 20) : 20;
 
             $peakConcurrent = $this->getPeakConcurrentBookings($quantity);
             if ($peakConcurrent > $maxDevices) {
@@ -136,7 +136,7 @@ class TimeSlot extends Model
     }
 
     // Đồng bộ trạng thái 'full' cho TẤT CẢ các slot trong ngày có thể bị kẹt máy do giao giờ
-    private function syncGlobalOverlappingStatus()
+    public function syncGlobalOverlappingStatus()
     {
         // Để tổng quát, lấy mọi slot trong ngày
         $allSlots = self::where('location_id', $this->location_id)
@@ -144,7 +144,7 @@ class TimeSlot extends Model
             ->get();
             
         $location = \App\Models\Location::find($this->location_id);
-        $maxDevices = $location ? ($location->total_devices ?? 20) : 20;
+        $maxDevices = $location ? ($location->total_devices ?: 20) : 20;
 
         // Tạo base events cho tất cả các máy đã được đặt thật trên tất cả các khung giờ
         $baseEvents = [];
@@ -207,7 +207,7 @@ class TimeSlot extends Model
                      ->get();
 
         $location = \App\Models\Location::find($locationId);
-        $maxDevices = $location ? ($location->total_devices ?? 20) : 20;
+        $maxDevices = $location ? ($location->total_devices ?: 20) : 20;
 
         $availabilities = [];
 

@@ -53,11 +53,24 @@ class PosController extends Controller
             $query->where('name', 'like', '%' . request()->search . '%');
         }
 
+        // Safety: Ensure location has total_devices >= 20
+        if (!$location->total_devices || $location->total_devices <= 0) {
+            $location->update(['total_devices' => 20]);
+        }
+
         $tickets = $query->with(['timeSlots' => function ($q) use ($location) {
             $q->where('location_id', $location->id)
               ->whereDate('date', today())
               ->orderBy('start_time');
         }])->paginate(10)->withQueryString();
+
+        // Trigger maintenance sync to fix incorrectly 'full' slots
+        $firstSlot = \App\Models\TimeSlot::where('location_id', $location->id)
+            ->whereDate('date', today())
+            ->first();
+        if ($firstSlot) {
+            $firstSlot->syncGlobalOverlappingStatus();
+        }
 
         $totalDevicesConfig = $location->total_devices ?? 20;
 
