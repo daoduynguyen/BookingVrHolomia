@@ -62,7 +62,7 @@ class PosController extends Controller
             $q->where('location_id', $location->id)
               ->whereDate('date', today())
               ->orderBy('start_time');
-        }])->paginate(10)->withQueryString();
+        }])->paginate(9)->withQueryString();
 
         // Trigger maintenance sync to fix incorrectly 'full' slots
         $firstSlot = \App\Models\TimeSlot::where('location_id', $location->id)

@@ -190,18 +190,32 @@
         .pos-topbar {
             position: sticky; top: 0; z-index: 50;
             background: {{ $posGlassBg }};
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--pos-card-border);
-            padding: 12px 24px;
+            padding: 18px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            min-height: 68px;
         }
 
         .pos-topbar .page-title {
-            font-size: 1rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 800;
             color: var(--pos-text);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .pos-topbar .page-title::before {
+            content: '';
+            width: 4px;
+            height: 22px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, var(--pos-primary), var(--pos-secondary));
+            display: inline-block;
+            flex-shrink: 0;
         }
 
         .pos-topbar .shift-badge {
@@ -209,6 +223,24 @@
             padding: 4px 12px;
             border-radius: 20px;
             font-weight: 600;
+        }
+
+        .pos-topbar .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pos-topbar .pos-clock-display {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--pos-text);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+            background: rgba(var(--pos-primary-rgb), 0.08);
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(var(--pos-primary-rgb), 0.15);
         }
 
         .pos-content {
@@ -414,6 +446,11 @@
                 overflow: visible !important; 
             }
         }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
     </style>
 
     @yield('styles')
@@ -490,19 +527,19 @@
 <main class="pos-main">
     <div class="pos-topbar">
         <div class="page-title">@yield('page-title', 'POS')</div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="topbar-right">
             @if(isset($activeShift) && $activeShift)
-                <span class="status-badge status-open">
-                    <i class="bi bi-circle-fill" style="font-size:.5rem"></i>
+                <span class="status-badge status-open" style="padding: 6px 16px; font-size: 0.8rem;">
+                    <i class="bi bi-circle-fill" style="font-size:.5rem; animation: pulse 2s infinite;"></i>
                     Ca đang mở — {{ \Carbon\Carbon::parse($activeShift->opened_at)->format('H:i') }}
                 </span>
             @else
-                <span class="status-badge status-closed">
+                <span class="status-badge status-closed" style="padding: 6px 16px; font-size: 0.8rem;">
                     <i class="bi bi-circle-fill" style="font-size:.5rem"></i>
                     Chưa mở ca
                 </span>
             @endif
-            <span style="font-size:0.75rem;color:var(--pos-text-muted)" id="pos-clock"></span>
+            <span class="pos-clock-display" id="pos-clock"></span>
         </div>
     </div>
 

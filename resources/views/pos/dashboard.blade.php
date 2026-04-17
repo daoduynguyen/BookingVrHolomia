@@ -118,6 +118,10 @@
     .stat-icon.cyan   { background: rgba(34, 211, 238, 0.15); color: #06b6d4; }
     .stat-icon.amber  { background: rgba(251, 191, 36, 0.15);  color: #f59e0b; }
 
+    .stat-card.clickable { cursor: pointer; border: 1px solid transparent; }
+    .stat-card.clickable:hover { border-color: rgba(var(--pos-primary-rgb), 0.3); background: rgba(var(--pos-primary-rgb), 0.02); }
+    .stat-card.clickable:active { transform: scale(0.97); }
+
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.75rem; color: var(--pos-text-muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin-bottom: 4px; }
     .stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--pos-text); }
@@ -183,11 +187,14 @@ $totalDevices = $devices->count();
             <span class="stat-value">{{ number_format($totalRevenue,0,',','.') }}₫</span>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card clickable" onclick="openDevicesListModal()">
         <div class="stat-icon cyan"><i class="bi bi-headset-vr"></i></div>
         <div class="stat-info">
             <span class="stat-label">Kính sẵn sàng</span>
             <span class="stat-value">{{ $availableDevices }}<span style="font-size:1rem; color:var(--pos-text-muted)">/{{ $totalDevices }}</span></span>
+        </div>
+        <div class="ms-auto no-print">
+            <i class="bi bi-chevron-right text-muted"></i>
         </div>
     </div>
     <div class="stat-card">
@@ -199,35 +206,21 @@ $totalDevices = $devices->count();
     </div>
 </div>
 
-{{-- THIẾT BỊ VR (quick view) --}}
-@if($devices->count() > 0)
-<div class="section-header">
-    <div>
-        <div class="section-title"><i class="bi bi-headset-vr me-2"></i>Thiết bị VR</div>
-        <div class="section-sub">Click để cập nhật trạng thái</div>
-    </div>
-    <a href="{{ route('pos.devices', $subdomain) }}" class="btn-pos-outline" style="font-size:0.75rem;padding:5px 12px">
-        Quản lý <i class="bi bi-arrow-right"></i>
-    </a>
-</div>
-<div class="device-row mb-4" id="device-container">
+{{-- Danh sách kính đã được chuyển vào Modal --}}
+<div id="device-container-hidden" class="d-none">
     @foreach($devices as $device)
     <div class="device-chip" data-id="{{ $device->id }}" data-status="{{ $device->status }}" data-name="{{ $device->name }}" onclick="openDeviceModal(this)">
         <div class="dot dot-{{ $device->status }}"></div>
         {{ $device->name }}
-        @if($device->battery_percent)
-            <span style="color:var(--pos-text-muted)">{{ $device->battery_percent }}%</span>
-        @endif
     </div>
     @endforeach
 </div>
-@endif
 
 {{-- DANH SÁCH VÉ + SLOT --}}
 <div class="section-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-    <div>
+    <div style="min-width: 200px; flex-shrink: 0;">
         <div class="section-title"><i class="bi bi-ticket-perforated me-2"></i>Vé hôm nay</div>
-        <div class="section-sub" id="refresh-status">Tự động cập nhật sau 30s</div>
+        <div class="section-sub" id="refresh-status" style="font-variant-numeric: tabular-nums;">Tự động cập nhật sau 30s</div>
     </div>
     
     <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 400px; margin: 0 auto;">
@@ -335,10 +328,34 @@ $totalDevices = $devices->count();
 </div>
 @endif
 
-{{-- MODAL CẬP NHẬT THIẾT BỊ --}}
-<div class="modal fade" id="deviceModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{{-- MODAL DANH SÁCH THIẾT BỊ --}}
+<div class="modal fade" id="devicesListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="background:var(--pos-card); border:1px solid var(--pos-card-border); color:var(--pos-text)">
+            <div class="modal-header" style="border-bottom:1px solid var(--pos-card-border)">
+                <h5 class="modal-title fs-5 fw-bold"><i class="bi bi-headset-vr me-2"></i>Tình trạng thiết bị</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-muted mb-4 small"><i class="bi bi-info-circle me-1"></i> Bấm vào từng kính để cập nhật trạng thái (Hỏng, Sạc, Vệ sinh...)</div>
+                <div class="d-flex flex-wrap gap-3 justify-content-center" id="devicesListContainer">
+                    {{-- Load từ device-container-hidden --}}
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--pos-card-border)">
+                <a href="{{ route('pos.devices', $subdomain) }}" class="btn-pos-outline ms-0 me-auto">
+                    <i class="bi bi-gear"></i> Cài đặt nâng cao
+                </a>
+                <button type="button" class="btn-pos" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL CẬP NHẬT THIẾT BỊ --}}
+<div class="modal fade" id="deviceModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--pos-card); border:1px solid var(--pos-card-border); color:var(--pos-text); box-shadow: 0 10px 40px rgba(0,0,0,0.5)">
             <div class="modal-header" style="border-bottom:1px solid var(--pos-card-border)">
                 <h5 class="modal-title fs-6 fw-bold" id="modalDeviceName">Cập nhật thiết bị</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -348,11 +365,11 @@ $totalDevices = $devices->count();
                 <div class="pos-form-group">
                     <label>Trạng thái mới</label>
                     <select id="modalNewStatus" class="form-select" onchange="toggleErrorNote()">
-                        <option value="available">Sẵn sàng</option>
-                        <option value="in_use">Đang dùng</option>
-                        <option value="cleaning">Chờ vệ sinh</option>
-                        <option value="charging">Đang sạc</option>
-                        <option value="error">Lỗi / Hỏng</option>
+                        <option value="available">Sẵn sàng (Xanh)</option>
+                        <option value="in_use">Đang dùng (Vàng)</option>
+                        <option value="cleaning">Chờ vệ sinh (Cyan)</option>
+                        <option value="charging">Đang sạc (Tím)</option>
+                        <option value="error">Lỗi / Hỏng (Đỏ)</option>
                     </select>
                 </div>
                 <div class="pos-form-group" id="errorNoteGroup" style="display:none">
@@ -398,11 +415,19 @@ $totalDevices = $devices->count();
 @section('scripts')
 <script>
 let deviceModal;
+let devicesListModal;
 let ticketModal;
 document.addEventListener('DOMContentLoaded', function() {
     deviceModal = new bootstrap.Modal(document.getElementById('deviceModal'));
+    devicesListModal = new bootstrap.Modal(document.getElementById('devicesListModal'));
     ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
 });
+
+function openDevicesListModal() {
+    const content = document.getElementById('device-container-hidden').innerHTML;
+    document.getElementById('devicesListContainer').innerHTML = content;
+    devicesListModal.show();
+}
 
 function openTicketModal(ticketId, ticketName) {
     document.getElementById('ticketModalName').textContent = ticketName;
