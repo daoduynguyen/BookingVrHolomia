@@ -237,6 +237,7 @@ class PosController extends Controller
                 'pos_shift_id'    => $activeShift->id,
                 'qr_token'        => Str::random(40),
                 'qr_used'         => false,
+                'shipping_address'=> '',
             ]);
 
             $slot->incrementBooked($request->quantity);

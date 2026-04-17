@@ -5,43 +5,67 @@
 
 @section('styles')
 <style>
-    .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 
     .ticket-card {
         background: var(--pos-card);
-        border: 1px solid var(--pos-card-border);
-        border-radius: 12px;
+        border: none;
+        border-radius: 16px;
         overflow: hidden;
         cursor: pointer;
-        transition: border-color .2s, transform .1s;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
     }
-    .ticket-card:hover { border-color: var(--pos-primary); transform: translateY(-1px); }
-
-    .ticket-card-header {
-        padding: 14px 16px 10px;
-        border-bottom: 1px solid var(--pos-card-border);
+    .ticket-card:hover { 
+        transform: translateY(-4px); 
+        box-shadow: 0 12px 25px rgba(0,0,0,0.08); 
     }
-    .ticket-card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
-    .ticket-card-price { font-size: 0.82rem; color: var(--pos-primary); font-weight: 600; opacity: 0.9; }
+    .ticket-card-img-wrap {
+        width: 100%;
+        height: 160px;
+        position: relative;
+        overflow: hidden;
+    }
+    .ticket-card-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .ticket-card:hover .ticket-card-img-wrap img {
+        transform: scale(1.05);
+    }
+    .ticket-card-body {
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
 
-    .slot-list { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .ticket-card-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; color: var(--pos-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ticket-card-price { font-size: 0.9rem; color: var(--pos-primary); font-weight: 700; display:flex; align-items:center; gap:6px; margin-bottom: 12px; }
+
+    .slot-list { padding: 10px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 
     .slot-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 9px 12px;
-        border-radius: 8px;
-        background: rgba(255,255,255,.03);
-        border: 1px solid rgba(255,255,255,.05);
-        transition: all .15s;
+        padding: 12px 18px;
+        border-radius: 12px;
+        background: var(--pos-card);
+        border: 1px solid var(--pos-card-border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: all .2s ease-in-out;
         text-decoration: none;
         color: var(--pos-text);
     }
-    .slot-item:hover { background: rgba(var(--pos-primary-rgb),.12); border-color: var(--pos-primary); color: var(--pos-text); }
+    .slot-item:hover { background: rgba(var(--pos-primary-rgb),.12); border-color: var(--pos-primary); color: var(--pos-text); transform: scale(1.02); }
     .slot-item.slot-full { opacity: .5; cursor: not-allowed; pointer-events: none; }
 
-    .slot-time { font-size: 0.85rem; font-weight: 600; }
+    .slot-time { font-size: 0.85rem; font-weight: 700; }
     .slot-time .date-tag { font-size: 0.68rem; color: var(--pos-text-muted); }
 
     .slot-avail {
@@ -51,49 +75,70 @@
         font-size: 0.75rem;
     }
     .slot-avail .add-btn {
-        width: 26px; height: 26px;
+        width: 32px; height: 32px;
         border-radius: 50%;
         background: var(--pos-primary);
         color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1rem;
+        font-size: 1.2rem;
         font-weight: 700;
         flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .slot-avail .add-btn:hover {
+        background: #000;
+        transform: rotate(90deg);
     }
     .slot-avail .add-btn.disabled {
         background: rgba(255,255,255,.1);
         color: #4b5563;
     }
 
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
         background: var(--pos-card);
-        border: 1px solid var(--pos-card-border);
-        border-radius: 10px;
-        padding: 14px 16px;
+        border: none;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .stat-label { font-size: 0.7rem; color: var(--pos-text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-    .stat-value { font-size: 1.4rem; font-weight: 800; }
-    .stat-value.green { color: #34d399; }
-    .stat-value.amber { color: #fbbf24; }
-    .stat-value.primary { color: var(--pos-primary); }
-    .stat-value.cyan   { color: #22d3ee; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+    
+    .stat-icon {
+        width: 52px; height: 52px; border-radius: 14px; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 1.6rem; flex-shrink: 0;
+    }
+    .stat-icon.green  { background: rgba(52, 211, 153, 0.15); color: #10b981; }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+    .stat-icon.cyan   { background: rgba(34, 211, 238, 0.15); color: #06b6d4; }
+    .stat-icon.amber  { background: rgba(251, 191, 36, 0.15);  color: #f59e0b; }
 
-    .device-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-label { font-size: 0.75rem; color: var(--pos-text-muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin-bottom: 4px; }
+    .stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--pos-text); }
+
+    .device-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
     .device-chip {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 0.8rem;
         font-weight: 600;
-        border: 1px solid var(--pos-card-border);
+        background: var(--pos-card);
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         cursor: pointer;
-        transition: opacity .15s;
+        transition: all .2s;
     }
-    .device-chip:hover { opacity: .8; }
-    .device-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .device-chip:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.06); }
+    .device-chip .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.2); }
     .dot-available { background: #34d399; }
     .dot-in_use    { background: #fbbf24; }
     .dot-cleaning  { background: #22d3ee; }
@@ -104,10 +149,10 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 14px;
+        margin-bottom: 18px;
     }
-    .section-title { font-size: 0.85rem; font-weight: 700; color: var(--pos-text); }
-    .section-sub { font-size: 0.75rem; color: var(--pos-text-muted); }
+    .section-title { font-size: 1.1rem; font-weight: 800; color: var(--pos-text); letter-spacing: -0.02em; }
+    .section-sub { font-size: 0.8rem; color: var(--pos-text-muted); font-weight: 500; }
 </style>
 @endsection@section('content')
 
@@ -125,20 +170,32 @@ $totalDevices = $devices->count();
 
 <div class="stats-row">
     <div class="stat-card">
-        <div class="stat-label"><i class="bi bi-receipt me-1"></i>Vé đã bán (ca này)</div>
-        <div class="stat-value green" id="stat-orders">{{ $totalOrders }}</div>
+        <div class="stat-icon green"><i class="bi bi-receipt"></i></div>
+        <div class="stat-info">
+            <span class="stat-label">Vé đã bán (ca này)</span>
+            <span class="stat-value">{{ $totalOrders }}</span>
+        </div>
     </div>
     <div class="stat-card">
-        <div class="stat-label"><i class="bi bi-cash-stack me-1"></i>Doanh thu ca</div>
-        <div class="stat-value purple" id="stat-revenue">{{ number_format($totalRevenue,0,',','.') }}₫</div>
+        <div class="stat-icon purple"><i class="bi bi-cash-stack"></i></div>
+        <div class="stat-info">
+            <span class="stat-label">Doanh thu ca</span>
+            <span class="stat-value">{{ number_format($totalRevenue,0,',','.') }}₫</span>
+        </div>
     </div>
     <div class="stat-card">
-        <div class="stat-label"><i class="bi bi-headset-vr me-1"></i>Kính sẵn sàng</div>
-        <div class="stat-value cyan" id="stat-devices">{{ $availableDevices }}/{{ $totalDevices }}</div>
+        <div class="stat-icon cyan"><i class="bi bi-headset-vr"></i></div>
+        <div class="stat-info">
+            <span class="stat-label">Kính sẵn sàng</span>
+            <span class="stat-value">{{ $availableDevices }}<span style="font-size:1rem; color:var(--pos-text-muted)">/{{ $totalDevices }}</span></span>
+        </div>
     </div>
     <div class="stat-card">
-        <div class="stat-label"><i class="bi bi-calendar-date me-1"></i>Hôm nay</div>
-        <div class="stat-value amber">{{ now()->format('d/m/Y') }}</div>
+        <div class="stat-icon amber"><i class="bi bi-calendar-date"></i></div>
+        <div class="stat-info">
+            <span class="stat-label">Hôm nay</span>
+            <span class="stat-value" style="font-size:1.15rem;">{{ now()->format('d/m/Y') }}</span>
+        </div>
     </div>
 </div>
 
@@ -175,10 +232,10 @@ $totalDevices = $devices->count();
     
     <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 400px; margin: 0 auto;">
         <form action="{{ route('pos.dashboard', $subdomain) }}" method="GET" class="w-100 position-relative">
-            <input type="text" name="search" class="form-control" placeholder="Tìm tên trò chơi..." 
+            <input type="text" name="search" class="form-control" placeholder="Tra cứu nhanh bộ sưu tập trò chơi..." 
                    value="{{ request('search') }}"
-                   style="border-radius: 20px; padding-left: 35px; background: var(--pos-card); color: var(--pos-text); border: 1px solid var(--pos-card-border);">
-            <i class="bi bi-search position-absolute text-muted" style="top: 50%; left: 12px; transform: translateY(-50%);"></i>
+                   style="border-radius: 30px; padding: 12px 20px 12px 42px; background: var(--pos-card); color: var(--pos-text); border: transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-size: 0.9rem; font-weight: 500;">
+            <i class="bi bi-search position-absolute text-primary" style="top: 50%; left: 16px; transform: translateY(-50%); font-size: 1rem;"></i>
             @if(request('search'))
                 <a href="{{ route('pos.dashboard', $subdomain) }}" class="position-absolute text-muted" style="top: 50%; right: 12px; transform: translateY(-50%); text-decoration: none;">
                     <i class="bi bi-x-circle-fill"></i>
@@ -203,13 +260,20 @@ $totalDevices = $devices->count();
 @endphp
 <div class="ticket-grid" id="ticket-grid">
     @foreach($tickets as $ticket)
-    <div class="ticket-card" data-ticket-id="{{ $ticket->id }}">
-        <div class="ticket-card-header">
+    <div class="ticket-card" data-ticket-id="{{ $ticket->id }}" onclick="openTicketModal({{ $ticket->id }}, '{{ htmlspecialchars($ticket->name) }}')">
+        <div class="ticket-card-img-wrap">
+            @php 
+                $img = Str::startsWith($ticket->image ?? $ticket->image_url, 'http') ? ($ticket->image ?? $ticket->image_url) : asset('storage/' . ($ticket->image ?? $ticket->image_url)); 
+                if(!$ticket->image && !$ticket->image_url) $img = "https://ui-avatars.com/api/?name=".urlencode($ticket->name)."&background=random&size=400";
+            @endphp
+            <img src="{{ $img }}" alt="{{ $ticket->name }}">
+        </div>
+        <div class="ticket-card-body">
             <div class="ticket-card-title">{{ $ticket->name }}</div>
-            <div class="ticket-card-price">{{ number_format($ticket->price,0,',','.') }}₫ / người</div>
+            <div class="ticket-card-price"><i class="bi bi-tag-fill"></i> {{ number_format($ticket->price,0,',','.') }}₫ / người</div>
             
-            <button class="btn-pos w-100 mt-3" style="padding: 8px;" onclick="openTicketModal({{ $ticket->id }}, '{{ htmlspecialchars($ticket->name) }}')">
-                Xem trò chơi <i class="bi bi-chevron-right ms-1 text-white-50"></i>
+            <button class="btn-pos w-100 mt-auto" style="padding: 10px; border-radius: 12px; font-weight: 600; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <i class="bi bi-calendar2-range"></i> Xem Giờ Chơi
             </button>
         </div>
 
@@ -308,11 +372,16 @@ $totalDevices = $devices->count();
 <div class="modal fade" id="ticketModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="background:var(--pos-card); border:1px solid var(--pos-card-border); color:var(--pos-text)">
-            <div class="modal-header" style="border-bottom:1px solid var(--pos-card-border)">
-                <h5 class="modal-title fs-5 fw-bold" id="ticketModalName">Tên Trò Chơi</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header d-flex align-items-center" style="border-bottom:1px solid var(--pos-card-border); background: rgba(var(--pos-primary-rgb), 0.03);">
+                <h5 class="modal-title fs-5 fw-bold text-primary mb-0" id="ticketModalName">Tên Trò Chơi</h5>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center" onclick="toggleTicketModalFullscreen()" style="width:32px; height:32px; border-radius: 8px;" title="Phóng to / Thu nhỏ">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
-            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+            <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto; background: var(--pos-bg);">
                 <div class="d-flex align-items-center justify-content-between mb-3 text-muted" style="font-size:0.9rem;">
                     <div><i class="bi bi-clock-history me-1"></i> Danh sách giờ chơi hôm nay</div>
                     <div><span class="badge bg-secondary">Tối đa 15 người / slot</span></div>
@@ -340,6 +409,11 @@ function openTicketModal(ticketId, ticketName) {
     const slotsHtml = document.getElementById('slots-data-' + ticketId).innerHTML;
     document.getElementById('ticketModalContent').innerHTML = slotsHtml;
     ticketModal.show();
+}
+
+function toggleTicketModalFullscreen() {
+    const dialog = document.querySelector('#ticketModal .modal-dialog');
+    dialog.classList.toggle('modal-fullscreen');
 }
 
 function openDeviceModal(el) {
