@@ -45,20 +45,28 @@ class PosController extends Controller
         }
 
         // Vé thuộc chi nhánh
-        $tickets = Ticket::whereHas('locations', function ($q) use ($location) {
+        $query = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
-        })->with(['timeSlots' => function ($q) use ($location) {
+        });
+
+        if (request()->has('search') && request()->search != '') {
+            $query->where('name', 'like', '%' . request()->search . '%');
+        }
+
+        $tickets = $query->with(['timeSlots' => function ($q) use ($location) {
             $q->where('location_id', $location->id)
               ->whereDate('date', today())
               ->orderBy('start_time');
-        }])->paginate(10);
+        }])->paginate(10)->withQueryString();
 
         // Thiết bị VR
         $devices = PosDevice::where('location_id', $location->id)
             ->orderBy('name')
             ->get();
 
-        return view('pos.dashboard', compact('location', 'subdomain', 'activeShift', 'tickets', 'devices'));
+        $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, today()->format('Y-m-d'));
+
+        return view('pos.dashboard', compact('location', 'subdomain', 'activeShift', 'tickets', 'devices', 'availabilities'));
     }
 
     // -------------------------------------------------------
@@ -67,7 +75,7 @@ class PosController extends Controller
     public function slotDetail(string $subdomain, int $slotId)
     {
         $location = $this->getLocation($subdomain);
-        $slot     = TimeSlot::where('id', $slotId)
+        $slot     = TimeSlot::query()->where('id', $slotId)
             ->where('location_id', $location->id)
             ->with('ticket')
             ->firstOrFail();
@@ -106,7 +114,7 @@ class PosController extends Controller
     public function slotStatus(string $subdomain, int $slotId)
     {
         $location = $this->getLocation($subdomain);
-        $slot     = TimeSlot::where('id', $slotId)
+        $slot     = TimeSlot::query()->where('id', $slotId)
             ->where('location_id', $location->id)
             ->firstOrFail();
 

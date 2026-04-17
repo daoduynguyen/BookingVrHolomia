@@ -78,6 +78,8 @@ class BranchController extends Controller
             'password' => 'required',
         ]);
 
+        $location = $this->getLocation($subdomain);
+
        if (Auth::attempt($credentials)) {
     $request->session()->regenerate();
 
@@ -153,7 +155,7 @@ class BranchController extends Controller
 
         // Lấy danh sách slot
         $today = Carbon::today()->format('Y-m-d');
-        $slots = TimeSlot::where('ticket_id', $ticket->id)
+        $slots = TimeSlot::query()->where('ticket_id', $ticket->id)
             ->where('date', '>=', $today)
             ->where('status', 'open')
             ->orderBy('date')->orderBy('start_time')
@@ -427,7 +429,7 @@ class BranchController extends Controller
 
         // Cập nhật slot
         if ($order->slot_id) {
-            $slot = TimeSlot::find($order->slot_id);
+            $slot = TimeSlot::query()->find($order->slot_id);
             if ($slot)
                 $slot->incrementBooked($order->quantity);
         }
@@ -585,15 +587,16 @@ class BranchController extends Controller
     {
         $ticketId = $request->ticket_id;
         $date = $request->date;
+        $location = $this->getLocation($subdomain);
 
         if (!$ticketId || !$date) {
             return response()->json([]);
         }
 
-        $query = TimeSlot::where('ticket_id', $ticketId)
+        $query = TimeSlot::query()->where('ticket_id', $ticketId)
             ->where('date', $date)
             ->where('status', 'open')
-            ->whereColumn('booked_count', '<', 'capacity');
+            ->where('location_id', $location->id); // Bảo mật: đảm bảo lọc theo chi nhánh này
 
         // Nếu là ngày hiện tại, chỉ lấy khung giờ tương lai hoặc bắt đầu ngay
         $targetDate = Carbon::parse($date);
@@ -602,6 +605,20 @@ class BranchController extends Controller
         }
 
         $slots = $query->orderBy('start_time', 'asc')->get();
+
+        // Map data để tính available thực tế
+        $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, $date);
+        
+        $slots->transform(function($slot) use ($availabilities) {
+            $slot->available_devices = $availabilities[$slot->id] ?? 0;
+            return $slot;
+        });
+
+        // Chỉ trả về các slot thực sự còn sức chứa
+        $slots = $slots->filter(function($slot) {
+            return $slot->available_devices > 0;
+        })->values();
+
         return response()->json($slots);
     }
 

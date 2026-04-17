@@ -113,6 +113,7 @@
                             <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
                             <input type="hidden" name="start_date" value="{{ $selectedDate }}">
                             <input type="hidden" name="end_date" value="{{ $selectedDate }}">
+                            <input type="hidden" name="gap_time" value="10">
                             <button type="submit" class="btn btn-outline-info btn-sm rounded-pill px-3 text-nowrap">
                                 <i class="bi bi-magic"></i> Tạo nhanh (08:00 - 21:00)
                             </button>
@@ -135,8 +136,15 @@
                                     <div class="slot-box {{ $statusClass }} h-100 d-flex flex-column justify-content-center"
                                          onclick="showCustomerList({{ $slot->id }})">
                                         <span class="time-label">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}</span>
-                                        <span class="capacity-label">
-                                            <i class="bi bi-people-fill"></i> {{ $slot->booked_count }} / {{ $slot->capacity }}
+                                        @php
+                                            $available = $availabilities[$slot->id] ?? 0;
+                                        @endphp
+                                        <span class="capacity-label mt-1">
+                                            @if($statusClass != 'slot-full')
+                                                <i class="bi bi-headset-vr text-success"></i> <b class="text-success">Còn {{ $available }}</b> thiết bị
+                                            @else
+                                                <i class="bi bi-headset-vr text-danger"></i> <b class="text-danger">Hết máy</b>
+                                            @endif
                                         </span>
                                         @if($statusClass == 'slot-full')
                                             <div class="small mt-1 fw-bold">FULL</div>
@@ -170,7 +178,9 @@
                             <form action="{{ route('admin.slots.generate') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
-                                <input type="hidden" name="date" value="{{ $selectedDate }}">
+                                <input type="hidden" name="start_date" value="{{ $selectedDate }}">
+                                <input type="hidden" name="end_date" value="{{ $selectedDate }}">
+                                <input type="hidden" name="gap_time" value="10">
                                 <button type="submit" class="btn btn-info rounded-pill px-4 py-2 fw-bold">
                                     <i class="bi bi-plus-circle-fill me-2"></i> KHỞI TẠO CA NHANH (08:00 - 21:00)
                                 </button>
@@ -305,6 +315,10 @@
                             <div class="col-md-6">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Đến giờ</label>
                                 <input type="text" name="end_time" class="form-control bg-light text-dark border-light time-picker" required value="21:00">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Khoảng nghỉ giữa các ca (Giấy nghỉ chờ 1-20 phút)</label>
+                                <input type="number" name="gap_time" class="form-control bg-light text-dark border-light" required value="10" min="0" max="30">
                             </div>
                         </div>
                     </div>

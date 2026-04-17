@@ -46,7 +46,15 @@ class SlotController extends Controller
         // 3. Lấy toàn bộ Khung giờ sau khi đã lọc, sắp xếp và nhóm theo Trò chơi
         $slots = $slotQuery->orderBy('start_time')->get()->groupBy('ticket_id');
 
-        return view('admin.slots.index', compact('slots', 'tickets', 'selectedDate'));
+        $availabilities = [];
+        $locationIds = \App\Models\TimeSlot::where('date', $selectedDate)->distinct()->pluck('location_id');
+        foreach ($locationIds as $locId) {
+            if ($locId) {
+                $availabilities += \App\Models\TimeSlot::getTrueAvailabilitiesForDate($locId, $selectedDate);
+            }
+        }
+
+        return view('admin.slots.index', compact('slots', 'tickets', 'selectedDate', 'availabilities'));
     }
     // 1. Thêm 1 ca lẻ
     public function storeSingle(Request $request)
@@ -170,6 +178,7 @@ class SlotController extends Controller
 
         $dailyStart = Carbon::parse($request->input('start_time', '08:00'))->format('H:i:00');
         $dailyEnd   = Carbon::parse($request->input('end_time', '21:00'))->format('H:i:00');
+        $gapTime    = (int) $request->input('gap_time', 10);
 
         foreach ($period as $dateObj) {
             $currentDate = $dateObj->format('Y-m-d');
@@ -214,7 +223,7 @@ class SlotController extends Controller
                         $existingSlots[$key] = true;
                     }
 
-                    $currentTimeStr = $endTime;
+                    $currentTimeStr = (clone $slotEndCarbon)->addMinutes($gapTime)->format('H:i:00');
                 }
             }
         }

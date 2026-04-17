@@ -24,7 +24,7 @@
     .ticket-card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
     .ticket-card-price { font-size: 0.82rem; color: var(--pos-primary); font-weight: 600; opacity: 0.9; }
 
-    .slot-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .slot-list { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 
     .slot-item {
         display: flex;
@@ -167,12 +167,27 @@ $totalDevices = $devices->count();
 @endif
 
 {{-- DANH SÁCH VÉ + SLOT --}}
-<div class="section-header">
+<div class="section-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
         <div class="section-title"><i class="bi bi-ticket-perforated me-2"></i>Vé hôm nay</div>
         <div class="section-sub" id="refresh-status">Tự động cập nhật sau 30s</div>
     </div>
-    <a href="{{ route('pos.checkin', $subdomain) }}" class="btn-pos" style="font-size:0.8rem;padding:7px 14px">
+    
+    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 400px; margin: 0 auto;">
+        <form action="{{ route('pos.dashboard', $subdomain) }}" method="GET" class="w-100 position-relative">
+            <input type="text" name="search" class="form-control" placeholder="Tìm tên trò chơi..." 
+                   value="{{ request('search') }}"
+                   style="border-radius: 20px; padding-left: 35px; background: var(--pos-card); color: var(--pos-text); border: 1px solid var(--pos-card-border);">
+            <i class="bi bi-search position-absolute text-muted" style="top: 50%; left: 12px; transform: translateY(-50%);"></i>
+            @if(request('search'))
+                <a href="{{ route('pos.dashboard', $subdomain) }}" class="position-absolute text-muted" style="top: 50%; right: 12px; transform: translateY(-50%); text-decoration: none;">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            @endif
+        </form>
+    </div>
+
+    <a href="{{ route('pos.checkin', $subdomain) }}" class="btn-pos" style="font-size:0.8rem;padding:7px 14px; white-space: nowrap;">
         <i class="bi bi-qr-code-scan"></i> Quét vào
     </a>
 </div>
@@ -213,26 +228,30 @@ $totalDevices = $devices->count();
                     }
                     $hasVisibleSlots = true;
                     
-                    $available = $slot->capacity - $slot->booked_count;
+                    $available = $availabilities[$slot->id] ?? 0;
                     $isFull = $available <= 0 || $slot->status !== 'open';
                 @endphp
                 <a href="{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}" 
                    class="slot-item {{ $isFull ? 'slot-full' : '' }}" 
-                   data-slot-id="{{ $slot->id }}" style="margin-bottom: 8px;">
+                   data-slot-id="{{ $slot->id }}">
                     <div>
                         <div class="slot-time">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</div>
-                        <div class="slot-time date-tag">{{ \Carbon\Carbon::parse($slot->date)->format('d/m') }} · <span class="booked-count">{{ $slot->booked_count }}</span>/{{ $slot->capacity }} chỗ</div>
+                        <div class="slot-time date-tag mt-1">
+                            @if(!$isFull)
+                                <i class="bi bi-headset-vr text-success"></i> Còn <b class="text-success">{{ $available }}</b> thiết bị
+                            @else
+                                <i class="bi bi-headset-vr text-danger"></i> <b class="text-danger">Hết thiết bị</b>
+                            @endif
+                        </div>
                     </div>
                     <div class="slot-avail">
                         @if(!$isFull)
-                            <span class="avail-text" style="color:var(--pos-text-muted)">còn {{ $available }}</span>
                             <a href="{{ route('pos.sale.form', [$subdomain, $slot->id]) }}" 
                                class="add-btn" 
                                onclick="event.stopPropagation()"
                                title="Bán vé cho slot này">+</a>
                         @else
-                            <span class="avail-text" style="color:#f87171;font-size:0.72rem">Hết chỗ</span>
-                            <div class="add-btn disabled">–</div>
+                            <div class="add-btn disabled text-muted">–</div>
                         @endif
                     </div>
                 </a>

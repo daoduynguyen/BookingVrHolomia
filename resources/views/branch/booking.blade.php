@@ -290,11 +290,11 @@
                                     bestIndex = validSlotsCount;
                                 }
 
-                                var available = slot.capacity - slot.booked_count;
+                                var available = slot.available_devices;
                                 slotSelect.append(
                                     '<option value="' + slot.id + '" data-available="' + available + '">' +
                                     start + ' - ' + end +
-                                    ' (Còn ' + available + ' chỗ)</option>'
+                                    ' (Còn ' + available + ' thiết bị)</option>'
                                 );
                                 validSlotsCount++;
                             });
