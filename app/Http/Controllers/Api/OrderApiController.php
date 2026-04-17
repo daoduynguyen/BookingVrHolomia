@@ -340,9 +340,8 @@ class OrderApiController extends Controller
                 ]);
             }
 
-            // Nhả slot
             if ($order->slot_id) {
-                TimeSlot::find($order->slot_id)?->decrement('booked_count', $order->quantity);
+                TimeSlot::find($order->slot_id)?->decrementBooked($order->quantity);
             }
 
             $order->update(['status' => 'refunded']);

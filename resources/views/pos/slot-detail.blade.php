@@ -6,8 +6,8 @@
 @section('styles')
 <style>
     .slot-header-card {
-        background: linear-gradient(135deg, rgba(124,58,237,.2), rgba(6,182,212,.1));
-        border: 1px solid rgba(124,58,237,.3);
+        background: linear-gradient(135deg, rgba(var(--pos-primary-rgb),.2), rgba(var(--pos-secondary-rgb, 56, 189, 248),.1));
+        border: 1px solid rgba(var(--pos-primary-rgb),.3);
         border-radius: 12px;
         padding: 16px 20px;
         margin-bottom: 20px;

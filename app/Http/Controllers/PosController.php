@@ -414,8 +414,10 @@ class PosController extends Controller
         DB::transaction(function () use ($order, $request) {
             // Hoàn lại slot
             if ($order->slot_id) {
-                TimeSlot::where('id', $order->slot_id)
-                    ->decrement('booked_count', $order->quantity ?? 1);
+                $slot = TimeSlot::find($order->slot_id);
+                if ($slot) {
+                    $slot->decrementBooked($order->quantity ?? 1);
+                }
             }
 
             $order->update([
@@ -425,5 +427,39 @@ class PosController extends Controller
         });
 
         return back()->with('success', 'Đã huỷ vé thành công.');
+    }
+
+    // -------------------------------------------------------
+    // Cài đặt giao diện POS
+    // -------------------------------------------------------
+    public function settings(string $subdomain)
+    {
+        $location    = $this->getLocation($subdomain);
+        $activeShift = $this->getActiveShift($location->id);
+        
+        $uiSettings = auth()->user()->ui_settings ?? [];
+
+        return view('pos.settings', compact('location', 'subdomain', 'activeShift', 'uiSettings'));
+    }
+
+    public function updateSettings(Request $request, string $subdomain)
+    {
+        $request->validate([
+            'pos_theme'         => 'required|in:dark,light',
+            'pos_primary_color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+        ]);
+
+        $user = auth()->user();
+        $uiSettings = $user->ui_settings ?? [];
+        
+        // Cập nhật cài đặt mới vào mảng hiện tại
+        $uiSettings['pos_theme']         = $request->pos_theme;
+        $uiSettings['pos_primary_color'] = $request->pos_primary_color;
+
+        $user->update([
+            'ui_settings' => $uiSettings
+        ]);
+
+        return back()->with('success', 'Đã lưu cài đặt giao diện thành công.');
     }
 }

@@ -451,4 +451,10 @@ Route::prefix('chi-nhanh/{subdomain}/pos')
         ->name('pos.shift.close');
     Route::get('/bao-cao-ca/{shiftId}', [\App\Http\Controllers\PosShiftController::class, 'report'])
         ->name('pos.shift.report');
+
+    // Cài đặt giao diện
+    Route::get('/cai-dat', [\App\Http\Controllers\PosController::class, 'settings'])
+        ->name('pos.settings');
+    Route::post('/cai-dat', [\App\Http\Controllers\PosController::class, 'updateSettings'])
+        ->name('pos.settings.update');
 });

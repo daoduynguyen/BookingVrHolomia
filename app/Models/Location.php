@@ -24,6 +24,7 @@ class Location extends Model
         'color',
         'logo_url',
         'banner_url',
+        'total_devices',
     ];
 
     protected $casts = [

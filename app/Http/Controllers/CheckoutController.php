@@ -702,13 +702,7 @@ class CheckoutController extends Controller
             if ($order->slot_id) {
                 $slot = TimeSlot::find($order->slot_id);
                 if ($slot) {
-                    // Trừ đi số lượng khách đã hủy (Hạ booked_count xuống)
-                    $slot->decrement('booked_count', $order->quantity);
-
-                    // Đảm bảo không bị âm và cập nhật lại trạng thái open nếu trước đó bị full
-                    if ($slot->booked_count < $slot->capacity) {
-                        $slot->update(['status' => 'open']);
-                    }
+                    $slot->decrementBooked($order->quantity);
                 }
             }
         });

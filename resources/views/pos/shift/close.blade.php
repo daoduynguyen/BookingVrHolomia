@@ -37,14 +37,14 @@
         justify-content: space-between;
         align-items: center;
         padding: 12px 16px;
-        background: rgba(124,58,237,.1);
-        border: 1px solid rgba(124,58,237,.2);
+        background: rgba(var(--pos-primary-rgb),.1);
+        border: 1px solid rgba(var(--pos-primary-rgb),.2);
         border-radius: 10px;
         margin-bottom: 20px;
     }
     .total-row .label { font-size: 0.85rem; color: var(--pos-text-muted); font-weight: 600; }
-    .total-row .value { font-size: 1.3rem; font-weight: 800; color: #a78bfa; }
-
+    .total-row .value { font-size: 1.3rem; font-weight: 800; color: var(--pos-primary); }
+ 
     /* Lệch tiền */
     .diff-card {
         border-radius: 10px;
@@ -59,17 +59,17 @@
     .diff-card.ok    .diff-amount { color: #34d399; }
     .diff-card.over  .diff-amount { color: #818cf8; }
     .diff-card.short .diff-amount { color: #f87171; }
-
+ 
     /* Sticky summary */
     .close-sidebar { position: sticky; top: 80px; }
-
+ 
     .cash-input-wrap {
         position: relative;
     }
     .cash-input-wrap .currency-symbol {
         position: absolute; right: 14px; top: 50%;
         transform: translateY(-50%);
-        color: #a78bfa; font-weight: 700; font-size: 0.9rem;
+        color: var(--pos-primary); font-weight: 700; font-size: 0.9rem;
         pointer-events: none;
     }
     .cash-input-wrap input {
@@ -196,7 +196,7 @@
                         <td style="color:var(--pos-text-muted)">{{ $order->id }}</td>
                         <td>{{ $order->customer_name }}</td>
                         <td>{{ $order->slot->ticket->name ?? '—' }}</td>
-                        <td style="color:#a78bfa;font-weight:700">{{ number_format($order->total_amount, 0, ',', '.') }}₫</td>
+                        <td style="color:var(--pos-primary);font-weight:700">{{ number_format($order->total_amount, 0, ',', '.') }}₫</td>
                         <td>
                             @if($order->payment_method === 'cash') 💵
                             @elseif($order->payment_method === 'card') 💳

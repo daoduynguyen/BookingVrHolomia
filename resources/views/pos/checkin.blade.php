@@ -20,7 +20,7 @@
         margin: 0 auto 16px;
         border: 2px dashed var(--pos-primary);
         border-radius: 12px;
-        background: rgba(124,58,237,.05);
+        background: rgba(var(--pos-primary-rgb),.05);
         position: relative;
         overflow: hidden;
     }

@@ -43,6 +43,7 @@ class LocationController extends Controller
             'facebook_url' => 'nullable|url|max:500',
             'is_active' => 'nullable|boolean',
             'color' => 'nullable|string|max:20',
+            'total_devices' => 'nullable|integer|min:1',
         ]);
 
         // Nếu slug rỗng thì tự tạo từ name (model cũng làm nhưng đề phòng)
@@ -98,6 +99,7 @@ class LocationController extends Controller
             'facebook_url' => 'nullable|url|max:500',
             'is_active' => 'nullable|boolean',
             'color' => 'nullable|string|max:20',
+            'total_devices' => 'nullable|integer|min:1',
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);

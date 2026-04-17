@@ -38,8 +38,8 @@
         transition: all .15s;
         text-align: center;
     }
-    .status-btn:hover { background: rgba(124,58,237,.15); border-color: var(--pos-primary); color: #c4b5fd; }
-    .status-btn.active { background: rgba(124,58,237,.2); border-color: var(--pos-primary); color: #c4b5fd; }
+    .status-btn:hover { background: rgba(var(--pos-primary-rgb),.15); border-color: var(--pos-primary); color: var(--pos-primary); }
+    .status-btn.active { background: rgba(var(--pos-primary-rgb),.2); border-color: var(--pos-primary); color: var(--pos-primary); }
 
     .stats-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .stats-chip {

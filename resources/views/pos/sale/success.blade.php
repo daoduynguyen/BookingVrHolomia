@@ -15,7 +15,7 @@
     }
 
     .bill-header {
-        background: linear-gradient(135deg, var(--pos-primary), #4f46e5);
+        background: linear-gradient(135deg, var(--pos-primary), var(--pos-secondary));
         padding: 20px 24px;
         text-align: center;
     }
@@ -42,8 +42,8 @@
     .bill-row .val { font-weight: 600; }
 
     .bill-total {
-        background: rgba(124,58,237,.1);
-        border: 1px solid rgba(124,58,237,.2);
+        background: rgba(var(--pos-primary-rgb),.1);
+        border: 1px solid rgba(var(--pos-primary-rgb),.2);
         border-radius: 10px;
         padding: 14px 20px;
         margin-top: 12px;
@@ -52,7 +52,7 @@
         align-items: center;
     }
     .bill-total .label { font-size: 0.85rem; color: var(--pos-text-muted); font-weight: 600; }
-    .bill-total .val { font-size: 1.4rem; font-weight: 800; color: #a78bfa; }
+    .bill-total .val { font-size: 1.4rem; font-weight: 800; color: var(--pos-primary); }
 
     .payment-badge {
         display: inline-flex;

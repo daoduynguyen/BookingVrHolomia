@@ -111,7 +111,7 @@
             <div class="kpi-card">
                 <div class="kpi-icon">🎫</div>
                 <div class="kpi-label">Vé đã bán</div>
-                <div class="kpi-value" style="color:#a78bfa">{{ $summary['count'] }}</div>
+                <div class="kpi-value" style="color:var(--pos-primary)">{{ $summary['count'] }}</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-icon">💰</div>
@@ -200,7 +200,7 @@
                             </td>
                             <td>{{ $order->slot->ticket->name ?? '—' }}</td>
                             <td>{{ $order->quantity ?? 1 }}</td>
-                            <td style="font-weight:700;color:#a78bfa">{{ number_format($order->total_amount, 0, ',', '.') }}₫</td>
+                            <td style="font-weight:700;color:var(--pos-primary)">{{ number_format($order->total_amount, 0, ',', '.') }}₫</td>
                             <td>
                                 @if($order->payment_method === 'cash') <span style="color:#34d399">💵</span>
                                 @elseif($order->payment_method === 'card') <span style="color:#818cf8">💳</span>

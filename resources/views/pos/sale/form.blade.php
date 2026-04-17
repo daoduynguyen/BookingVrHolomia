@@ -20,11 +20,11 @@
         text-align: center;
         transition: all .15s;
     }
-    .payment-btn:hover { border-color: var(--pos-primary); color: #c4b5fd; }
+    .payment-btn:hover { border-color: var(--pos-primary); color: var(--pos-primary); }
     .payment-btn.selected {
         border-color: var(--pos-primary);
-        background: rgba(124,58,237,.15);
-        color: #c4b5fd;
+        background: rgba(var(--pos-primary-rgb),.15);
+        color: var(--pos-primary);
     }
     .payment-btn i { font-size: 1.3rem; display: block; margin-bottom: 4px; }
 
@@ -41,7 +41,7 @@
     .summary-row { display: flex; justify-content: space-between; font-size: 0.83rem; margin-bottom: 8px; }
     .summary-row .label { color: var(--pos-text-muted); }
     .summary-divider { border: none; border-top: 1px solid var(--pos-card-border); margin: 12px 0; }
-    .summary-total { font-size: 1.2rem; font-weight: 800; color: #a78bfa; }
+    .summary-total { font-size: 1.2rem; font-weight: 800; color: var(--pos-primary); }
 
     .customer-found-card {
         background: rgba(16,185,129,.1);
@@ -65,7 +65,7 @@
         display: flex; align-items: center; justify-content: center;
         transition: background .15s;
     }
-    .qty-control button:hover { background: rgba(124,58,237,.2); border-color: var(--pos-primary); }
+    .qty-control button:hover { background: rgba(var(--pos-primary-rgb),.2); border-color: var(--pos-primary); }
     .qty-control .qty-val { font-size: 1.1rem; font-weight: 700; min-width: 30px; text-align: center; }
 </style>
 @endsection

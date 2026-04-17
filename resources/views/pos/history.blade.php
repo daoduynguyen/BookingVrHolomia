@@ -56,7 +56,7 @@
         margin-bottom: 8px;
         transition: background .15s;
     }
-    .order-row:hover { background: rgba(124,58,237,.07); border-color: rgba(124,58,237,.2); }
+    .order-row:hover { background: rgba(var(--pos-primary-rgb),.07); border-color: rgba(var(--pos-primary-rgb),.2); }
 
     .order-id {
         font-size: 0.7rem;
@@ -69,11 +69,11 @@
     .order-avatar {
         width: 36px; height: 36px;
         border-radius: 50%;
-        background: rgba(124,58,237,.2);
+        background: rgba(var(--pos-primary-rgb),.15);
         display: flex; align-items: center; justify-content: center;
         font-size: 0.8rem;
         font-weight: 700;
-        color: #c4b5fd;
+        color: var(--pos-primary);
         flex-shrink: 0;
     }
 
@@ -85,7 +85,7 @@
     .order-ticket .ticket-name { font-size: 0.82rem; font-weight: 600; }
     .order-ticket .slot-time   { font-size: 0.7rem; color: var(--pos-text-muted); }
 
-    .order-amount { font-size: 0.95rem; font-weight: 800; color: #a78bfa; flex-shrink: 0; }
+    .order-amount { font-size: 0.95rem; font-weight: 800; color: var(--pos-primary); flex-shrink: 0; }
 
     .order-pttt {
         font-size: 1.1rem;

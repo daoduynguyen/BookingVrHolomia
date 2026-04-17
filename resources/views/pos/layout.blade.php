@@ -1,3 +1,42 @@
+@php
+    $uiSettings = auth()->user()->ui_settings ?? [];
+    $posTheme   = $uiSettings['pos_theme'] ?? 'dark';
+    $posPrimary = $uiSettings['pos_primary_color'] ?? '#1e88e5'; 
+    $posSecondary = '#38bdf8';
+    $posPrimaryDark = '#0d6efd';
+
+    // Helper function to convert hex to rgb for CSS transparency
+    function hexToRgb($hex) {
+        $hex = str_replace('#', '', $hex);
+        if(strlen($hex) == 3) {
+            $r = hexdec(substr($hex,0,1).substr($hex,0,1));
+            $g = hexdec(substr($hex,1,1).substr($hex,1,1));
+            $b = hexdec(substr($hex,2,1).substr($hex,2,1));
+        } else {
+            $r = hexdec(substr($hex,0,2));
+            $g = hexdec(substr($hex,2,2));
+            $b = hexdec(substr($hex,4,2));
+        }
+        return "$r, $g, $b";
+    }
+    $posPrimaryRGB = hexToRgb($posPrimary);
+
+    if ($posTheme === 'light') {
+        $posBg        = '#f0f4f8';
+        $posCard      = '#ffffff';
+        $posCardBorder= '#d1d5db';
+        $posText      = '#1f2937';
+        $posTextMuted = '#6b7280';
+        $posGlassBg   = 'rgba(240, 244, 248, 0.9)';
+    } else {
+        $posBg        = '#0d1b3e'; 
+        $posCard      = '#152342';
+        $posCardBorder= '#1e2d5a';
+        $posText      = '#e2e8f0';
+        $posTextMuted = '#94a3b8';
+        $posGlassBg   = 'rgba(13, 27, 62, 0.9)';
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,17 +51,18 @@
 
     <style>
         :root {
-            --pos-primary: #7c3aed;
-            --pos-primary-dark: #5b21b6;
-            --pos-secondary: #06b6d4;
+            --pos-primary: {{ $posPrimary }};
+            --pos-primary-rgb: {{ $posPrimaryRGB }};
+            --pos-primary-dark: {{ $posPrimaryDark }};
+            --pos-secondary: {{ $posSecondary }};
             --pos-success: #10b981;
             --pos-warning: #f59e0b;
             --pos-danger: #ef4444;
-            --pos-bg: #0f0c1a;
-            --pos-card: #1a1530;
-            --pos-card-border: #2d2550;
-            --pos-text: #e2e8f0;
-            --pos-text-muted: #94a3b8;
+            --pos-bg: {{ $posBg }};
+            --pos-card: {{ $posCard }};
+            --pos-card-border: {{ $posCardBorder }};
+            --pos-text: {{ $posText }};
+            --pos-text-muted: {{ $posTextMuted }};
             --sidebar-w: 220px;
         }
 
@@ -35,6 +75,7 @@
             margin: 0;
             overflow: hidden;
             height: 100vh;
+            transition: background 0.3s, color 0.3s;
         }
 
         /* SIDEBAR */
@@ -47,6 +88,7 @@
             display: flex;
             flex-direction: column;
             z-index: 100;
+            transition: background 0.3s, border-color 0.3s;
         }
 
         .pos-sidebar .logo {
@@ -67,11 +109,12 @@
 
         .pos-sidebar .logo .badge-branch {
             font-size: 0.65rem;
-            background: rgba(124,58,237,0.2);
-            color: #a78bfa;
+            background: rgba(var(--pos-primary-rgb, 30, 136, 229), 0.15);
+            color: var(--pos-primary);
             padding: 2px 7px;
             border-radius: 20px;
             margin-top: 2px;
+            border: 1px solid rgba(var(--pos-primary-rgb, 30, 136, 229), 0.15);
         }
 
         .pos-nav {
@@ -95,8 +138,8 @@
 
         .pos-nav a:hover,
         .pos-nav a.active {
-            background: rgba(124,58,237,0.12);
-            color: #c4b5fd;
+            background: rgba(var(--pos-primary-rgb, 30, 136, 229), 0.1);
+            color: var(--pos-primary);
             border-left-color: var(--pos-primary);
         }
 
@@ -107,7 +150,7 @@
             font-size: 0.68rem;
             text-transform: uppercase;
             letter-spacing: .08em;
-            color: #4b5563;
+            color: var(--pos-text-muted);
             margin-top: 8px;
         }
 
@@ -146,7 +189,7 @@
 
         .pos-topbar {
             position: sticky; top: 0; z-index: 50;
-            background: rgba(15,12,26,0.9);
+            background: {{ $posGlassBg }};
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--pos-card-border);
             padding: 12px 24px;
@@ -223,7 +266,7 @@
             gap: 7px;
             text-decoration: none;
         }
-        .btn-pos-outline:hover { border-color: var(--pos-primary); color: #c4b5fd; }
+        .btn-pos-outline:hover { border-color: var(--pos-primary); color: var(--pos-primary); }
 
         .btn-success-pos {
             background: var(--pos-success);
@@ -380,7 +423,7 @@
 {{-- SIDEBAR --}}
 <aside class="pos-sidebar">
     <div class="logo">
-        <i class="bi bi-controller fs-5" style="color:#7c3aed"></i>
+        <i class="bi bi-controller fs-5" style="color:var(--pos-primary)"></i>
         <div>
             <span>HOLOMIA POS</span>
             <div class="badge-branch">{{ $location->name ?? '' }}</div>
@@ -408,7 +451,7 @@
             <i class="bi bi-clock-history"></i> Lịch sử giao dịch
         </a>
 
-        <div class="nav-section">Ca làm việc</div>
+        <div class="nav-section">Hệ thống</div>
         @if(isset($activeShift) && $activeShift)
         <a href="{{ route('pos.shift.close.form', $subdomain) }}"
            class="{{ request()->routeIs('pos.shift.close*') ? 'active' : '' }}">
@@ -420,6 +463,10 @@
             <i class="bi bi-door-open"></i> Mở ca
         </a>
         @endif
+        <a href="{{ route('pos.settings', $subdomain) }}"
+           class="{{ request()->routeIs('pos.settings') ? 'active' : '' }}">
+            <i class="bi bi-gear"></i> Cài đặt
+        </a>
     </nav>
 
     <div class="pos-sidebar-bottom">

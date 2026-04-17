@@ -63,6 +63,13 @@ Thêm các field: slug, description, banner_image, opening_hours, maps_url, face
                     <input type="url" name="facebook_url" class="form-control" value="{{ old('facebook_url') }}"
                         placeholder="https://facebook.com/holomia.hanoi">
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Tổng Số Kính VR <span class="text-danger">*</span></label>
+                    <input type="number" name="total_devices" class="form-control @error('total_devices') is-invalid @enderror"
+                        value="{{ old('total_devices', 20) }}" required min="1">
+                    @error('total_devices') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="form-text">Dùng để giới hạn số khách cùng lúc.</div>
+                </div>
             </div>
 
             {{-- ── LANDING PAGE CONTENT ── --}}

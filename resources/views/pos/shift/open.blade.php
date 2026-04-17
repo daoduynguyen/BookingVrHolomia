@@ -13,8 +13,8 @@
     .shift-hero {
         text-align: center;
         padding: 32px 24px 24px;
-        background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(6,182,212,.08));
-        border: 1px solid rgba(124,58,237,.25);
+        background: linear-gradient(135deg, rgba(var(--pos-primary-rgb),.15), rgba(var(--pos-secondary-rgb, 56, 189, 248),.08));
+        border: 1px solid rgba(var(--pos-primary-rgb),.25);
         border-radius: 14px;
         margin-bottom: 20px;
     }
@@ -33,7 +33,7 @@
         font-size: 0.85rem;
         margin: 0;
     }
-
+ 
     .cash-input-wrap {
         position: relative;
     }
@@ -42,7 +42,7 @@
         right: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #a78bfa;
+        color: var(--pos-primary);
         font-weight: 700;
         font-size: 0.9rem;
         pointer-events: none;
@@ -53,7 +53,7 @@
         font-weight: 700 !important;
         text-align: right !important;
     }
-
+ 
     .quick-amounts {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -74,8 +74,8 @@
     }
     .quick-amount-btn:hover {
         border-color: var(--pos-primary);
-        color: #c4b5fd;
-        background: rgba(124,58,237,.1);
+        color: var(--pos-primary);
+        background: rgba(var(--pos-primary-rgb),.1);
     }
 
     .shift-info-box {
@@ -171,7 +171,7 @@
                     <span class="currency-symbol">₫</span>
                 </div>
 
-                <div style="margin-top:8px;font-size:0.82rem;color:#a78bfa;text-align:right" id="cash-preview">
+                <div style="margin-top:8px;font-size:0.82rem;color:var(--pos-primary);text-align:right" id="cash-preview">
                     Không có tiền lẻ
                 </div>
 

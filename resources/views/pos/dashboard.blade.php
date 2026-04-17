@@ -22,7 +22,7 @@
         border-bottom: 1px solid var(--pos-card-border);
     }
     .ticket-card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
-    .ticket-card-price { font-size: 0.82rem; color: #a78bfa; font-weight: 600; }
+    .ticket-card-price { font-size: 0.82rem; color: var(--pos-primary); font-weight: 600; opacity: 0.9; }
 
     .slot-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
 
@@ -38,7 +38,7 @@
         text-decoration: none;
         color: var(--pos-text);
     }
-    .slot-item:hover { background: rgba(124,58,237,.1); border-color: var(--pos-primary); color: var(--pos-text); }
+    .slot-item:hover { background: rgba(var(--pos-primary-rgb),.12); border-color: var(--pos-primary); color: var(--pos-text); }
     .slot-item.slot-full { opacity: .5; cursor: not-allowed; pointer-events: none; }
 
     .slot-time { font-size: 0.85rem; font-weight: 600; }
@@ -76,7 +76,7 @@
     .stat-value { font-size: 1.4rem; font-weight: 800; }
     .stat-value.green { color: #34d399; }
     .stat-value.amber { color: #fbbf24; }
-    .stat-value.purple { color: #a78bfa; }
+    .stat-value.primary { color: var(--pos-primary); }
     .stat-value.cyan   { color: #22d3ee; }
 
     .device-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
