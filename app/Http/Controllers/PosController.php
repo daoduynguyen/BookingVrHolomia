@@ -58,19 +58,20 @@ class PosController extends Controller
             $location->update(['total_devices' => 20]);
         }
 
-        $tickets = $query->with(['timeSlots' => function ($q) use ($location) {
-            $q->where('location_id', $location->id)
-              ->whereDate('date', today())
-              ->orderBy('start_time');
-        }])->paginate(9)->withQueryString();
-
-        // Trigger maintenance sync to fix incorrectly 'full' slots
+        // Trigger maintenance sync BEFORE loading tickets so eager-loaded
+        // timeSlots reflect corrected status values (not stale 'full').
         $firstSlot = \App\Models\TimeSlot::where('location_id', $location->id)
             ->whereDate('date', today())
             ->first();
         if ($firstSlot) {
             $firstSlot->syncGlobalOverlappingStatus();
         }
+
+        $tickets = $query->with(['timeSlots' => function ($q) use ($location) {
+            $q->where('location_id', $location->id)
+              ->whereDate('date', today())
+              ->orderBy('start_time');
+        }])->paginate(9)->withQueryString();
 
         $totalDevicesConfig = $location->total_devices ?? 20;
 

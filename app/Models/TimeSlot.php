@@ -30,10 +30,8 @@ class TimeSlot extends Model
     {
         $hasCapacity = true;
         
-        // 1.1 Khóa nếu slot đã bị tắt/full
-        if ($this->status !== 'open') {
-            $hasCapacity = false;
-        }
+        // 1.1 Không dùng $this->status vì nó có thể bị stale
+        // Thay vào đó, dựa hoàn toàn vào tính toán động ở bước 1.2 và 1.3
 
         // 1.2 Kiểm tra sức chứa riêng của trò chơi này
         if (($this->capacity - $this->booked_count) < $quantity) {

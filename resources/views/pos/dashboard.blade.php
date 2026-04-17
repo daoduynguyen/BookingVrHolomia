@@ -286,7 +286,9 @@ $totalDevices = $devices->count();
                     $hasVisibleSlots = true;
                     
                     $available = $availabilities[$slot->id] ?? 0;
-                    $isFull = $available <= 0 || $slot->status !== 'open';
+                    // Chỉ dùng $available (đã tính đúng cả capacity lẫn device limit)
+                    // Không cần check $slot->status vì getTrueAvailabilitiesForDate đã xử lý
+                    $isFull = $available <= 0;
                 @endphp
                 <a href="{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}" 
                    class="slot-item {{ $isFull ? 'slot-full' : '' }}" 
