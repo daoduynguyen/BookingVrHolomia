@@ -18,12 +18,5 @@ cmds = [
   "chmod -R 775 storage bootstrap/cache"
 ]
 
-# Pre-deploy: chạy migration trước khi app start
-[phases.deploy]
-cmds = [
-  "php artisan migrate --force",
-  "php artisan db:seed --class=AdminSeeder --force"
-]
-
 [start]
-cmd = "php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
