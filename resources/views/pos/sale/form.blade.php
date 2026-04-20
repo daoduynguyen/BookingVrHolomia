@@ -143,7 +143,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <div style="font-size:0.83rem;color:var(--pos-text-muted)">
-                        Còn trống: <strong style="color:#34d399">{{ $slot->capacity - $slot->booked_count }}</strong> chỗ
+                        Còn trống: <strong style="color:#34d399">{{ $available }}</strong> thiết bị
                     </div>
                 </div>
                 <div class="qty-control">
@@ -233,7 +233,7 @@
 @section('scripts')
 <script>
 const unitPrice = {{ $slot->ticket->price ?? 0 }};
-const maxQty    = {{ $slot->capacity - $slot->booked_count }};
+const maxQty    = {{ $available }};
 let currentQty  = 1;
 let userPoints  = 0;
 
@@ -320,4 +320,4 @@ function clearCustomer() {
     updateSummary();
 }
 </script>
-@endsection
+@endsection

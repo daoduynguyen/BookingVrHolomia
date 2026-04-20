@@ -107,7 +107,7 @@
     <div class="d-flex gap-2 flex-wrap">
         @if($available > 0)
         <a href="{{ route('pos.sale.form', [$subdomain, $slot->id]) }}" class="btn-pos">
-            <i class="bi bi-plus-lg"></i> Bán vé ({{ $available }} chỗ còn)
+            <i class="bi bi-plus-lg"></i> Bán vé ({{ $available }} thiết bị trống)
         </a>
         @endif
         <a href="{{ route('pos.dashboard', $subdomain) }}" class="btn-pos-outline">

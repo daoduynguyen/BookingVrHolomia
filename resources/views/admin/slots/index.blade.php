@@ -90,8 +90,8 @@
                 <div class="card bg-white border-light shadow-sm">
                     <div class="card-body d-flex justify-content-center gap-4 py-2">
                         <small class="text-dark"><i class="bi bi-circle-fill me-1" style="color: #374151 !important;"></i> Trống (Sẵn sàng)</small>
-                        <small class="text-warning"><i class="bi bi-circle-fill me-1" style="color: #b45309 !important;"></i> Đang nhận (Còn chỗ)</small>
-                        <small class="text-danger"><i class="bi bi-circle-fill me-1" style="color: #b91c1c !important;"></i> Đã đầy (Hết chỗ)</small>
+                        <small class="text-warning"><i class="bi bi-circle-fill me-1" style="color: #b45309 !important;"></i> Đang nhận (Còn máy)</small>
+                        <small class="text-danger"><i class="bi bi-circle-fill me-1" style="color: #b91c1c !important;"></i> Đã đầy (Hết máy)</small>
                     </div>
                 </div>
             </div>

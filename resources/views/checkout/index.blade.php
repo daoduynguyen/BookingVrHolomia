@@ -293,7 +293,7 @@ $.ajax({
 
                 slotSelect.append(
                     '<option value="' + slot.id + '" data-available="' + slot.available + '">' +
-                    slot.label + ' (Còn ' + slot.available + ' chỗ)</option>'
+                    slot.label + ' (Còn ' + slot.available + ' thiết bị)</option>'
                 );
                 validSlotsCount++;
             });
@@ -585,7 +585,7 @@ updateSummary();
                             slotSelect.html('<option value="">Chưa có lịch giờ này!</option>');
                         } else {
                             $.each(slots, function (i, slot) {
-                                slotSelect.append('<option value="' + slot.id + '" data-available="' + slot.available + '">' + slot.label + ' (Còn ' + slot.available + ' chỗ)</option>');
+                                  slotSelect.append('<option value="' + slot.id + '" data-available="' + slot.available + '">' + slot.label + ' (Còn ' + slot.available + ' thiết bị)</option>');
                             });
                         }
                         enforceSlotCapacity();

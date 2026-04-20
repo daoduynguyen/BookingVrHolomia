@@ -333,9 +333,8 @@ PROMPT;
         $in7Days    = $today->copy()->addDays(3); // chỉ lấy 3 ngày tới để giảm token
         $locationNm = Location::pluck('name', 'id');
 
-        $ctx['available_slots'] = TimeSlot::with('ticket')
+        $availableSlotsRaw = TimeSlot::with('ticket')
             ->where('status', 'open')
-            ->whereRaw('capacity - booked_count > 0')
             ->whereBetween('date', [$today->toDateString(), $in7Days->toDateString()])
             ->where(function ($q) use ($today, $now) {
                 $q->where('date', '>', $today->toDateString())
@@ -345,22 +344,30 @@ PROMPT;
                   });
             })
             ->orderBy('date')->orderBy('start_time')
-            ->limit(30) // tối đa 30 slot để tránh tràn token
-            ->get()
-            ->map(fn($s) => [
-                'game'            => $s->ticket->name ?? '—',
-                'location'        => $locationNm[$s->location_id] ?? '—',
-                'date'            => Carbon::parse($s->date)->format('d/m'),
-                'day'             => $this->dayOfWeekVi(Carbon::parse($s->date)->dayOfWeek),
-                'time'            => substr($s->start_time, 0, 5) . '–' . substr($s->end_time, 0, 5),
-                'seats'           => $s->capacity - $s->booked_count,
-            ])->toArray();
+            ->get();
 
-        $ctx['game_max_seats'] = TimeSlot::selectRaw('ticket_id, MAX(capacity - booked_count) as max_avail')
-            ->where('status', 'open')->whereRaw('capacity - booked_count > 0')
-            ->whereBetween('date', [$today->toDateString(), $today->copy()->addDays(3)->toDateString()])
-            ->groupBy('ticket_id')->get()
-            ->mapWithKeys(fn($r) => [$r->ticket_id => (int)$r->max_avail])->toArray();
+        $slotsCtx = [];
+        $availCache = [];
+        foreach ($availableSlotsRaw as $s) {
+            $key = $s->location_id . '_' . $s->date;
+            if (!isset($availCache[$key])) {
+                $availCache[$key] = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($s->location_id, $s->date);
+            }
+            $avail = $availCache[$key][$s->id] ?? 0;
+            if ($avail > 0) {
+                $slotsCtx[] = [
+                    'game'            => $s->ticket->name ?? '—',
+                    'location'        => $locationNm[$s->location_id] ?? '—',
+                    'date'            => Carbon::parse($s->date)->format('d/m'),
+                    'day'             => $this->dayOfWeekVi(Carbon::parse($s->date)->dayOfWeek),
+                    'time'            => substr($s->start_time, 0, 5) . '–' . substr($s->end_time, 0, 5),
+                    'seats'           => $avail,
+                ];
+            }
+        }
+        $ctx['available_slots'] = array_slice($slotsCtx, 0, 30); // tối đa 30 slot để tránh tràn token
+
+        $ctx['game_max_seats'] = []; // Bỏ qua max seats vì giờ chung thiết bị
 
         $ctx['locations'] = Location::active()
             ->select('id', 'name', 'address', 'hotline', 'opening_hours')

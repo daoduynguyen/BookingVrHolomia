@@ -574,8 +574,7 @@ class CheckoutController extends Controller
 
         $query = TimeSlot::where('ticket_id', $request->ticket_id)
             ->where('date', $request->date)
-            ->where('status', 'open') // Chỉ lấy slot đang mở
-            ->whereColumn('booked_count', '<', 'capacity'); // Chỉ lấy slot còn chỗ
+            ->where('status', 'open'); // Chỉ lấy slot đang mở
 
         if ($request->location_id) {
             $query->where('location_id', $request->location_id);
@@ -588,15 +587,24 @@ class CheckoutController extends Controller
             $query->where('start_time', '>', Carbon::now()->format('H:i:s'));
         }
 
-        $slots = $query->orderBy('start_time', 'asc')
-            ->get()
-            ->map(function ($slot) {
-                return [
-                    'id' => $slot->id,
-                    'label' => Carbon::parse($slot->start_time)->format('H:i') . ' - ' . Carbon::parse($slot->end_time)->format('H:i'),
-                    'available' => $slot->capacity - $slot->booked_count
-                ];
-            });
+        $slotsResult = $query->orderBy('start_time', 'asc')->get();
+        if ($request->location_id && $slotsResult->count() > 0) {
+            $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($request->location_id, $request->date);
+        }
+
+        $slots = $slotsResult->map(function ($slot) use ($request, &$availabilities) {
+            $avail = $slot->capacity - $slot->booked_count; // fallback
+            if ($request->location_id && isset($availabilities)) {
+                $avail = $availabilities[$slot->id] ?? 0;
+            }
+            return [
+                'id' => $slot->id,
+                'label' => Carbon::parse($slot->start_time)->format('H:i') . ' - ' . Carbon::parse($slot->end_time)->format('H:i'),
+                'available' => $avail
+            ];
+        })->filter(function($slot) {
+            return $slot['available'] > 0;
+        })->values();
 
         return response()->json($slots);
     }

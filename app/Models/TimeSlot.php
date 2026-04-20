@@ -33,10 +33,10 @@ class TimeSlot extends Model
         // 1.1 Không dùng $this->status vì nó có thể bị stale
         // Thay vào đó, dựa hoàn toàn vào tính toán động ở bước 1.2 và 1.3
 
-        // 1.2 Kiểm tra sức chứa riêng của trò chơi này
-        if (($this->capacity - $this->booked_count) < $quantity) {
-            $hasCapacity = false;
-        }
+        // 1.2 Kiểm tra sức chứa riêng của trò chơi này (Bỏ qua vì bán theo thiết bị)
+        // if (($this->capacity - $this->booked_count) < $quantity) {
+        //     $hasCapacity = false;
+        // }
 
         // 1.3 Kiểm tra tổng tài nguyên thiết bị của TẤT CẢ các trò chơi tại chi nhánh có GIAO NHAU về mặt thời gian
         if ($hasCapacity) {
@@ -71,9 +71,10 @@ class TimeSlot extends Model
     public function incrementBooked($quantity)
     {
         $this->booked_count += $quantity;
-        if ($this->booked_count >= $this->capacity) {
-            $this->status = 'full';
-        }
+        // Bỏ logic capacity từng game
+        // if ($this->booked_count >= $this->capacity) {
+        //     $this->status = 'full';
+        // }
         $this->save();
 
         $this->syncGlobalOverlappingStatus();
@@ -181,8 +182,8 @@ class TimeSlot extends Model
                 }
             }
             
-            // Một slot được gọi là FULL nếu nó đạt sức chứa giới hạn riêng HOẶC nếu thêm 1 người nữa thì nó vi phạm tổng capacity chung
-            $shouldBeFull = $exceeds || ($testSlot->booked_count >= $testSlot->capacity);
+            // Một slot được gọi là FULL nếu thêm 1 người nữa thì nó vi phạm tổng capacity chung (Không tính capacity game nữa)
+            $shouldBeFull = $exceeds;
             
             if ($shouldBeFull && $testSlot->status === 'open') {
                 $testSlot->status = 'full';
@@ -212,8 +213,7 @@ class TimeSlot extends Model
         foreach ($slots as $slot) {
             $slotPeak = self::calculatePeakForSlotInMemory($slot, $slots);
             $locationAvailable = max(0, $maxDevices - $slotPeak);
-            $slotAvailable = max(0, $slot->capacity - $slot->booked_count);
-            $availabilities[$slot->id] = min($slotAvailable, $locationAvailable);
+            $availabilities[$slot->id] = $locationAvailable; // Theo logic mới: trả thẳng số máy trống
         }
         return $availabilities;
     }

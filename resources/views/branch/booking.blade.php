@@ -420,7 +420,7 @@
                         }
                         
                         $('#capacity-warning').remove();
-                        $('#quantity').closest('.mb-3, .mb-4').append('<div id="capacity-warning" class="text-danger small fw-bold mt-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> ' + (maxAvail === 0 ? 'Khung giờ này đã hết chỗ!' : 'Số lượng đã tự động điều chỉnh vì khung giờ này chỉ còn '+maxAvail+' suất!') + '</div>');
+                        $('#quantity').closest('.mb-3, .mb-4').append('<div id="capacity-warning" class="text-danger small fw-bold mt-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> ' + (maxAvail === 0 ? 'Khung giờ này đã hết thiết bị trống!' : 'Số lượng đã tự động điều chỉnh vì khung giờ này chỉ còn '+maxAvail+' thiết bị trống!') + '</div>');
                         setTimeout(function() { $('#capacity-warning').fadeOut(1000, function(){ $(this).remove(); }); }, 4500);
                     }
                 }

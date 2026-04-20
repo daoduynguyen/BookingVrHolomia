@@ -188,11 +188,14 @@ class PosController extends Controller
             ->with('ticket')
             ->firstOrFail();
 
-        if (!$slot->isBookable()) {
-            return back()->with('error', 'Slot này đã hết chỗ hoặc đã qua giờ.');
+        $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, $slot->date);
+        $available = $availabilities[$slot->id] ?? 0;
+
+        if (!$slot->isBookable() || $available <= 0) {
+            return back()->with('error', 'Slot này đã hết thiết bị trống hoặc đã qua giờ báo danh.');
         }
 
-        return view('pos.sale.form', compact('location', 'subdomain', 'slot', 'activeShift'));
+        return view('pos.sale.form', compact('location', 'subdomain', 'slot', 'activeShift', 'available'));
     }
 
 
