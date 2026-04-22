@@ -273,8 +273,14 @@
             </div>
             <div class="timer-label">thời gian còn lại</div>
             <div class="order-actions" onclick="event.stopPropagation()">
+                <form action="{{ route('pos.complete', [$subdomain, $order->id]) }}" method="POST" onsubmit="return confirm('Xác nhận kết thúc sớm ca chơi này?');" style="margin: 0;">
+                    @csrf
+                    <button type="submit" class="checkin-btn" style="background: var(--pos-primary);">
+                        <i class="bi bi-stop-circle"></i> Kết thúc
+                    </button>
+                </form>
                 <a href="{{ route('pos.sale.success', [$subdomain, $order->id]) }}" class="detail-btn" target="_blank">
-                    <i class="bi bi-receipt"></i> Xem hồ sơ
+                    <i class="bi bi-receipt"></i> Hồ sơ
                 </a>
             </div>
         @elseif($order->state === 'waiting')
@@ -353,6 +359,13 @@
                     <button type="button" class="checkin-btn" onclick="manualCheckin({{ $order->id }})">
                         <i class="bi bi-play-circle"></i> Bắt đầu
                     </button>
+                @elseif($order->state === 'playing')
+                    <form action="{{ route('pos.complete', [$subdomain, $order->id]) }}" method="POST" style="margin: 0;">
+                        @csrf
+                        <button type="submit" class="checkin-btn" style="background: var(--pos-primary);" onclick="return confirm('Xác nhận kết thúc sớm ca chơi này?');">
+                            <i class="bi bi-stop-circle"></i> Kết thúc sớm
+                        </button>
+                    </form>
                 @endif
                 <a href="{{ route('pos.sale.success', [$subdomain, $order->id]) }}" class="detail-btn" target="_blank">
                     <i class="bi bi-receipt"></i> Mở chi tiết đơn

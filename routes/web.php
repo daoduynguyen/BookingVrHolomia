@@ -432,9 +432,11 @@ Route::prefix('chi-nhanh/{subdomain}/pos')
     Route::get('/lich-su', [\App\Http\Controllers\PosController::class, 'history'])
         ->name('pos.history');
 
-    // Huỷ vé
+    // Huỷ vé & Kết thúc sớm
     Route::post('/huy-ve/{orderId}', [\App\Http\Controllers\PosController::class, 'cancelOrder'])
         ->name('pos.cancel');
+    Route::post('/ket-thuc/{orderId}', [\App\Http\Controllers\PosController::class, 'completeOrder'])
+        ->name('pos.complete');
 
     // Tìm khách hàng (AJAX)
     Route::get('/tim-khach', [\App\Http\Controllers\PosController::class, 'findCustomer'])

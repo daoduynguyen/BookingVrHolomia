@@ -4,35 +4,42 @@
 
 @section('admin_content')
     <style>
-        .slot-box {
-            border: 1px solid #858383;
-            border-radius: 12px;
-            padding: 15px;
+        .slot-compact-box {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 8px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             cursor: pointer;
             position: relative;
-            overflow: hidden;
+            width: 100px;
+            background-color: #fff;
         }
-        .slot-box:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 10px 20px rgba(61, 59, 59, 0.5); 
+        .slot-compact-box:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             border-color: #0dcaf0;
         }
-        .slot-empty   { background-color: #f3f4f6; color: #374151; border-color: #d1d5db; }
-        .slot-booking { background-color: #fffbeb; color: #b45309; border-color: #fde68a; }
-        .slot-full    { background-color: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .slot-empty   { background-color: #f3f4f6; border-color: #d1d5db; }
+        .slot-booking { background-color: #fffbeb; border-color: #fde68a; }
+        .slot-full    { background-color: #fef2f2; border-color: #fecaca; opacity: 0.8; }
 
-        .time-label     { font-size: 1.3rem; font-weight: bold; display: block; margin-bottom: 5px; }
-        .capacity-label { font-size: 0.85rem; opacity: 0.8; }
+        .time-label     { font-size: 1.1rem; font-weight: bold; display: block; line-height: 1.2; color: #1f2937; }
+        .capacity-label { font-size: 0.75rem; font-weight: 600; display: block; margin-top: 4px; }
         .letter-spacing-2 { letter-spacing: 2px; }
 
-        .slot-item-container:hover .slot-action-overlay {
-            display: block !important;
+        .slot-compact-box:hover .slot-action-overlay { display: flex !important; }
+        .slot-action-overlay {
+            display: none;
+            position: absolute;
+            top: -8px; right: -8px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 6px;
+            padding: 2px;
+            z-index: 10;
         }
-        .slot-action-overlay .btn:hover {
-            transform: scale(1.1);
-        }
+        .slot-action-overlay .btn { padding: 2px 4px; line-height: 1; margin: 0 2px; }
+        .slot-action-overlay .btn:hover { transform: scale(1.1); color: #fff !important; }
     </style>
 
     <div class="container-fluid">
@@ -122,53 +129,74 @@
                 </div>
                 <div class="card-body">
                     @if(count($ticketSlots) > 0)
-                        <div class="row g-3">
-                            @foreach($ticketSlots as $slot)
-                                @php
-                                    $statusClass = 'slot-empty';
-                                    if ($slot->booked_count > 0 && $slot->booked_count < $slot->capacity) {
-                                        $statusClass = 'slot-booking';
-                                    } elseif ($slot->booked_count >= $slot->capacity || $slot->status == 'full') {
-                                        $statusClass = 'slot-full';
-                                    }
-                                @endphp
-                                <div class="col-6 col-md-3 col-lg-2 position-relative slot-item-container">
-                                    <div class="slot-box {{ $statusClass }} h-100 d-flex flex-column justify-content-center"
-                                         onclick="showCustomerList({{ $slot->id }})">
-                                        <span class="time-label">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}</span>
-                                        @php
-                                            $available = $availabilities[$slot->id] ?? 0;
-                                        @endphp
-                                        <span class="capacity-label mt-1">
-                                            @if($statusClass != 'slot-full')
-                                                <i class="bi bi-headset-vr text-success"></i> <b class="text-success">Còn {{ $available }}</b> thiết bị
-                                            @else
-                                                <i class="bi bi-headset-vr text-danger"></i> <b class="text-danger">Hết máy</b>
-                                            @endif
-                                        </span>
-                                        @if($statusClass == 'slot-full')
-                                            <div class="small mt-1 fw-bold">FULL</div>
-                                        @endif
-                                        <div class="slot-action-overlay position-absolute top-0 end-0 p-1 mt-1 me-1"
-                                             style="display: none; background: rgba(0,0,0,0.8); border-radius: 6px; z-index: 10;"
-                                             onclick="event.stopPropagation();">
-                                            <button type="button" class="btn btn-sm text-primary p-1"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editSlotModal-{{ $slot->id }}"
-                                                    onclick="event.stopPropagation();">
-                                                <i class="bi bi-pencil-square fs-6"></i>
+                        @php
+                            $groups = [
+                                'morning' => ['title' => 'Buổi Sáng (08:00 - 12:00)', 'icon' => 'bi-sunrise', 'color' => 'success', 'slots' => []],
+                                'afternoon' => ['title' => 'Buổi Chiều (12:00 - 18:00)', 'icon' => 'bi-sun', 'color' => 'warning', 'slots' => []],
+                                'evening' => ['title' => 'Buổi Tối (18:00 - 23:00)', 'icon' => 'bi-moon-stars', 'color' => 'primary', 'slots' => []],
+                            ];
+                            foreach($ticketSlots as $slot) {
+                                $hour = (int)\Carbon\Carbon::parse($slot->start_time)->format('H');
+                                if($hour < 12) $groups['morning']['slots'][] = $slot;
+                                elseif($hour < 18) $groups['afternoon']['slots'][] = $slot;
+                                else $groups['evening']['slots'][] = $slot;
+                            }
+                            $accordionId = 'accordion-' . $ticket->id;
+                        @endphp
+
+                        <div class="accordion" id="{{ $accordionId }}">
+                            @foreach($groups as $key => $group)
+                                @if(count($group['slots']) > 0)
+                                    <div class="accordion-item border-light mb-3 shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                                        <h2 class="accordion-header" id="heading-{{ $ticket->id }}-{{ $key }}">
+                                            <button class="accordion-button bg-light fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $ticket->id }}-{{ $key }}" aria-expanded="true" aria-controls="collapse-{{ $ticket->id }}-{{ $key }}">
+                                                <i class="bi {{ $group['icon'] }} text-{{ $group['color'] }} fs-5 me-2"></i> {{ $group['title'] }} 
+                                                <span class="badge bg-secondary ms-2 rounded-pill">{{ count($group['slots']) }} ca</span>
                                             </button>
-                                            <form action="{{ route('admin.slots.destroy', $slot->id) }}" method="POST" class="d-inline"
-                                                  onsubmit="event.stopPropagation(); return confirm('Xác nhận xóa ca này?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm text-danger p-1">
-                                                    <i class="bi bi-trash fs-6"></i>
-                                                </button>
-                                            </form>
+                                        </h2>
+                                        <div id="collapse-{{ $ticket->id }}-{{ $key }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ $ticket->id }}-{{ $key }}">
+                                            <div class="accordion-body">
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    @foreach($group['slots'] as $slot)
+                                                        @php
+                                                            $statusClass = 'slot-empty';
+                                                            $textColor = 'text-secondary';
+                                                            if ($slot->booked_count > 0 && $slot->booked_count < $slot->capacity) {
+                                                                $statusClass = 'slot-booking';
+                                                                $textColor = 'text-warning';
+                                                            } elseif ($slot->booked_count >= $slot->capacity || $slot->status == 'full') {
+                                                                $statusClass = 'slot-full';
+                                                                $textColor = 'text-danger';
+                                                            }
+                                                        @endphp
+                                                        <div class="slot-compact-box {{ $statusClass }}" onclick="showCustomerList({{ $slot->id }})">
+                                                            <span class="time-label">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}</span>
+                                                            <span class="capacity-label {{ $textColor }}">
+                                                                @if($statusClass != 'slot-full')
+                                                                    {{ $slot->booked_count }}/{{ $slot->capacity }} máy
+                                                                @else
+                                                                    FULL
+                                                                @endif
+                                                            </span>
+                                                            <div class="slot-action-overlay" onclick="event.stopPropagation();">
+                                                                <button type="button" class="btn btn-sm text-primary" data-bs-toggle="modal" data-bs-target="#editSlotModal-{{ $slot->id }}" onclick="event.stopPropagation();" title="Sửa ca">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <form action="{{ route('admin.slots.destroy', $slot->id) }}" method="POST" class="d-inline" onsubmit="event.stopPropagation(); return confirm('Xác nhận xóa ca này?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="btn btn-sm text-danger" title="Xóa ca">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
                             @endforeach
                         </div>
                     @else

@@ -573,6 +573,33 @@ class PosController extends Controller
     }
 
     // -------------------------------------------------------
+    // Kết thúc ca sớm (thủ công)
+    // -------------------------------------------------------
+    public function completeOrder(Request $request, string $subdomain, int $orderId)
+    {
+        $location = $this->getLocation($subdomain);
+        $order    = Order::where('id', $orderId)
+            ->where('location_id', $location->id)
+            ->firstOrFail();
+
+        if ($order->status === 'completed') {
+            return back()->with('error', 'Đơn hàng này đã kết thúc rồi.');
+        }
+
+        DB::transaction(function () use ($order) {
+            if ($order->device_id) {
+                PosDevice::where('id', $order->device_id)->update(['status' => 'available']);
+            }
+
+            $order->update([
+                'status' => 'completed',
+            ]);
+        });
+
+        return back()->with('success', 'Đã kết thúc ca chơi sớm cho khách.');
+    }
+
+    // -------------------------------------------------------
     // Huỷ vé (yêu cầu quyền branch_admin hoặc admin)
     // -------------------------------------------------------
     public function cancelOrder(Request $request, string $subdomain, int $orderId)
