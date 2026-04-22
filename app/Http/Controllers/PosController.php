@@ -96,7 +96,72 @@ class PosController extends Controller
 
         $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, today()->format('Y-m-d'));
 
-        return view('pos.dashboard', compact('location', 'subdomain', 'activeShift', 'tickets', 'devices', 'availabilities'));
+        $todayOrders = Order::where('location_id', $location->id)
+            ->whereDate('booking_date', today())
+            ->with(['slot.ticket', 'device', 'user'])
+            ->orderByRaw('CASE WHEN checkin_at IS NULL THEN 0 ELSE 1 END')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($order) {
+                $slot = $order->slot;
+                $deadline = $slot ? \Carbon\Carbon::parse($slot->date . ' ' . $slot->start_time)->addMinutes(15) : null;
+                $endTime = $slot ? \Carbon\Carbon::parse($slot->date . ' ' . $slot->end_time) : null;
+                $deadlineRemain = $deadline ? max(0, now()->diffInSeconds($deadline, false)) : 0;
+                $playingRemain = $endTime ? max(0, now()->diffInSeconds($endTime, false)) : 0;
+
+                if ($order->status === 'cancelled') {
+                    $state = 'cancelled';
+                } elseif ($order->status === 'refunded') {
+                    $state = 'refunded';
+                } elseif ($order->status === 'expired') {
+                    $state = 'expired';
+                } elseif ($order->checkin_at) {
+                    $state = 'playing';
+                } elseif ($order->status === 'paid') {
+                    $state = $deadlineRemain <= 0 ? 'expired' : 'waiting';
+                } else {
+                    $state = 'pending';
+                }
+
+                $order->work_state = $state;
+                $order->slot_label = $slot ? \Carbon\Carbon::parse($slot->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($slot->end_time)->format('H:i') : 'Chưa có slot';
+                $order->ticket_name = $slot && $slot->ticket ? $slot->ticket->name : 'Vé';
+                $order->device_name = $order->device->name ?? ($order->device_id ? 'Máy #' . $order->device_id : 'Chưa gán máy');
+                $order->deadline_seconds = $deadlineRemain;
+                $order->remain_seconds = $playingRemain;
+                $order->deadline_at = $deadline;
+                $order->sort_priority = match ($order->work_state) {
+                    'expired' => 0,
+                    'waiting' => 1,
+                    'playing' => 2,
+                    default => 3,
+                };
+
+                return $order;
+            })
+            ->sortBy(function ($order) {
+                return [
+                    $order->sort_priority ?? 3,
+                    $order->state === 'expired' ? 0 : 1,
+                    $order->deadline_seconds ?? PHP_INT_MAX,
+                    $order->remain_seconds ?? PHP_INT_MAX,
+                    $order->created_at ? -$order->created_at->timestamp : 0,
+                ];
+            })
+            ->values();
+
+        $taskOrders = $todayOrders->filter(function ($order) {
+            return in_array($order->work_state, ['waiting', 'playing', 'expired', 'pending']);
+        })->take(6)->values();
+
+        $taskStats = [
+            'waiting' => $todayOrders->where('work_state', 'waiting')->count(),
+            'playing' => $todayOrders->where('work_state', 'playing')->count(),
+            'expired' => $todayOrders->where('work_state', 'expired')->count(),
+            'closed' => $todayOrders->whereIn('work_state', ['cancelled', 'refunded'])->count(),
+        ];
+
+        return view('pos.dashboard', compact('location', 'subdomain', 'activeShift', 'tickets', 'devices', 'availabilities', 'taskOrders', 'taskStats'));
     }
 
     // -------------------------------------------------------

@@ -217,6 +217,262 @@
     }
     .section-title { font-size: 1.1rem; font-weight: 800; color: var(--pos-text); letter-spacing: -0.02em; }
     .section-sub { font-size: 0.8rem; color: var(--pos-text-muted); font-weight: 500; }
+
+    @keyframes warningPulse {
+        0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.36); }
+        70% { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .warning-pulse {
+        animation: warningPulse 1.9s ease-in-out infinite;
+    }
+
+    .workboard {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+        gap: 18px;
+        margin-bottom: 26px;
+    }
+    @media (max-width: 992px) {
+        .workboard { grid-template-columns: 1fr; }
+    }
+
+    .work-panel {
+        background: var(--pos-card);
+        border: 1px solid var(--pos-card-border);
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .work-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+    }
+    @media (max-width: 768px) {
+        .work-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .work-summary-card {
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: linear-gradient(180deg, rgba(var(--pos-primary-rgb), 0.05), rgba(var(--pos-primary-rgb), 0.02));
+        border: 1px solid rgba(var(--pos-primary-rgb), 0.08);
+    }
+    .work-summary-card .label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--pos-text-muted);
+        margin-bottom: 6px;
+    }
+    .work-summary-card .value {
+        display: block;
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--pos-text);
+    }
+
+    .task-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .task-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+    }
+    .task-filter-btn {
+        border: 1px solid rgba(var(--pos-primary-rgb), 0.12);
+        background: rgba(var(--pos-primary-rgb), 0.04);
+        color: var(--pos-text-muted);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        transition: all .2s ease;
+    }
+    .task-filter-btn:hover {
+        color: var(--pos-text);
+        border-color: rgba(var(--pos-primary-rgb), 0.18);
+        transform: translateY(-1px);
+    }
+    .task-filter-btn.active {
+        background: var(--pos-primary);
+        color: #fff;
+        border-color: var(--pos-primary);
+    }
+
+    .task-card {
+        border-radius: 18px;
+        padding: 16px;
+        border: 1px solid var(--pos-card-border);
+        background: rgba(var(--pos-primary-rgb), 0.03);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        border-color: rgba(var(--pos-primary-rgb), 0.18);
+    }
+    .task-card[data-state="expired"] {
+        border-color: rgba(245, 158, 11, 0.42);
+        background: linear-gradient(180deg, rgba(245, 158, 11, 0.10), rgba(var(--pos-primary-rgb), 0.03));
+        box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12), 0 10px 28px rgba(245, 158, 11, 0.10);
+    }
+    .task-card[data-state="expired"]::before {
+        content: 'QUÁ HẠN';
+        position: absolute;
+        top: 12px;
+        right: -32px;
+        width: 120px;
+        text-align: center;
+        font-size: 0.68rem;
+        font-weight: 900;
+        letter-spacing: .08em;
+        color: #fff;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        transform: rotate(38deg);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
+        z-index: 2;
+    }
+    .task-card[data-state="expired"] .task-chip {
+        border-color: rgba(245, 158, 11, 0.28);
+    }
+    .task-card[data-state="expired"] .task-title {
+        color: #ffedd5;
+    }
+    .task-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .task-title {
+        font-weight: 800;
+        font-size: 1rem;
+        color: var(--pos-text);
+        margin-bottom: 3px;
+    }
+    .task-sub {
+        font-size: 0.82rem;
+        color: var(--pos-text-muted);
+    }
+    .task-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .task-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        background: rgba(255,255,255,.05);
+        color: var(--pos-text);
+        border: 1px solid rgba(var(--pos-primary-rgb), 0.08);
+    }
+    .task-chip.primary { color: #38bdf8; }
+    .task-chip.success { color: #10b981; }
+    .task-chip.warning { color: #f59e0b; }
+    .task-chip.danger { color: #f87171; }
+    .task-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+    }
+    .task-action-btn {
+        border: none;
+        border-radius: 12px;
+        padding: 9px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+    .task-action-btn.primary {
+        background: var(--pos-primary);
+        color: #fff;
+    }
+    .task-action-btn.primary:hover {
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .task-action-btn.soft {
+        background: rgba(var(--pos-primary-rgb), 0.08);
+        color: var(--pos-text);
+    }
+    .task-action-btn.soft:hover {
+        background: rgba(var(--pos-primary-rgb), 0.14);
+        color: var(--pos-text);
+    }
+
+    .quick-actions {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    .quick-action {
+        border-radius: 16px;
+        padding: 14px 16px;
+        text-decoration: none;
+        color: var(--pos-text);
+        background: linear-gradient(180deg, rgba(var(--pos-primary-rgb), 0.06), rgba(var(--pos-primary-rgb), 0.02));
+        border: 1px solid rgba(var(--pos-primary-rgb), 0.08);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all .2s ease;
+    }
+    .quick-action:hover {
+        color: var(--pos-text);
+        transform: translateY(-2px);
+        border-color: rgba(var(--pos-primary-rgb), 0.2);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+    .quick-action .icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        background: rgba(var(--pos-primary-rgb), 0.1);
+        color: var(--pos-primary);
+        flex-shrink: 0;
+    }
+    .quick-action .label {
+        font-weight: 800;
+        display: block;
+        line-height: 1.15;
+    }
+    .quick-action .desc {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--pos-text-muted);
+        margin-top: 3px;
+    }
 </style>
 @endsection
 @section('content')
@@ -265,6 +521,233 @@ $totalDevices = $devices->count();
             <span class="stat-value" style="font-size:1.15rem;">{{ now()->format('d/m/Y') }}</span>
         </div>
     </a>
+</div>
+
+@php
+    $urgentWaiting = $taskStats['waiting'] ?? 0;
+    $urgentExpired = $taskStats['expired'] ?? 0;
+    $dashboardSubdomain = $subdomain ?? request()->route('subdomain');
+@endphp
+
+@if(($urgentWaiting + $urgentExpired) > 0)
+<div class="pos-alert pos-alert-warning warning-pulse d-flex align-items-center justify-content-between gap-3 mb-4" style="padding: 16px 18px;">
+    <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+        <div>
+            <div class="fw-bold">Có công việc cần xử lý ngay</div>
+            <div class="small mb-0">
+                {{ $urgentWaiting }} vé chờ bắt đầu, {{ $urgentExpired }} vé quá hạn check-in.
+            </div>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn-pos-outline" onclick="document.getElementById('tickets-section').scrollIntoView({behavior:'smooth', block:'start'})">
+            <i class="bi bi-arrow-down-circle"></i> Tới khu xử lý
+        </button>
+        <button type="button" class="btn-pos" onclick="filterTasks('waiting', document.querySelector('.task-filter-btn[data-filter=\'waiting\']'))">
+            <i class="bi bi-hourglass-split"></i> Lọc vé chờ
+        </button>
+    </div>
+</div>
+@endif
+
+<div class="workboard">
+    <div class="work-panel">
+        <div class="section-header mb-0">
+            <div>
+                <div class="section-title"><i class="bi bi-lightning-charge me-2"></i>Việc cần làm ngay</div>
+                <div class="section-sub">Khách đang chờ check-in, khách đã vào máy và vé quá hạn sẽ hiện ở đây.</div>
+            </div>
+        </div>
+
+        <div class="task-filters" role="tablist" aria-label="Bộ lọc công việc">
+            <button type="button" class="task-filter-btn active" data-filter="all" onclick="filterTasks('all', this)">Tất cả</button>
+            <button type="button" class="task-filter-btn" data-filter="waiting" onclick="filterTasks('waiting', this)">Chờ bắt đầu</button>
+            <button type="button" class="task-filter-btn" data-filter="playing" onclick="filterTasks('playing', this)">Đang chơi</button>
+            <button type="button" class="task-filter-btn" data-filter="expired" onclick="filterTasks('expired', this)">Quá hạn</button>
+        </div>
+
+        <div class="work-summary">
+            <div class="work-summary-card">
+                <span class="label">Chờ bắt đầu</span>
+                <span class="value" style="color:#06b6d4">{{ $taskStats['waiting'] ?? 0 }}</span>
+            </div>
+            <div class="work-summary-card">
+                <span class="label">Đang chơi</span>
+                <span class="value" style="color:#10b981">{{ $taskStats['playing'] ?? 0 }}</span>
+            </div>
+            <div class="work-summary-card">
+                <span class="label">Quá hạn</span>
+                <span class="value" style="color:#f59e0b">{{ $taskStats['expired'] ?? 0 }}</span>
+            </div>
+            <div class="work-summary-card">
+                <span class="label">Đóng / hoàn</span>
+                <span class="value" style="color:#f87171">{{ $taskStats['closed'] ?? 0 }}</span>
+            </div>
+        </div>
+
+        <div class="task-list">
+            @if(isset($taskOrders) && $taskOrders->isNotEmpty())
+                @foreach($taskOrders as $order)
+                <div class="task-card" data-state="{{ $order->work_state }}" onclick="window.location='{{ $order->slot_id ? route('pos.slot.detail', [$subdomain, $order->slot_id]) : route('pos.history', $subdomain) }}'">
+                    <div class="task-card-header">
+                        <div>
+                            <div class="task-title">{{ $order->customer_name ?? 'Khách lẻ' }}</div>
+                            <div class="task-sub">{{ $order->ticket_name }} • {{ $order->slot_label }}</div>
+                        </div>
+                        <span class="task-chip {{ $order->work_state === 'playing' ? 'success' : ($order->work_state === 'waiting' ? 'primary' : ($order->work_state === 'expired' ? 'warning' : 'danger')) }}">
+                            <i class="bi bi-{{ $order->work_state === 'playing' ? 'play-fill' : ($order->work_state === 'waiting' ? 'hourglass-split' : ($order->work_state === 'expired' ? 'exclamation-triangle-fill' : 'x-circle-fill')) }}"></i>
+                            {{ $order->work_state === 'playing' ? 'Đang chơi' : ($order->work_state === 'waiting' ? 'Chờ bắt đầu' : ($order->work_state === 'expired' ? 'Hết hạn' : ucfirst($order->work_state))) }}
+                        </span>
+                    </div>
+
+                    <div class="task-meta">
+                        <span class="task-chip"><i class="bi bi-person"></i> {{ $order->customer_phone ?? 'Không có SĐT' }}</span>
+                        <span class="task-chip"><i class="bi bi-headset-vr"></i> {{ $order->device_name }}</span>
+                        <span class="task-chip"><i class="bi bi-ticket-perforated"></i> SL {{ $order->quantity }}</span>
+                        @if($order->work_state === 'waiting')
+                            <span class="task-chip primary"><i class="bi bi-alarm"></i> {{ gmdate('i:s', $order->deadline_seconds) }}</span>
+                        @elseif($order->work_state === 'playing')
+                            <span class="task-chip success"><i class="bi bi-stopwatch"></i> {{ gmdate('i:s', $order->remain_seconds) }}</span>
+                        @endif
+                    </div>
+
+                    <div class="task-actions">
+                        <button type="button" class="task-action-btn soft" onclick="event.stopPropagation(); openOrderModal({{ $order->id }})">
+                            <i class="bi bi-eye"></i> Xem nhanh
+                        </button>
+                        @if($order->slot_id)
+                            <a href="{{ route('pos.slot.detail', [$subdomain, $order->slot_id]) }}" class="task-action-btn soft" onclick="event.stopPropagation()">
+                                <i class="bi bi-box-arrow-up-right"></i> Mở chi tiết
+                            </a>
+                        @endif
+
+                        @if($order->work_state === 'waiting')
+                            <button type="button" class="task-action-btn primary" onclick="event.stopPropagation(); startOrder({{ $order->id }})">
+                                <i class="bi bi-play-fill"></i> Bắt đầu
+                            </button>
+                        @elseif($order->work_state === 'playing' && $order->device_id)
+                            <button type="button" class="task-action-btn soft" onclick="event.stopPropagation(); openDevicesListModal()">
+                                <i class="bi bi-gear"></i> Xem máy
+                            </button>
+                        @elseif($order->work_state === 'expired')
+                            <span class="task-action-btn soft" style="pointer-events:none; opacity:.75;">
+                                <i class="bi bi-clock-history"></i> Hết hạn
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            @else
+                <div class="pos-alert pos-alert-info mb-0">
+                    <i class="bi bi-check2-circle"></i>
+                    Chưa có đơn cần xử lý ngay lúc này.
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="work-panel">
+        <div class="section-header mb-0">
+            <div>
+                <div class="section-title"><i class="bi bi-stars me-2"></i>Thao tác nhanh</div>
+                <div class="section-sub">Nhân viên có thể mở chức năng phổ biến chỉ bằng một chạm.</div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="{{ route('pos.checkin', $subdomain) }}" class="quick-action">
+                <span class="icon"><i class="bi bi-qr-code-scan"></i></span>
+                <span>
+                    <span class="label">Quét check-in</span>
+                    <span class="desc">Mở camera để nhận QR hoặc bắt đầu thủ công</span>
+                </span>
+            </a>
+            <a href="{{ route('pos.history', $subdomain) }}" class="quick-action">
+                <span class="icon"><i class="bi bi-receipt"></i></span>
+                <span>
+                    <span class="label">Danh sách vé đã bán</span>
+                    <span class="desc">Xem nhanh các đơn trong ca làm việc</span>
+                </span>
+            </a>
+            <a href="{{ route('pos.shift.report', [$subdomain, $activeShift->id]) }}" class="quick-action">
+                <span class="icon"><i class="bi bi-clipboard2-data"></i></span>
+                <span>
+                    <span class="label">Báo cáo ca</span>
+                    <span class="desc">Mở bill chốt ca và đối soát tiền mặt</span>
+                </span>
+            </a>
+            <button type="button" class="quick-action text-start" style="width:100%;" onclick="openDevicesListModal()">
+                <span class="icon"><i class="bi bi-headset-vr"></i></span>
+                <span>
+                    <span class="label">Danh sách máy</span>
+                    <span class="desc">Kiểm tra máy trống, máy đang dùng, máy lỗi</span>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderQuickModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background:var(--pos-card); border:1px solid var(--pos-card-border); color:var(--pos-text)">
+            <div class="modal-header" style="border-bottom:1px solid var(--pos-card-border); background: rgba(var(--pos-primary-rgb), 0.03);">
+                <div>
+                    <h5 class="modal-title fs-5 fw-bold mb-1" id="orderQuickTitle">Chi tiết đơn</h5>
+                    <div class="small text-muted" id="orderQuickSubTitle">Xem nhanh thông tin đơn đang xử lý</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4 border" style="border-color: var(--pos-card-border) !important; background: rgba(var(--pos-primary-rgb), 0.03);">
+                            <div class="small text-muted mb-1">Khách hàng</div>
+                            <div class="fw-bold" id="orderQuickCustomer">-</div>
+                            <div class="small text-muted" id="orderQuickPhone">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4 border" style="border-color: var(--pos-card-border) !important; background: rgba(var(--pos-primary-rgb), 0.03);">
+                            <div class="small text-muted mb-1">Trạng thái</div>
+                            <div class="fw-bold" id="orderQuickState">-</div>
+                            <div class="small text-muted" id="orderQuickDeadline">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="border-color: var(--pos-card-border) !important; background: rgba(var(--pos-primary-rgb), 0.03);">
+                            <div class="small text-muted mb-1">Vé</div>
+                            <div class="fw-bold" id="orderQuickTicket">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="border-color: var(--pos-card-border) !important; background: rgba(var(--pos-primary-rgb), 0.03);">
+                            <div class="small text-muted mb-1">Máy</div>
+                            <div class="fw-bold" id="orderQuickDevice">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="border-color: var(--pos-card-border) !important; background: rgba(var(--pos-primary-rgb), 0.03);">
+                            <div class="small text-muted mb-1">Số lượng</div>
+                            <div class="fw-bold" id="orderQuickQty">-</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 rounded-4 border" style="border-color: var(--pos-card-border) !important; background: rgba(var(--pos-primary-rgb), 0.03);">
+                            <div class="small text-muted mb-1">Ghi chú</div>
+                            <div id="orderQuickNote" class="fw-semibold">Không có ghi chú</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--pos-card-border)">
+                <button type="button" class="btn-pos-outline" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn-pos" id="orderQuickActionBtn" onclick="openSelectedOrderDetail()">
+                    <i class="bi bi-box-arrow-up-right"></i> Mở chi tiết slot
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Danh sách kính đã được chuyển vào Modal --}}
@@ -489,10 +972,31 @@ $totalDevices = $devices->count();
 let deviceModal;
 let devicesListModal;
 let ticketModal;
+let orderQuickModal;
+let selectedOrder = null;
+
+const taskOrdersPayload = @json((isset($taskOrders) ? $taskOrders : collect())->map(function ($order) use ($dashboardSubdomain) {
+    return [
+        'id' => $order->id,
+        'customer_name' => $order->customer_name ?? 'Khách lẻ',
+        'customer_phone' => $order->customer_phone ?? '',
+        'ticket_name' => $order->ticket_name ?? 'Vé',
+        'slot_label' => $order->slot_label ?? '',
+        'device_name' => $order->device_name ?? 'Chưa gán máy',
+        'work_state' => $order->work_state ?? 'pending',
+        'deadline_seconds' => $order->deadline_seconds ?? 0,
+        'remain_seconds' => $order->remain_seconds ?? 0,
+        'quantity' => $order->quantity ?? 1,
+        'note' => $order->note ?? '',
+        'slot_id' => $order->slot_id ?? null,
+        'slot_url' => $order->slot_id ? route('pos.slot.detail', [$dashboardSubdomain, $order->slot_id]) : route('pos.history', $dashboardSubdomain),
+    ];
+})->values());
 document.addEventListener('DOMContentLoaded', function() {
     deviceModal = new bootstrap.Modal(document.getElementById('deviceModal'));
     devicesListModal = new bootstrap.Modal(document.getElementById('devicesListModal'));
     ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+    orderQuickModal = new bootstrap.Modal(document.getElementById('orderQuickModal'));
 });
 
 function openDevicesListModal() {
@@ -569,6 +1073,114 @@ function saveDeviceUpdate() {
     });
 }
 
+function startOrder(orderId) {
+    const buttons = document.querySelectorAll(`button[onclick*="startOrder(${orderId})"]`);
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.dataset.oldHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang bắt đầu...';
+    });
+
+    fetch(`{{ route('pos.checkin.process', $subdomain) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ order_id: orderId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Đã bắt đầu đơn và gán máy thành công', 'success');
+            setTimeout(() => {
+                if (data.slot_id) {
+                    window.location.href = `/chi-nhanh/{{ $subdomain }}/pos/slot/${data.slot_id}`;
+                } else {
+                    window.location.reload();
+                }
+            }, 600);
+            return;
+        }
+
+        showToast(data.message || 'Không thể bắt đầu đơn này', 'error');
+    })
+    .catch(() => {
+        showToast('Không thể kết nối đến máy chủ', 'error');
+    })
+    .finally(() => {
+        buttons.forEach(btn => {
+            btn.disabled = false;
+            if (btn.dataset.oldHtml) {
+                btn.innerHTML = btn.dataset.oldHtml;
+            }
+        });
+    });
+}
+
+function openOrderModal(orderId) {
+    selectedOrder = taskOrdersPayload.find(item => String(item.id) === String(orderId)) || null;
+    if (!selectedOrder) {
+        showToast('Không tìm thấy dữ liệu đơn này', 'error');
+        return;
+    }
+
+    const stateLabelMap = {
+        playing: 'Đang chơi',
+        waiting: 'Chờ bắt đầu',
+        expired: 'Hết hạn',
+        cancelled: 'Đã hủy',
+        refunded: 'Đã hoàn',
+        pending: 'Chờ xử lý'
+    };
+
+    document.getElementById('orderQuickTitle').textContent = selectedOrder.customer_name + ' • ' + selectedOrder.ticket_name;
+    document.getElementById('orderQuickSubTitle').textContent = selectedOrder.slot_label || 'Chưa có slot';
+    document.getElementById('orderQuickCustomer').textContent = selectedOrder.customer_name || 'Khách lẻ';
+    document.getElementById('orderQuickPhone').textContent = selectedOrder.customer_phone ? ('SĐT: ' + selectedOrder.customer_phone) : 'Không có SĐT';
+    document.getElementById('orderQuickState').textContent = stateLabelMap[selectedOrder.work_state] || selectedOrder.work_state;
+    document.getElementById('orderQuickDeadline').textContent = selectedOrder.work_state === 'waiting'
+        ? ('Còn ' + formatCountdown(selectedOrder.deadline_seconds) + ' để bắt đầu')
+        : (selectedOrder.work_state === 'playing'
+            ? ('Còn ' + formatCountdown(selectedOrder.remain_seconds) + ' để kết thúc')
+            : '');
+    document.getElementById('orderQuickTicket').textContent = selectedOrder.ticket_name || '-';
+    document.getElementById('orderQuickDevice').textContent = selectedOrder.device_name || '-';
+    document.getElementById('orderQuickQty').textContent = selectedOrder.quantity || 1;
+    document.getElementById('orderQuickNote').textContent = selectedOrder.note ? selectedOrder.note : 'Không có ghi chú';
+    document.getElementById('orderQuickActionBtn').style.display = selectedOrder.slot_url ? 'inline-flex' : 'none';
+
+    orderQuickModal.show();
+}
+
+function openSelectedOrderDetail() {
+    if (!selectedOrder || !selectedOrder.slot_url) {
+        return;
+    }
+
+    window.location.href = selectedOrder.slot_url;
+}
+
+function formatCountdown(totalSeconds) {
+    const seconds = Math.max(0, parseInt(totalSeconds || 0, 10));
+    const minutes = Math.floor(seconds / 60);
+    const remainSeconds = seconds % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(remainSeconds).padStart(2, '0');
+}
+
+function filterTasks(state, button) {
+    document.querySelectorAll('.task-filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (button) {
+        button.classList.add('active');
+    }
+
+    document.querySelectorAll('.task-card').forEach(card => {
+        const cardState = card.dataset.state || 'all';
+        card.style.display = (state === 'all' || cardState === state) ? '' : 'none';
+    });
+}
+
 function showToast(msg, type = 'success') {
     // Simple alert for now, can be improved to a real toast
     const alertDiv = document.createElement('div');
@@ -593,12 +1205,7 @@ function autoRefresh() {
 }
 
 function refreshData() {
-    // We can use a custom logic here to only update needed parts or just reload
-    // For now, let's keep it simple and just do a location.reload() or targeted fetch
-    // To make it feel better, we'll just reload the page for now
-    // But in a real "perfected" POS, we'd use AJAX to update slot counts
-    console.log('Refreshing POS data...');
-    // location.reload(); 
+    window.location.reload();
 }
 
 setInterval(autoRefresh, 1000);
