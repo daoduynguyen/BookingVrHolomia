@@ -47,7 +47,13 @@
     .ticket-card-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; color: var(--pos-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ticket-card-price { font-size: 0.9rem; color: var(--pos-primary); font-weight: 700; display:flex; align-items:center; gap:6px; margin-bottom: 12px; }
 
-    .slot-list { padding: 10px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .slot-list { padding: 10px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 768px) {
+        .slot-list { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 576px) {
+        .slot-list { grid-template-columns: 1fr; }
+    }
 
     .slot-item {
         display: flex;
@@ -158,7 +164,8 @@
     .section-title { font-size: 1.1rem; font-weight: 800; color: var(--pos-text); letter-spacing: -0.02em; }
     .section-sub { font-size: 0.8rem; color: var(--pos-text-muted); font-weight: 500; }
 </style>
-@endsection@section('content')
+@endsection
+@section('content')
 
 {{-- STATS --}}
 @php
@@ -533,4 +540,4 @@ function refreshData() {
 
 setInterval(autoRefresh, 1000);
 </script>
-@endsection
+@endsection

@@ -54,17 +54,17 @@ $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold">Họ và tên</label>
                             <input type="text" name="customer_name" class="form-control"
-                                value="{{ Auth::check() ? Auth::user()->name : '' }}" required>
+                                value="{{ old('customer_name', $customerInfo['customer_name'] ?? (Auth::check() ? Auth::user()->name : '')) }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold">Số điện thoại</label>
                             <input type="text" name="customer_phone" class="form-control"
-                                value="{{ Auth::check() ? Auth::user()->phone : '' }}" required>
+                                value="{{ old('customer_phone', $customerInfo['customer_phone'] ?? (Auth::check() ? Auth::user()->phone : '')) }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold">Email nhận vé</label>
                             <input type="email" name="customer_email" class="form-control"
-                                value="{{ Auth::check() ? Auth::user()->email : '' }}" required placeholder="Ví dụ: nguyenvan@gmail.com">
+                                value="{{ old('customer_email', $customerInfo['customer_email'] ?? (Auth::check() ? Auth::user()->email : '')) }}" required placeholder="Ví dụ: nguyenvan@gmail.com">
                         </div>
 
                         {{-- CHỌN NGÀY VÀ GIỜ --}}
@@ -72,7 +72,7 @@ $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i>
                                     Ngày chơi</label>
-                                <input type="date" name="booking_date" id="booking_date" class="form-control" required>
+                                <input type="date" name="booking_date" id="booking_date" class="form-control" value="{{ old('booking_date', $lastBookingDate ?? '') }}" required>
                                 <div id="date-message" class="mt-2 small text-muted">Vui lòng chọn ngày...</div>
                             </div>
 
@@ -80,7 +80,7 @@ $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold text-warning"><i class="bi bi-clock-history me-1"></i>
                                     Khung giờ</label>
-                                <select name="slot_id" id="slot_id"
+                                <select name="slot_id" id="slot_id" data-selected="{{ old('slot_id', $lastSlotId ?? '') }}"
                                     class="form-select bg-white text-dark border-light shadow-sm" required>
                                     <option value="">-- Hãy chọn ngày trước --</option>
                                 </select>
@@ -249,19 +249,23 @@ $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
             var today = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
             $('#booking_date').attr('min', today);
 
-            // ✅ TỰ ĐỘNG CHỌN NGÀY HÔM NAY
-            $('#booking_date').val(today);
+            // ✅ TỰ ĐỘNG CHỌN NGÀY HÔM NAY (NẾU CHƯA CÓ)
+            if (!$('#booking_date').val()) {
+                $('#booking_date').val(today);
+            }
 
-// ✅ TỰ ĐỘNG LOAD SLOT GIỜ GẦN NHẤT
+// ✅ TỰ ĐỘNG LOAD SLOT GIỜ GẦN NHẤT HOẶC ĐÃ LƯU
 var ticket_id = $('input[name="ticket_id"]').val();
 var slotSelect = $('#slot_id');
+var selectedDate = $('#booking_date').val() || today;
+var preselectedSlotId = slotSelect.data('selected');
 
 slotSelect.html('<option value="">Đang tải khung giờ...</option>');
 slotSelect.prop('disabled', true);
 
 $.ajax({
     url: '/api/get-slots',
-    data: { ticket_id: ticket_id, date: today, location_id: $('#location_id').val() },
+    data: { ticket_id: ticket_id, date: selectedDate, location_id: $('#location_id').val() },
     success: function (slots) {
         slotSelect.prop('disabled', false);
         slotSelect.empty();
@@ -300,12 +304,14 @@ $.ajax({
        
 
             if (validSlotsCount === 0) {
-                slotSelect.html('<option value="">Chưa có lịch hôm nay!</option>');
+                slotSelect.html('<option value="">Chưa có lịch ngày này!</option>');
                 return;
             }
 
-            // ✅ TỰ ĐỘNG CHỌN SLOT GẦN NHẤT
-            if (bestIndex !== -1) {
+            // ✅ TỰ ĐỘNG CHỌN SLOT ĐÃ LƯU HOẶC GẦN NHẤT
+            if (preselectedSlotId && slotSelect.find('option[value="' + preselectedSlotId + '"]').length > 0) {
+                slotSelect.val(preselectedSlotId);
+            } else if (selectedDate === today && bestIndex !== -1) {
                 slotSelect.find('option').eq(bestIndex).prop('selected', true);
             } else if (validSlotsCount > 0) {
                 slotSelect.find('option').eq(0).prop('selected', true);

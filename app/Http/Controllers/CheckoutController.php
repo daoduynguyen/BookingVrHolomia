@@ -34,15 +34,21 @@ class CheckoutController extends Controller
         }
 
         $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
-        $surchargeRate = (int) $surchargeStr;
+        $surchargeRate = (int) $surchargeStr / 100;
 
         $totalWeek = $ticket->price;
+        $customerInfo = session('customer_info', []);
+        $lastBookingDate = session('last_booking_date');
+        $lastSlotId = session('last_slot_id');
 
         return view('checkout.index', [
             'totalWeek' => $totalWeek,
             'surchargeRate' => $surchargeRate,
             'ticket_id' => $id,
             'ticket' => $ticket,
+            'customerInfo' => $customerInfo,
+            'lastBookingDate' => $lastBookingDate,
+            'lastSlotId' => $lastSlotId,
         ]);
     }
 
@@ -91,11 +97,12 @@ class CheckoutController extends Controller
             return $discount > $subTotal ? $subTotal : $discount; // Không giảm lố tiền
         };
 
-        // Lấy mảng ticket_types khách gửi lên (dạng ['Tên loại' => Số lượng])
-        $submittedTypes = $request->input('ticket_types'); // e.g. ['Vé Thường' => 2, 'VIP' => 1]
-        $totalQuantitySubmitted = 0;
+        if ($request->has('replace_cart_id') && isset($cart[$request->replace_cart_id])) {
+            // Delete the old ticket (if the key changes, it's replaced. If it's the same, we simply overwrite anyway later)
+            unset($cart[$request->replace_cart_id]);
+        }
 
-        // Nếu ticket có loại vé và khách gửi lên
+        // Now process type and base price
         if ($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0 && is_array($submittedTypes)) {
             foreach ($submittedTypes as $typeName => $qty) {
                 $qty = (int) $qty;
@@ -183,10 +190,7 @@ class CheckoutController extends Controller
             return back()->with('error', __('messages.select_at_least_one'))->withInput();
         }
 
-        if ($request->has('replace_cart_id') && isset($cart[$request->replace_cart_id])) {
-            unset($cart[$request->replace_cart_id]);
-        }
-
+        session(['customer_info' => $request->only(['customer_name', 'customer_phone', 'customer_email', 'payment_method', 'shipping_address', 'note']), 'last_booking_date' => $request->booking_date, 'last_slot_id' => $request->slot_id]);
         session()->put('cart', $cart);
 
         if (!session()->has('cart_created_at')) {
@@ -234,7 +238,7 @@ class CheckoutController extends Controller
             // Khóa mã giảm giá để ngăn chặn việc dùng chung 1 mã quá lượt (Race Condition)
             if (!empty($appliedCoupons)) {
                 $uniqueCoupons = array_unique($appliedCoupons);
-                $lockedCoupons = \App\Models\Coupon::whereIn('code', $uniqueCoupons)->lockForUpdate()->get()->keyBy('code');
+                $lockedCoupons = Coupon::whereIn('code', $uniqueCoupons)->lockForUpdate()->get()->keyBy('code');
                 foreach ($uniqueCoupons as $code) {
                     if (!isset($lockedCoupons[$code]) || $lockedCoupons[$code]->quantity <= 0) {
                         DB::rollBack();
@@ -280,7 +284,7 @@ class CheckoutController extends Controller
                 $ticketId = $firstItem['id'] ?? $firstItem['ticket_id'] ?? key($cart);
 
                 if ($ticketId) {
-                    $ticketForLocation = \App\Models\Ticket::find($ticketId);
+                    $ticketForLocation = Ticket::find($ticketId);
                     if ($ticketForLocation && $ticketForLocation->locations->count() > 0) {
                         $locationId = $ticketForLocation->locations->first()->id;
                     }
@@ -329,7 +333,7 @@ class CheckoutController extends Controller
                     . "💳 *Trạng thái:* " . ($order->status == 'paid' ? '✅ Đã thanh toán' : '⏳ Chờ thanh toán');
 
                 // Bắn Request lên API của Telegram thông qua Background Job
-                \App\Jobs\SendTelegramNotification::dispatchSync($message);
+                SendTelegramNotification::dispatchSync($message);
             } catch (\Exception $e) {
                 // Ghi log
                 Log::error("Lỗi gửi Telegram: " . $e->getMessage());
@@ -503,7 +507,7 @@ class CheckoutController extends Controller
     // Trang QR thanh toán chuyển khoản
     public function bankingPaymentPage($id)
     {
-        $order = \App\Models\Order::with(['orderItems.ticket', 'location', 'slot'])->findOrFail($id);
+        $order = Order::with(['orderItems.ticket', 'location', 'slot'])->findOrFail($id);
 
         // Bảo mật: chỉ khách của đơn mới xem được
         if ($order->user_id) {
@@ -518,7 +522,7 @@ class CheckoutController extends Controller
         $bankBin = !empty($settings['bank_bin']) ? $settings['bank_bin'] : '970418';
         $bankAccount = !empty($settings['bank_account']) ? $settings['bank_account'] : '8860075445';
         $bankName = !empty($settings['bank_name']) ? $settings['bank_name'] : 'BIDV';
-        $bankOwner = !empty($settings['bank_owner']) ? $settings['bank_owner'] : 'HOLOMIA VR';
+        $bankOwner = !empty($settings['bank_owner']) && $settings['bank_owner'] !== 'HOLOMIA VR' ? $settings['bank_owner'] : 'NGUYEN';
 
         $refCode = 'DH' . $order->id;
         $amount = $order->total_amount;
@@ -589,7 +593,7 @@ class CheckoutController extends Controller
 
         $slotsResult = $query->orderBy('start_time', 'asc')->get();
         if ($request->location_id && $slotsResult->count() > 0) {
-            $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($request->location_id, $request->date);
+            $availabilities = TimeSlot::getTrueAvailabilitiesForDate($request->location_id, $request->date);
         }
 
         $slots = $slotsResult->map(function ($slot) use ($request, &$availabilities) {

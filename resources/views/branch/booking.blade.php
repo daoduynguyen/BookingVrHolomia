@@ -90,7 +90,7 @@
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold text-warning"><i class="bi bi-clock-history me-1"></i> {{ __('checkout.time_slot') }}</label>
-                                <select name="slot_id" id="slot_id"
+                                <select name="slot_id" id="slot_id" data-selected="{{ $oldCartData['slot_id'] ?? '' }}"
                                     class="form-select bg-white text-dark border-light shadow-sm" required>
                                     <option value="">{{ __('checkout.slot_choose_date') }}</option>
                                 </select>
@@ -304,8 +304,11 @@
                                 updateSummary();
                                 return;
                             }
-
-                            if (bestIndex !== -1) {
+                            
+                            var preselectedSlotId = slotSelect.data('selected');
+                            if (preselectedSlotId && slotSelect.find('option[value="' + preselectedSlotId + '"]').length > 0) {
+                                slotSelect.val(preselectedSlotId);
+                            } else if (bestIndex !== -1) {
                                 slotSelect.find('option').eq(bestIndex).prop('selected', true);
                             } else if (validSlotsCount > 0) {
                                 slotSelect.find('option').eq(0).prop('selected', true);

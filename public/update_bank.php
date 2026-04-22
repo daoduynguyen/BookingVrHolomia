@@ -9,6 +9,6 @@ use App\Models\Setting;
 Setting::updateOrCreate(['key' => 'bank_name'], ['value' => 'BIDV']);
 Setting::updateOrCreate(['key' => 'bank_bin'], ['value' => '970418']);
 Setting::updateOrCreate(['key' => 'bank_account'], ['value' => '8860075445']);
-Setting::updateOrCreate(['key' => 'bank_owner'], ['value' => 'HOLOMIA VR']);
+Setting::updateOrCreate(['key' => 'bank_owner'], ['value' => 'NGUYEN']);
 
 echo "Settings updated successfully.\n";

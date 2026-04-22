@@ -166,11 +166,13 @@ class BranchController extends Controller
         $surchargeStr = \App\Models\Setting::where('key', 'weekend_surcharge_percentage')->value('value') ?? '0';
         $surchargeRate = (int) $surchargeStr;
 
-        $oldCartData = null;
+        $oldCartData = session('branch_customer_info_' . $subdomain, []);
         $replaceId = request('replace_cart_id');
         if ($replaceId) {
             $cart = session()->get('branch_cart_' . $subdomain, []);
-            $oldCartData = $cart[$replaceId] ?? null;
+            if (isset($cart[$replaceId])) {
+                $oldCartData = $cart[$replaceId];
+            }
         }
 
         return view('branch.booking', compact('location', 'ticket', 'subdomain', 'selectedType', 'slots', 'surchargeRate', 'oldCartData', 'replaceId'));
@@ -190,6 +192,11 @@ class BranchController extends Controller
         $location = $this->getLocation($subdomain);
 
         $cart = session()->get('branch_cart_' . $subdomain, []);
+
+        if ($request->input('replace_cart_id') && isset($cart[$request->input('replace_cart_id')])) {
+            unset($cart[$request->input('replace_cart_id')]);
+        }
+
         $cartKey = $ticket->id . '_' . $request->booking_date . '_' . ($request->slot_id ?? 'noslot');
 
         $types = $request->input('ticket_types', []);
@@ -278,12 +285,19 @@ class BranchController extends Controller
             ];
         }
 
-        // Nếu đang sửa item cũ (từ giỏ hàng), xóa item cũ đi
-        if ($request->input('replace_cart_id')) {
-            unset($cart[$request->input('replace_cart_id')]);
-        }
-
         session()->put('branch_cart_' . $subdomain, $cart);
+        
+        // Save customer info into session for next bookings
+        session()->put('branch_customer_info_' . $subdomain, [
+            'customer_name' => $request->customer_name,
+            'customer_phone' => $request->customer_phone,
+            'customer_email' => $request->customer_email ?? (Auth::user()->email ?? ''),
+            'booking_date' => $request->booking_date,
+            'slot_id' => $request->slot_id,
+            'payment_method' => $request->input('payment_method', 'cod'),
+            'note' => $request->input('note', ''),
+        ]);
+
         return redirect()->route('branch.cart', ['subdomain' => $subdomain])
             ->with('success', 'Đã thêm vé vào giỏ hàng!');
 
@@ -642,7 +656,7 @@ class BranchController extends Controller
         $bankBin = !empty($settings['bank_bin']) ? $settings['bank_bin'] : '970418';
         $bankAccount = !empty($settings['bank_account']) ? $settings['bank_account'] : '8860075445';
         $bankName = !empty($settings['bank_name']) ? $settings['bank_name'] : 'BIDV';
-        $bankOwner = !empty($settings['bank_owner']) ? $settings['bank_owner'] : 'HOLOMIA VR';
+        $bankOwner = !empty($settings['bank_owner']) && $settings['bank_owner'] !== 'HOLOMIA VR' ? $settings['bank_owner'] : 'NGUYEN';
 
         $refCode = 'DH' . $order->id;
         $amount = $order->total_amount;

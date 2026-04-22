@@ -254,7 +254,7 @@ class OrderApiController extends Controller
                 $settings = \App\Models\Setting::whereIn('key', ['bank_bin', 'bank_account', 'bank_name', 'bank_owner'])->pluck('value', 'key');
                 $bankBin = $settings['bank_bin'] ?? '970436';
                 $bankAccount = $settings['bank_account'] ?? '';
-                $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
+                $bankOwner = !empty($settings['bank_owner']) && $settings['bank_owner'] !== 'HOLOMIA VR' ? $settings['bank_owner'] : 'NGUYEN';
                 $bankName = $settings['bank_name'] ?? 'Vietcombank';
                 $refCode = 'DH' . $order->id;
 

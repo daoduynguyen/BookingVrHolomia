@@ -40,7 +40,7 @@ class WalletController extends Controller
         $bankBin = $settings['bank_bin'] ?? '970436';
         $bankAccount = $settings['bank_account'] ?? '1234567890';
         $bankName = $settings['bank_name'] ?? 'Vietcombank';
-        $bankOwner = $settings['bank_owner'] ?? 'HOLOMIA VR';
+        $bankOwner = !empty($settings['bank_owner']) && $settings['bank_owner'] !== 'HOLOMIA VR' ? $settings['bank_owner'] : 'NGUYEN';
 
         // QR VietQR chuẩn
         $qrUrl = "https://img.vietqr.io/image/{$bankBin}-{$bankAccount}-compact2.png"
