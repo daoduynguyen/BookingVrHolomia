@@ -715,34 +715,79 @@
     </script>
     
     @if(session('cod_success'))
+    @php
+        $codSummary = session('order_summary', []);
+        $codItems = $codSummary['items'] ?? [];
+        $codDate = $codSummary['booking_date'] ?? '';
+        $codSlot = $codSummary['slot'] ?? '';
+        $codLocation = $codSummary['location'] ?? ($location->name ?? 'Đang cập nhật');
+    @endphp
     <script>
         Swal.fire({
     icon: 'success',
     title: '{{ __("profile.order_success") ?? "Đặt vé thành công!" }} 🎉',
     html: `
         <div class="text-start small">
-            <div class="alert alert-warning border-0 rounded-3 mb-3 py-2" style="font-size:0.85rem;">
-                <i class="bi bi-shop me-2"></i>
-                <strong>{{ __("profile.pay_at_counter") ?? "Thanh toán tại quầy" }}</strong><br>
-                {!! __("profile.pay_at_counter_desc") ?? 'Vui lòng đến quầy thanh toán <strong>trước 15 phút</strong> so với giờ chơi.' !!}
+            <div class="rounded-3 p-3 mb-3" style="background: linear-gradient(135deg, rgba(255,193,7,0.12), rgba(13,202,240,0.08)); border:1px solid rgba(255,193,7,0.18);">
+                <div class="d-flex align-items-center gap-2 fw-bold text-dark mb-1">
+                    <i class="bi bi-shop text-warning"></i>
+                    {{ __("profile.pay_at_counter") ?? "Thanh toán tại quầy" }}
+                </div>
+                <div style="color:#4b5563; line-height:1.45; font-size:0.9rem;">
+                    {!! __("profile.pay_at_counter_desc") ?? 'Vui lòng đến quầy thanh toán <strong>trước 15 phút</strong> so với giờ chơi.' !!}
+                </div>
             </div>
-            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                <span class="text-muted">Cơ sở:</span>
-                <span class="fw-bold text-primary">{{ $location->name }}</span>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="p-3 rounded-3 bg-light border h-100">
+                        <div class="text-muted small mb-1">Cơ sở</div>
+                        <div class="fw-bold text-primary">{{ $codLocation }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded-3 bg-light border h-100">
+                        <div class="text-muted small mb-1">Ngày chơi</div>
+                        <div class="fw-bold text-dark">{{ $codDate ?: 'Đang cập nhật' }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded-3 bg-light border h-100">
+                        <div class="text-muted small mb-1">Khung giờ</div>
+                        <div class="fw-bold text-dark">{{ $codSlot ?: 'Đang cập nhật' }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded-3 bg-light border h-100">
+                        <div class="text-muted small mb-1">Mã đơn</div>
+                        <div class="fw-bold text-dark">#{{ session('order_id') }}</div>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                <span class="text-muted">{{ __("profile.order_id_label") ?? "Mã đơn:" }}</span>
-                <span class="fw-bold text-dark">#{{ session('order_id') }}</span>
-            </div>
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                 <span class="text-muted">{{ __("profile.total_label") ?? "Tổng tiền:" }}</span>
                 <span class="fw-bold text-success fs-6">{{ number_format(session('total_amount')) }}đ</span>
+            </div>
+            <div class="mb-2 fw-bold text-dark">Chi tiết vé</div>
+            <div class="border rounded-3 p-3 bg-white">
+                @if(count($codItems))
+                    @foreach($codItems as $item)
+                        <div class="d-flex justify-content-between align-items-start gap-3 py-1 {{ !$loop->last ? 'border-bottom' : '' }}">
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold text-dark">{{ $item['ticket_name'] ?? 'Vé' }}</div>
+                                <div class="text-muted small">Số lượng: {{ $item['quantity'] ?? 1 }}</div>
+                            </div>
+                            <div class="fw-bold text-primary text-nowrap">{{ number_format($item['price'] ?? 0) }}đ</div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="text-muted">Không có dữ liệu chi tiết vé.</div>
+                @endif
             </div>
         </div>
     `,
     confirmButtonText: '{{ __("profile.understood") ?? "Đã hiểu" }}',
     confirmButtonColor: '#0dcaf0',
-    width: '420px',
+    width: '540px',
     allowOutsideClick: false,
 });
     </script>
@@ -750,7 +795,7 @@
 @php
     $pMethod = 'banking';
     if (session('order_id')) {
-        $orderData = \App\Models\Order::find(session('order_id'));
+        $orderData = \App\Models\Order::with(['location', 'orderItems.ticket', 'slot'])->find(session('order_id'));
         if ($orderData) $pMethod = $orderData->payment_method;
     }
     $methodLabel = match($pMethod) {
@@ -759,6 +804,11 @@
         'banking' => 'Chuyển khoản ngân hàng',
         default   => $pMethod,
     };
+    $walletSummary = session('order_summary', []);
+    $walletItems = $walletSummary['items'] ?? [];
+    $walletLocation = $walletSummary['location'] ?? ($location->name ?? 'Đang cập nhật');
+    $walletDate = $walletSummary['booking_date'] ?? '';
+    $walletSlot = $walletSummary['slot'] ?? '';
 @endphp
 <script>
     Swal.fire({
@@ -766,27 +816,70 @@
         title: '{{ __("profile.payment_success") ?? "Thanh toán thành công!" }} 🎮',
         html: `
             <div class="text-start small">
-                <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                    <span class="text-muted">Cơ sở:</span>
-                    <span class="fw-bold text-primary">{{ $location->name }}</span>
+                <div class="rounded-3 p-3 mb-3" style="background: linear-gradient(135deg, rgba(13,110,253,0.10), rgba(13,202,240,0.10)); border:1px solid rgba(13,110,253,0.18);">
+                    <div class="d-flex align-items-center gap-2 fw-bold text-dark mb-1">
+                        <i class="bi bi-wallet2 text-primary"></i>
+                        Thanh toán qua ví đã hoàn tất
+                    </div>
+                    <div style="color:#4b5563; line-height:1.45; font-size:0.9rem;">
+                        Số tiền đã được trừ thành công và đơn hàng của bạn đã được xác nhận.
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-3 rounded-3 bg-light border h-100">
+                            <div class="text-muted small mb-1">Cơ sở</div>
+                            <div class="fw-bold text-primary">{{ $walletLocation }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded-3 bg-light border h-100">
+                            <div class="text-muted small mb-1">Mã đơn</div>
+                            <div class="fw-bold text-dark">#{{ session('order_id') }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded-3 bg-light border h-100">
+                            <div class="text-muted small mb-1">Ngày chơi</div>
+                            <div class="fw-bold text-dark">{{ $walletDate ?: 'Đang cập nhật' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded-3 bg-light border h-100">
+                            <div class="text-muted small mb-1">Khung giờ</div>
+                            <div class="fw-bold text-dark">{{ $walletSlot ?: 'Đang cập nhật' }}</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                    <span class="text-muted">{{ __("profile.order_id_label") ?? "Mã đơn:" }}</span>
-                    <span class="fw-bold text-dark">{{ session('order_id') }}</span>
+                    <span class="text-muted">Phương thức:</span>
+                    <span class="fw-bold text-dark">{{ $methodLabel }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                     <span class="text-muted">{{ __("profile.total_label") ?? "Tổng tiền:" }}</span>
                     <span class="fw-bold text-primary fs-6">{{ number_format(session('total_amount')) }}đ</span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Phương thức:</span>
-                    <span class="fw-bold text-dark">{{ $methodLabel }}</span>
+                <div class="mb-2 fw-bold text-dark">Chi tiết vé</div>
+                <div class="border rounded-3 p-3 bg-white">
+                    @if(count($walletItems))
+                        @foreach($walletItems as $item)
+                            <div class="d-flex justify-content-between align-items-start gap-3 py-1 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold text-dark">{{ $item['ticket_name'] ?? 'Vé' }}</div>
+                                    <div class="text-muted small">Số lượng: {{ $item['quantity'] ?? 1 }}</div>
+                                </div>
+                                <div class="fw-bold text-primary text-nowrap">{{ number_format($item['price'] ?? 0) }}đ</div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="text-muted">Không có dữ liệu chi tiết vé.</div>
+                    @endif
                 </div>
             </div>
         `,
         confirmButtonText: '{{ __("profile.close") ?? "Đóng" }}',
         confirmButtonColor: '#0d6efd',
-        width: '380px',
+        width: '540px',
         allowOutsideClick: false,
     });
 </script>

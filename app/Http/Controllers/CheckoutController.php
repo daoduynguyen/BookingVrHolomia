@@ -97,10 +97,14 @@ class CheckoutController extends Controller
             return $discount > $subTotal ? $subTotal : $discount; // Không giảm lố tiền
         };
 
+        // Lấy mảng ticket_types khách gửi lên, luôn mặc định là mảng rỗng để tránh biến chưa khởi tạo.
+        $submittedTypes = $request->input('ticket_types', []); // e.g. ['Vé Thường' => 2, 'VIP' => 1]
+
         if ($request->has('replace_cart_id') && isset($cart[$request->replace_cart_id])) {
             // Delete the old ticket (if the key changes, it's replaced. If it's the same, we simply overwrite anyway later)
             unset($cart[$request->replace_cart_id]);
         }
+        $totalQuantitySubmitted = 0;
 
         // Now process type and base price
         if ($ticket->ticket_types && is_array($ticket->ticket_types) && count($ticket->ticket_types) > 0 && is_array($submittedTypes)) {
@@ -488,12 +492,27 @@ class CheckoutController extends Controller
             }
 
             // 3. VÍ HOLOMIA → Thông báo thành công
+            $order->loadMissing(['orderItems.ticket', 'slot', 'location']);
+            $orderSummary = [
+                'items' => $order->orderItems->map(function($it){
+                    return [
+                        'ticket_name' => $it->ticket_name ?? ($it->ticket->name ?? ''),
+                        'quantity' => $it->quantity,
+                        'price' => $it->price,
+                    ];
+                })->toArray(),
+                'booking_date' => $order->booking_date ? \Carbon\Carbon::parse($order->booking_date)->format('d/m/Y') : '',
+                'slot' => isset($order->slot) && $order->slot ? substr($order->slot->start_time,0,5) . ' - ' . substr($order->slot->end_time,0,5) : '',
+                'location' => $order->location->name ?? '',
+            ];
+
             return redirect()->route('profile.index')->with([
                 'payment_success' => true,
                 'order_id' => $order->id,
                 'total_amount' => $order->total_amount,
                 'method' => 'wallet',
                 'qr_code' => $qr->qr_code ?? '',
+                'order_summary' => $orderSummary,
             ]);
 
         } catch (\Throwable $e) {

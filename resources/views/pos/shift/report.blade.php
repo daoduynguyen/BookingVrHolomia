@@ -68,16 +68,110 @@
         border: 1px solid var(--pos-card-border);
     }
 
+    .thermal-bill {
+        display: none;
+        width: 100%;
+        max-width: 80mm;
+        margin: 0 auto;
+        background: #fff;
+        color: #111827;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        font-size: 11px;
+        line-height: 1.35;
+        padding: 10px;
+    }
+    .thermal-bill .brand {
+        text-align: center;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px dashed #cbd5e1;
+    }
+    .thermal-bill .brand h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 1px;
+    }
+    .thermal-bill .brand .sub {
+        font-size: 9px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    .thermal-bill .rowline {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 0;
+    }
+    .thermal-bill .rowline .k {
+        color: #64748b;
+        flex: 0 0 48%;
+    }
+    .thermal-bill .rowline .v {
+        flex: 1;
+        text-align: right;
+        font-weight: 700;
+        word-break: break-word;
+    }
+    .thermal-bill .divider {
+        border-top: 1px dashed #cbd5e1;
+        margin: 8px 0;
+    }
+    .thermal-bill .section-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-weight: 800;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+    .thermal-bill .mini-item {
+        padding: 5px 0;
+        border-bottom: 1px dotted #e5e7eb;
+    }
+    .thermal-bill .mini-item:last-child { border-bottom: 0; }
+    .thermal-bill .mini-item .top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .thermal-bill .mini-item .name { font-weight: 700; }
+    .thermal-bill .mini-item .meta, .thermal-bill .footnote {
+        font-size: 9px;
+        color: #64748b;
+    }
+    .thermal-bill .total-box {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 2px solid #111827;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 900;
+        font-size: 13px;
+    }
+    .thermal-bill .total-box .value {
+        color: #0ea5e9;
+        font-size: 15px;
+    }
+
     /* Print */
     @media print {
+        @page { size: 80mm auto; margin: 4mm; }
+        body { background: #fff !important; color: #000 !important; }
         .pos-sidebar, .pos-topbar, .no-print { display: none !important; }
         .pos-main { margin-left: 0 !important; }
         .pos-content { padding: 0 !important; }
-        .report-layout { grid-template-columns: 1fr !important; }
-        body { background: #fff !important; color: #000 !important; }
+        .report-layout { grid-template-columns: 1fr !important; gap: 0 !important; }
+        .kpi-row { grid-template-columns: 1fr !important; }
+        .diff-highlight { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .diff-highlight .diff-val { font-size: 1.25rem; }
+        .order-table-wrap { max-height: none !important; overflow: visible !important; }
+        .pos-table th, .pos-table td { font-size: 9pt !important; padding: 4px 0 !important; color: #000 !important; }
         .pos-card { border-color: #ddd !important; background: #fff !important; }
         .kpi-card { background: #f9f9f9 !important; border-color: #ddd !important; }
-        .pos-table th, .pos-table td { color: #333 !important; }
+        .thermal-bill { display: block !important; max-width: 72mm !important; padding: 0 !important; }
+        .thermal-bill * { color: #000 !important; }
+        .screen-only { display: none !important; }
     }
 </style>
 @endsection
@@ -91,6 +185,49 @@
     $allOrders = $shift->orders()->with('slot.ticket')->where('status','paid')->latest()->get();
 @endphp
 
+<div class="thermal-bill print-only" id="print-area">
+    <div class="brand">
+        <h3>HOLOMIA VR</h3>
+        <div class="sub">BÁO CÁO CHỐT CA</div>
+        <div class="sub">Ca #{{ $shift->id }} - {{ $location->name }}</div>
+    </div>
+
+    <div class="rowline"><span class="k">Nhân viên</span><span class="v">{{ $shift->user->name ?? 'N/A' }}</span></div>
+    <div class="rowline"><span class="k">Mở ca</span><span class="v">{{ \Carbon\Carbon::parse($shift->opened_at)->format('H:i d/m/Y') }}</span></div>
+    <div class="rowline"><span class="k">Đóng ca</span><span class="v">{{ \Carbon\Carbon::parse($shift->closed_at)->format('H:i d/m/Y') }}</span></div>
+    <div class="rowline"><span class="k">Vé đã bán</span><span class="v">{{ $summary['count'] }}</span></div>
+    <div class="rowline"><span class="k">Doanh thu</span><span class="v">{{ number_format($summary['total'], 0, ',', '.') }}₫</span></div>
+    <div class="rowline"><span class="k">Tiền đầu ca</span><span class="v">{{ number_format($shift->opening_cash, 0, ',', '.') }}₫</span></div>
+    <div class="rowline"><span class="k">Tiền mặt</span><span class="v">{{ number_format($summary['cash'], 0, ',', '.') }}₫</span></div>
+    <div class="rowline"><span class="k">Tiền đếm</span><span class="v">{{ number_format($shift->closing_cash, 0, ',', '.') }}₫</span></div>
+
+    <div class="divider"></div>
+    <div class="section-title">Kiểm két</div>
+    <div class="rowline"><span class="k">Két phải có</span><span class="v">{{ number_format($expectedCash, 0, ',', '.') }}₫</span></div>
+    <div class="rowline"><span class="k">Chênh lệch</span><span class="v">{{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 0, ',', '.') }}₫</span></div>
+    @if($shift->closing_note)
+    <div class="divider"></div>
+    <div class="section-title">Ghi chú</div>
+    <div style="font-size:9px;line-height:1.4">{{ $shift->closing_note }}</div>
+    @endif
+
+    <div class="divider"></div>
+    <div class="section-title">5 giao dịch gần nhất</div>
+    @foreach($allOrders->take(5) as $order)
+        <div class="mini-item">
+            <div class="top">
+                <div class="name">#{{ $order->id }} - {{ $order->customer_name }}</div>
+                <div class="value">{{ number_format($order->total_amount, 0, ',', '.') }}₫</div>
+            </div>
+            <div class="meta">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }} | {{ $order->slot->ticket->name ?? '—' }} | SL {{ $order->quantity ?? 1 }}</div>
+        </div>
+    @endforeach
+
+    <div class="footnote" style="text-align:center;margin-top:8px;">
+        Vui lòng đối chiếu trước khi bàn giao ca.
+    </div>
+</div>
+
 <div style="margin-bottom:16px" class="no-print">
     <a href="{{ route('pos.dashboard', $subdomain) }}" class="btn-pos-outline">
         <i class="bi bi-grid-1x2"></i> Về Dashboard
@@ -102,7 +239,7 @@
     {{ $diffLabel }}
 </span>
 
-<div class="report-layout" id="print-area">
+<div class="report-layout screen-only">
 
     {{-- LEFT --}}
     <div>
