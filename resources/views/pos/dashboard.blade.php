@@ -47,7 +47,7 @@
     .ticket-card-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; color: var(--pos-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ticket-card-price { font-size: 0.9rem; color: var(--pos-primary); font-weight: 700; display:flex; align-items:center; gap:6px; margin-bottom: 12px; }
 
-    .slot-list { padding: 10px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .slot-list { padding: 10px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
     @media (max-width: 768px) {
         .slot-list { grid-template-columns: repeat(2, 1fr); }
     }
@@ -56,47 +56,92 @@
     }
 
     .slot-item {
+        position: relative;
+        min-height: 104px;
+        padding: 16px 18px 14px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(var(--pos-primary-rgb), 0.05) 0%, rgba(var(--pos-primary-rgb), 0.02) 100%);
+        border: 1px solid var(--pos-card-border);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+        transition: all .2s ease-in-out;
+        color: var(--pos-text);
+        cursor: pointer;
+        overflow: hidden;
+    }
+    .slot-item:hover {
+        background: rgba(var(--pos-primary-rgb), .10);
+        border-color: rgba(var(--pos-primary-rgb), .28);
+        color: var(--pos-text);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+    .slot-item.slot-full { opacity: .5; cursor: not-allowed; pointer-events: none; }
+
+    .slot-time { font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em; }
+    .slot-time .date-tag { font-size: 0.68rem; color: var(--pos-text-muted); }
+
+    .slot-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .slot-main {
+        min-width: 0;
+    }
+
+    .slot-badge {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #fff;
+        background: rgba(71, 85, 105, 0.78);
+        padding: 4px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+
+    .slot-card-footer {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 18px;
-        border-radius: 12px;
-        background: var(--pos-card);
-        border: 1px solid var(--pos-card-border);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        transition: all .2s ease-in-out;
-        text-decoration: none;
-        color: var(--pos-text);
+        gap: 10px;
+        margin-top: 12px;
     }
-    .slot-item:hover { background: rgba(var(--pos-primary-rgb),.12); border-color: var(--pos-primary); color: var(--pos-text); transform: scale(1.02); }
-    .slot-item.slot-full { opacity: .5; cursor: not-allowed; pointer-events: none; }
 
-    .slot-time { font-size: 0.85rem; font-weight: 700; }
-    .slot-time .date-tag { font-size: 0.68rem; color: var(--pos-text-muted); }
-
-    .slot-avail {
+    .slot-meta {
+        font-size: 0.78rem;
+        color: var(--pos-text-muted);
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.75rem;
+        font-weight: 600;
     }
-    .slot-avail .add-btn {
-        width: 32px; height: 32px;
+
+    .slot-add-btn {
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         background: var(--pos-primary);
         color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         font-weight: 700;
         flex-shrink: 0;
         transition: all 0.2s;
+        border: none;
+        text-decoration: none;
     }
-    .slot-avail .add-btn:hover {
+    .slot-add-btn:hover {
         background: #000;
         transform: rotate(90deg);
+        color: #fff;
     }
-    .slot-avail .add-btn.disabled {
-        background: rgba(255,255,255,.1);
+    .slot-add-btn.disabled {
+        background: rgba(255,255,255,.15);
         color: #4b5563;
     }
 
@@ -113,6 +158,15 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+    .stat-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+    }
+    .stat-card-link:hover,
+    .stat-card-link:focus {
+        color: inherit;
+    }
     
     .stat-icon {
         width: 52px; height: 52px; border-radius: 14px; 
@@ -180,20 +234,20 @@ $totalDevices = $devices->count();
 @endphp
 
 <div class="stats-row">
-    <div class="stat-card">
+    <a href="{{ route('pos.history', $subdomain) }}" class="stat-card stat-card-link" title="Xem danh sách vé đã bán">
         <div class="stat-icon green"><i class="bi bi-receipt"></i></div>
         <div class="stat-info">
             <span class="stat-label">Vé đã bán (ca này)</span>
             <span class="stat-value">{{ $totalOrders }}</span>
         </div>
-    </div>
-    <div class="stat-card">
+    </a>
+    <a href="{{ route('pos.shift.report', [$subdomain, $activeShift->id]) }}" class="stat-card stat-card-link" title="Xem báo cáo ca hiện tại">
         <div class="stat-icon purple"><i class="bi bi-cash-stack"></i></div>
         <div class="stat-info">
             <span class="stat-label">Doanh thu ca</span>
             <span class="stat-value">{{ number_format($totalRevenue,0,',','.') }}₫</span>
         </div>
-    </div>
+    </a>
     <div class="stat-card clickable" onclick="openDevicesListModal()">
         <div class="stat-icon cyan"><i class="bi bi-headset-vr"></i></div>
         <div class="stat-info">
@@ -204,13 +258,13 @@ $totalDevices = $devices->count();
             <i class="bi bi-chevron-right text-muted"></i>
         </div>
     </div>
-    <div class="stat-card">
+    <a href="#tickets-section" class="stat-card stat-card-link" title="Xem vé hôm nay">
         <div class="stat-icon amber"><i class="bi bi-calendar-date"></i></div>
         <div class="stat-info">
             <span class="stat-label">Hôm nay</span>
             <span class="stat-value" style="font-size:1.15rem;">{{ now()->format('d/m/Y') }}</span>
         </div>
-    </div>
+    </a>
 </div>
 
 {{-- Danh sách kính đã được chuyển vào Modal --}}
@@ -224,7 +278,7 @@ $totalDevices = $devices->count();
 </div>
 
 {{-- DANH SÁCH VÉ + SLOT --}}
-<div class="section-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+<div class="section-header d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4" id="tickets-section">
     <div style="min-width: 200px; flex-shrink: 0;">
         <div class="section-title"><i class="bi bi-ticket-perforated me-2"></i>Vé hôm nay</div>
         <div class="section-sub" id="refresh-status" style="font-variant-numeric: tabular-nums;">Tự động cập nhật sau 30s</div>
@@ -297,30 +351,39 @@ $totalDevices = $devices->count();
                     // Không cần check $slot->status vì getTrueAvailabilitiesForDate đã xử lý
                     $isFull = $available <= 0;
                 @endphp
-                <a href="{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}" 
-                   class="slot-item {{ $isFull ? 'slot-full' : '' }}" 
-                   data-slot-id="{{ $slot->id }}">
-                    <div>
-                        <div class="slot-time">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</div>
-                        <div class="slot-time date-tag mt-1">
-                            @if(!$isFull)
-                                <i class="bi bi-headset-vr text-success"></i> Còn <b class="text-success">{{ $available }}</b> thiết bị
-                            @else
-                                <i class="bi bi-headset-vr text-danger"></i> <b class="text-danger">Hết thiết bị</b>
-                            @endif
+                <div class="slot-item {{ $isFull ? 'slot-full' : '' }}"
+                   data-slot-id="{{ $slot->id }}"
+                   onclick="window.location='{{ route('pos.slot.detail', [$subdomain, $slot->id]) }}'">
+                    <div class="slot-badge">@if(!$isFull) Còn chỗ @else Hết chỗ @endif</div>
+                    <div class="slot-card-top">
+                        <div class="slot-main">
+                            <div class="slot-time">{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</div>
+                            <div class="slot-meta mt-2">
+                                @if(!$isFull)
+                                    <i class="bi bi-headset-vr text-success"></i>
+                                    Còn <b class="text-success">{{ $available }}</b> thiết bị
+                                @else
+                                    <i class="bi bi-headset-vr text-danger"></i>
+                                    <b class="text-danger">Hết thiết bị</b>
+                                @endif
+                            </div>
                         </div>
                     </div>
-                    <div class="slot-avail">
+                    <div class="slot-card-footer">
+                        <div class="slot-meta">
+                            <i class="bi bi-ticket-perforated text-primary"></i>
+                            Bán vé nhanh
+                        </div>
                         @if(!$isFull)
-                            <a href="{{ route('pos.sale.form', [$subdomain, $slot->id]) }}" 
-                               class="add-btn" 
+                            <a href="{{ route('pos.sale.form', [$subdomain, $slot->id]) }}"
+                               class="slot-add-btn"
                                onclick="event.stopPropagation()"
                                title="Bán vé cho slot này">+</a>
                         @else
-                            <div class="add-btn disabled text-muted">–</div>
+                            <div class="slot-add-btn disabled text-muted">–</div>
                         @endif
                     </div>
-                </a>
+                </div>
                 @endforeach
                 
                 @if(!$hasVisibleSlots)
