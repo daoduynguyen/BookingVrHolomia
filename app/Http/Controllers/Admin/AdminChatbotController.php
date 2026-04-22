@@ -72,9 +72,10 @@ class AdminChatbotController extends Controller
 
         $caches = $query->orderByDesc('ask_count')
                         ->orderByDesc('created_at')
-                        ->paginate(5);
+                        ->paginate(5)
+                        ->withQueryString();
 
-        return redirect()->route('admin.chatbot.index');
+        return view('admin.chatbot.cache', compact('caches'));
     }
 
     // =========================================================

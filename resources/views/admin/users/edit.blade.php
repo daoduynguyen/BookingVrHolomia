@@ -30,6 +30,12 @@
         <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
             @csrf
             @method('PUT')
+            @php
+                $selectedPermissions = old('admin_permissions', $user->admin_permissions ?? \App\Models\User::defaultAdminPermissions());
+                if (!is_array($selectedPermissions)) {
+                    $selectedPermissions = [];
+                }
+            @endphp
             <div class="row g-3">
 
                 {{-- Họ tên --}}
@@ -71,6 +77,30 @@
                         <option value="super_admin"  {{ old('role', $user->role) == 'super_admin'  ? 'selected' : '' }}>👑 Super admin</option>
                         <option value="staff" {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}>🧑‍💼 Nhân viên</option>
                     </select>
+                </div>
+
+                <div class="col-12" id="permission_box_edit"
+                    style="display: {{ in_array(old('role', $user->role), ['branch_admin', 'staff']) ? 'block' : 'none' }};">
+                    <div class="p-3 border rounded-3 bg-light">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                                <div class="fw-bold text-dark">Quyền truy cập trang admin</div>
+                                <div class="small text-muted">Chỉ áp dụng cho admin chi nhánh / nhân viên. Super admin luôn có toàn quyền.</div>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            @foreach($permissionOptions as $permissionKey => $permissionLabel)
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-check border rounded-3 px-3 py-2 bg-white mb-0 w-100">
+                                        <input class="form-check-input me-2" type="checkbox" name="admin_permissions[]" value="{{ $permissionKey }}"
+                                            {{ in_array($permissionKey, $selectedPermissions, true) ? 'checked' : '' }}>
+                                        <span class="small fw-semibold">{{ $permissionLabel }}</span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="small text-muted mt-2">Nếu không chọn gì, tài khoản sẽ không vào được các khu vực đã khóa.</div>
+                    </div>
                 </div>
 
                 {{-- Cơ sở (chỉ hiện khi là branch_admin) --}}
@@ -115,6 +145,9 @@
 <script>
     document.getElementById('role_select_edit').addEventListener('change', function () {
         document.getElementById('location_box_edit').style.display =
+            (['branch_admin', 'staff'].includes(this.value)) ? 'block' : 'none';
+
+        document.getElementById('permission_box_edit').style.display =
             (['branch_admin', 'staff'].includes(this.value)) ? 'block' : 'none';
     });
 </script>

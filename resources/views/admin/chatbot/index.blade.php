@@ -35,11 +35,12 @@
 @endphp
 @foreach($cards as $c)
 <div class="col-6 col-md-2">
-    <a href="{{ $c['url'] }}" class="text-decoration-none">
+    <a href="{{ $c['url'] }}" class="text-decoration-none d-block h-100 text-body">
         <div class="card shadow-sm border-0 h-100 hover-shadow" style="cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
             <div class="card-body text-center py-3">
                 <div class="fw-bold text-{{ $c['color'] }}" style="font-size:1.75rem;line-height:1.2">{{ $c['value'] }}</div>
                 <div class="small text-muted mt-1">{{ $c['label'] }}</div>
+                <div class="small text-primary mt-2">Bấm để xem và chỉnh sửa</div>
             </div>
         </div>
     </a>

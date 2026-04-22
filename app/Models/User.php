@@ -12,12 +12,35 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    public const ADMIN_PERMISSION_OPTIONS = [
+        'dashboard' => 'Thống kê',
+        'slots' => 'Lịch khung giờ',
+        'bookings' => 'Duyệt đơn hàng',
+        'tickets' => 'Quản lý vé',
+        'locations' => 'Cơ sở',
+        'coupons' => 'Kho Voucher',
+        'users' => 'Người dùng',
+        'settings' => 'Hệ thống',
+        'contacts' => 'Tin nhắn',
+        'chatbot' => 'Chatbot AI',
+    ];
+
+    public const DEFAULT_BRANCH_ADMIN_PERMISSIONS = [
+        'dashboard',
+        'slots',
+        'bookings',
+        'chatbot',
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'phone',
         'role',
+        'location_id',
+        'admin_permissions',
         'is_banned',
         'address',
         'birthday',
@@ -51,6 +74,7 @@ class User extends Authenticatable
         'notification_prefs' => 'array',
         'ui_settings' => 'array',
         'privacy_settings' => 'array',
+        'admin_permissions' => 'array',
     ];
 
     // --- KHAI BÁO QUAN HỆ ---
@@ -72,6 +96,40 @@ class User extends Authenticatable
     {
         // Kiểm tra cột 'role' trong Database có giá trị là 'admin' hay không
         return $this->role === 'admin';
+    }
+
+    public static function adminPermissionOptions(): array
+    {
+        return self::ADMIN_PERMISSION_OPTIONS;
+    }
+
+    public static function defaultAdminPermissions(): array
+    {
+        return self::DEFAULT_BRANCH_ADMIN_PERMISSIONS;
+    }
+
+    public function resolvedAdminPermissions(): array
+    {
+        if (in_array($this->role, ['super_admin', 'admin'], true)) {
+            return array_keys(self::ADMIN_PERMISSION_OPTIONS);
+        }
+
+        if (!in_array($this->role, ['branch_admin', 'staff'], true)) {
+            return [];
+        }
+
+        if ($this->admin_permissions === null) {
+            return self::DEFAULT_BRANCH_ADMIN_PERMISSIONS;
+        }
+
+        $permissions = is_array($this->admin_permissions) ? $this->admin_permissions : [];
+
+        return array_values(array_intersect($permissions, array_keys(self::ADMIN_PERMISSION_OPTIONS)));
+    }
+
+    public function canAccessAdminSection(string $section): bool
+    {
+        return in_array($section, $this->resolvedAdminPermissions(), true);
     }
 
     // User.php

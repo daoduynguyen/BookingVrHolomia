@@ -241,88 +241,100 @@
 
             {{-- MENU --}}
             <div class="sidebar-menu-wrapper">
-            <li class="nav-item">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Thống kê</span>
-                </a>
-            </li>
-            
-            
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('admin.slots.*') ? 'active' : '' }}"
-                    href="{{ route('admin.slots.index') }}">
-                    <i class="bi bi-calendar3"></i>
-                    <span>Lịch khung giờ</span>
-                </a>
-            </li>
+                @php $adminUser = Auth::user(); @endphp
 
-            <li class="nav-item">
-                <a href="{{ route('admin.bookings.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
-                    <i class="bi bi-cart-check"></i>
-                    <span>Duyệt đơn hàng</span>
-                </a>
-            </li>
-
-            {{-- BỌC QUYỀN: Chỉ Sếp tổng (super_admin) mới thấy các Menu bên dưới --}}
-            @if(Auth::check() && Auth::user()->role === 'super_admin')
-                <li class="nav-item">
-                <a href="{{ route('admin.tickets.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
-                    <i class="bi bi-ticket-perforated"></i>
-                    <span>Quản lý vé</span>
-                   </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.locations.*') ? 'active' : '' }}"
-                        href="{{ route('admin.locations.index') }}">
-                        <i class="bi bi-geo-alt"></i>
-                        <span>Cơ sở</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}"
-                        href="{{ route('admin.coupons.index') }}">
-                        <i class="bi bi-ticket-perforated-fill"></i>
-                        <span>Kho Voucher</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="{{ route('admin.users') }}"
-                        class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-                        <i class="bi bi-people"></i>
-                        <span>Người dùng</span>
+                @if(Auth::check() && $adminUser->canAccessAdminSection('dashboard'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Thống kê</span>
                         </a>
-                        <a href="{{ route('admin.settings.index') }}"
-                            class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('slots'))
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.slots.*') ? 'active' : '' }}" href="{{ route('admin.slots.index') }}">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Lịch khung giờ</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('bookings'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
+                            <i class="bi bi-cart-check"></i>
+                            <span>Duyệt đơn hàng</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('tickets'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.tickets.index') }}" class="nav-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                            <i class="bi bi-ticket-perforated"></i>
+                            <span>Quản lý vé</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('locations'))
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.locations.*') ? 'active' : '' }}" href="{{ route('admin.locations.index') }}">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Cơ sở</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('coupons'))
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}" href="{{ route('admin.coupons.index') }}">
+                            <i class="bi bi-ticket-perforated-fill"></i>
+                            <span>Kho Voucher</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('users'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                            <i class="bi bi-people"></i>
+                            <span>Người dùng</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('settings'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                             <i class="bi bi-sliders"></i>
                             <span>Hệ thống</span>
                         </a>
-                        </li>
+                    </li>
+                @endif
 
-                <li class="nav-item">
-                    <a href="{{ route('admin.contacts') }}"
-                        class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}">
-                        <i class="bi bi-chat-dots"></i>
-                        <span>Tin nhắn</span>
+                @if(Auth::check() && $adminUser->canAccessAdminSection('contacts'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.contacts') }}" class="nav-link {{ request()->routeIs('admin.contacts*') ? 'active' : '' }}">
+                            <i class="bi bi-chat-dots"></i>
+                            <span>Tin nhắn</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if(Auth::check() && $adminUser->canAccessAdminSection('chatbot'))
+                    <a href="{{ route('admin.chatbot.index') }}" class="nav-link {{ request()->routeIs('admin.chatbot.*') ? 'active' : '' }}">
+                        <i class="bi bi-robot"></i>
+                        <span>Chatbot AI</span>
+                        @php $pendingChat = \App\Models\ChatCache::where('approved', false)->count(); @endphp
+                        @if($pendingChat > 0)
+                            <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingChat }}</span>
+                        @endif
                     </a>
-                </li>
-            @endif
-            
-<a href="{{ route('admin.chatbot.index') }}"
-     class="nav-link {{ request()->routeIs('admin.chatbot.*') ? 'active' : '' }}">
-      <i class="bi bi-robot"></i>
-     <span>Chatbot AI</span>
-     @php $pendingChat = \App\Models\ChatCache::where('approved', false)->count(); @endphp
-      @if($pendingChat > 0)
-          <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingChat }}</span>
-      @endif
-  </a>
+                @endif
+
             {{-- FOOTER (LOGOUT) --}}
             <div class="logout-container">
                 <form action="{{ route('logout') }}" method="POST">
@@ -332,7 +344,7 @@
                     </button>
                 </form>
             </div>
-        </div>
+            </div>
         </div>
         {{-- === END SIDEBAR === --}}
 

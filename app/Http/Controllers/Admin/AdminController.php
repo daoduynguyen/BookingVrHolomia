@@ -241,8 +241,10 @@ class AdminController extends Controller
         // Nếu là Admin chi nhánh thì bắt buộc phải gắn location_id, ngược lại thì xóa location_id
         if (in_array($request->role, ['branch_admin', 'staff'])) {
             $user->location_id = $request->location_id;
+            $user->admin_permissions = $user->admin_permissions ?? User::defaultAdminPermissions();
         } else {
             $user->location_id = null;
+            $user->admin_permissions = null;
         }
 
         $user->save();
@@ -264,15 +266,21 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
-            'role' => 'required'
+            'role' => 'required',
         ]);
+
+        $adminPermissions = null;
+        if (in_array($request->role, ['branch_admin', 'staff'])) {
+            $adminPermissions = User::defaultAdminPermissions();
+        }
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'role' => $request->role,
-           'location_id' => in_array($request->role, ['branch_admin', 'staff']) ? $request->location_id : null,
+            'location_id' => in_array($request->role, ['branch_admin', 'staff']) ? $request->location_id : null,
+            'admin_permissions' => $adminPermissions,
         ]);
 
         return redirect()->route('admin.users')->with('success', 'Đã thêm tài khoản mới thành công!');
@@ -283,7 +291,8 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
         $locations = \App\Models\Location::all();
-        return view('admin.users.edit', compact('user', 'locations'));
+        $permissionOptions = User::adminPermissionOptions();
+        return view('admin.users.edit', compact('user', 'locations', 'permissionOptions'));
     }
  
     // Lưu thay đổi user
@@ -296,6 +305,8 @@ class AdminController extends Controller
             'email'    => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|min:8',
             'role'     => 'required',
+            'admin_permissions' => 'nullable|array',
+            'admin_permissions.*' => 'in:' . implode(',', array_keys(User::adminPermissionOptions())),
         ]);
  
         $user->name  = $request->name;
@@ -303,6 +314,12 @@ class AdminController extends Controller
         $user->phone = $request->phone;
         $user->role  = $request->role;
         $user->location_id = in_array($request->role, ['branch_admin', 'staff']) ? $request->location_id : null;
+
+        if (in_array($request->role, ['branch_admin', 'staff'])) {
+            $user->admin_permissions = $request->input('admin_permissions', User::defaultAdminPermissions());
+        } else {
+            $user->admin_permissions = null;
+        }
  
         if ($request->filled('password')) {
             $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
