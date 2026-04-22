@@ -63,6 +63,50 @@
             font-size: 0.82rem;
         }
 
+        .branch-account-summary {
+            padding: 0 1rem 1rem;
+            display: grid;
+            gap: 10px;
+        }
+
+        .branch-account-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 12px 14px;
+            backdrop-filter: blur(6px);
+        }
+
+        .branch-account-card .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.62);
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .branch-account-card .value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .branch-account-card.balance-card .value {
+            color: #67e8f9;
+        }
+
+        .branch-account-card.tier-card .value {
+            color: #fde68a;
+        }
+
+        .branch-account-card .subtext {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.68);
+            margin-top: 3px;
+        }
+
         .nav-pills .nav-link {
             color: rgba(255, 255, 255, 0.65) !important;
             border-radius: 10px;
@@ -218,6 +262,37 @@
                         </div>
                         <h5 class="fw-bold mb-1 mt-3">{{ $user->name }}</h5>
                         <p class="mb-0 small opacity-75">Thành viên tại {{ $location->name }}</p>
+                    </div>
+
+                    <div class="branch-account-summary">
+                        <div class="branch-account-card balance-card">
+                            <div class="label"><i class="bi bi-wallet2 me-1"></i>{{ __('profile.my_balance') ?? 'Số dư ví' }}</div>
+                            <div class="value">{{ number_format($user->balance ?? 0) }}đ</div>
+                            <div class="subtext">{{ __('profile.top_up') ?? 'Nạp tiền để thanh toán nhanh hơn' }}</div>
+                        </div>
+
+                        @php
+                            $tier = $user->tier ?? 'Thành viên';
+                            $tierStyles = [
+                                'Thành viên' => ['color' => '#93c5fd', 'icon' => 'bi-person'],
+                                'Bạc' => ['color' => '#cbd5e1', 'icon' => 'bi-award'],
+                                'Vàng' => ['color' => '#fde68a', 'icon' => 'bi-award-fill'],
+                                'Kim Cương' => ['color' => '#67e8f9', 'icon' => 'bi-gem'],
+                                'VIP' => ['color' => '#d8b4fe', 'icon' => 'bi-stars'],
+                            ];
+                            $tierStyle = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
+                            $tierKey = 'profile.tier_' . \Illuminate\Support\Str::slug($tier, '_');
+                            $translatedTier = __($tierKey);
+                            if ($translatedTier === $tierKey) {
+                                $translatedTier = $tier;
+                            }
+                        @endphp
+
+                        <div class="branch-account-card tier-card" style="border-color: rgba(255,255,255,0.18);">
+                            <div class="label"><i class="bi {{ $tierStyle['icon'] }} me-1"></i>{{ __('profile.member_tier') ?? 'Hạng thành viên' }}</div>
+                            <div class="value" style="color: {{ $tierStyle['color'] }};">{{ $translatedTier }}</div>
+                            <div class="subtext">{{ $user->points ?? 0 }} {{ __('profile.points') ?? 'điểm tích lũy' }}</div>
+                        </div>
                     </div>
 
                     <div class="nav flex-column nav-pills px-1 flex-grow-1 py-2" id="v-pills-tab" role="tablist">
@@ -452,6 +527,11 @@
                 <div class="d-flex gap-2">
                     <a href="{{ route('branch.booking.form', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
                         class="btn btn-primary btn-sm flex-grow-1 fw-bold">ĐẶT VÉ</a>
+                    <a href="{{ route('branch.cart.add.quick', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
+                        class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center shadow-sm"
+                        title="Thêm vào giỏ hàng" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <i class="bi bi-cart-plus fs-6"></i>
+                    </a>
                     <a href="{{ route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}"
                         class="btn btn-outline-secondary btn-sm px-3">
                         <i class="bi bi-eye"></i>
