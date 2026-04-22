@@ -975,7 +975,8 @@ let ticketModal;
 let orderQuickModal;
 let selectedOrder = null;
 
-const taskOrdersPayload = @json((isset($taskOrders) ? $taskOrders : collect())->map(function ($order) use ($dashboardSubdomain) {
+@php
+$taskOrdersPayloadData = (isset($taskOrders) ? $taskOrders : collect())->map(function ($order) use ($dashboardSubdomain) {
     return [
         'id' => $order->id,
         'customer_name' => $order->customer_name ?? 'Khách lẻ',
@@ -991,7 +992,9 @@ const taskOrdersPayload = @json((isset($taskOrders) ? $taskOrders : collect())->
         'slot_id' => $order->slot_id ?? null,
         'slot_url' => $order->slot_id ? route('pos.slot.detail', [$dashboardSubdomain, $order->slot_id]) : route('pos.history', $dashboardSubdomain),
     ];
-})->values());
+})->values();
+@endphp
+const taskOrdersPayload = @json($taskOrdersPayloadData);
 document.addEventListener('DOMContentLoaded', function() {
     deviceModal = new bootstrap.Modal(document.getElementById('deviceModal'));
     devicesListModal = new bootstrap.Modal(document.getElementById('devicesListModal'));
