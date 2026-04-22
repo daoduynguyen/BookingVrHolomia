@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Coupon;
+use App\Models\PosDevice;
 use App\Models\Ticket;
 use App\Models\TimeSlot;
 use App\Services\QrTicketService;
@@ -671,6 +672,13 @@ class CheckoutController extends Controller
 
         // 2. Thực hiện hoàn tiền và Nhả slot
         DB::transaction(function () use ($order, $user) {
+            if ($order->device_id) {
+                $device = PosDevice::find($order->device_id);
+                if ($device) {
+                    $device->update(['status' => 'available']);
+                }
+            }
+
             // Chỉ cộng tiền vào ví nếu thanh toán không phải bằng tiền mặt
             if ($order->payment_method !== 'cod') {
                 $balanceBefore = (float) $user->fresh()->balance;

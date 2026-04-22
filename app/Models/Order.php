@@ -49,4 +49,9 @@ class Order extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    public function device()
+    {
+        return $this->belongsTo(PosDevice::class, 'device_id');
+    }
 }

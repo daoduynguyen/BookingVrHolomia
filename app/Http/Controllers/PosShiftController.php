@@ -123,6 +123,8 @@ class PosShiftController extends Controller
             'count'    => $shift->orders()->where('status', 'paid')->count(),
         ];
 
-        return view('pos.shift.report', compact('location', 'subdomain', 'shift', 'summary'));
+        $expectedCash = $shift->opening_cash + $summary['cash'];
+
+        return view('pos.shift.report', compact('location', 'subdomain', 'shift', 'summary', 'expectedCash'));
     }
 }

@@ -63,48 +63,54 @@
             font-size: 0.82rem;
         }
 
-        .branch-account-summary {
-            padding: 0 1rem 1rem;
-            display: grid;
-            gap: 10px;
-        }
-
-        .branch-account-card {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+        .profile-account-summary .account-card {
+            background: #f8fafc;
+            border: 1px solid #dbeafe;
             border-radius: 14px;
-            padding: 12px 14px;
-            backdrop-filter: blur(6px);
+            padding: 16px 18px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            height: 100%;
         }
 
-        .branch-account-card .label {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255, 255, 255, 0.62);
-            margin-bottom: 4px;
-            font-weight: 700;
+        .profile-account-summary .account-card.balance-card {
+            border-color: #bfdbfe;
         }
 
-        .branch-account-card .value {
-            font-size: 1rem;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.2;
+        .profile-account-summary .account-card.tier-card {
+            border-color: #d1d5db;
         }
 
-        .branch-account-card.balance-card .value {
-            color: #67e8f9;
-        }
-
-        .branch-account-card.tier-card .value {
-            color: #fde68a;
-        }
-
-        .branch-account-card .subtext {
+        .profile-account-summary .account-label {
             font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.68);
-            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 800;
+            color: #1d4ed8;
+            margin-bottom: 4px;
+        }
+
+        .profile-account-summary .account-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #111827;
+        }
+
+        .profile-account-summary .account-subtext {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+
+        .profile-account-summary .tier-ring {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(107, 114, 128, 0.12);
         }
 
         .nav-pills .nav-link {
@@ -264,37 +270,6 @@
                         <p class="mb-0 small opacity-75">Thành viên tại {{ $location->name }}</p>
                     </div>
 
-                    <div class="branch-account-summary">
-                        <div class="branch-account-card balance-card">
-                            <div class="label"><i class="bi bi-wallet2 me-1"></i>{{ __('profile.my_balance') ?? 'Số dư ví' }}</div>
-                            <div class="value">{{ number_format($user->balance ?? 0) }}đ</div>
-                            <div class="subtext">{{ __('profile.top_up') ?? 'Nạp tiền để thanh toán nhanh hơn' }}</div>
-                        </div>
-
-                        @php
-                            $tier = $user->tier ?? 'Thành viên';
-                            $tierStyles = [
-                                'Thành viên' => ['color' => '#93c5fd', 'icon' => 'bi-person'],
-                                'Bạc' => ['color' => '#cbd5e1', 'icon' => 'bi-award'],
-                                'Vàng' => ['color' => '#fde68a', 'icon' => 'bi-award-fill'],
-                                'Kim Cương' => ['color' => '#67e8f9', 'icon' => 'bi-gem'],
-                                'VIP' => ['color' => '#d8b4fe', 'icon' => 'bi-stars'],
-                            ];
-                            $tierStyle = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
-                            $tierKey = 'profile.tier_' . \Illuminate\Support\Str::slug($tier, '_');
-                            $translatedTier = __($tierKey);
-                            if ($translatedTier === $tierKey) {
-                                $translatedTier = $tier;
-                            }
-                        @endphp
-
-                        <div class="branch-account-card tier-card" style="border-color: rgba(255,255,255,0.18);">
-                            <div class="label"><i class="bi {{ $tierStyle['icon'] }} me-1"></i>{{ __('profile.member_tier') ?? 'Hạng thành viên' }}</div>
-                            <div class="value" style="color: {{ $tierStyle['color'] }};">{{ $translatedTier }}</div>
-                            <div class="subtext">{{ $user->points ?? 0 }} {{ __('profile.points') ?? 'điểm tích lũy' }}</div>
-                        </div>
-                    </div>
-
                     <div class="nav flex-column nav-pills px-1 flex-grow-1 py-2" id="v-pills-tab" role="tablist">
                         <button class="nav-link active" id="v-pills-profile-tab" data-bs-toggle="pill"
                             data-bs-target="#v-pills-profile" type="button" role="tab">
@@ -336,6 +311,67 @@
                             <h4 class="text-primary fw-bold text-uppercase mb-4 border-bottom border-light pb-3">
                                 <i class="bi bi-person-lines-fill me-2"></i> {{ __('profile.my_profile') }}
                             </h4>
+
+                            @php
+                                $tier = $user->tier ?? 'Thành viên';
+                                $tierStyles = [
+                                    'Thành viên' => ['color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.15)', 'icon' => 'bi-person'],
+                                    'Bạc' => ['color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.15)', 'icon' => 'bi-award'],
+                                    'Vàng' => ['color' => '#f59e0b', 'bg' => 'rgba(245, 158, 11, 0.15)', 'icon' => 'bi-award-fill'],
+                                    'Kim Cương' => ['color' => '#0dcaf0', 'bg' => 'rgba(13, 202, 240, 0.15)', 'icon' => 'bi-gem'],
+                                    'VIP' => ['color' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.15)', 'icon' => 'bi-stars'],
+                                ];
+                                $style = $tierStyles[$tier] ?? $tierStyles['Thành viên'];
+                                $tierKey = 'profile.tier_' . \Illuminate\Support\Str::slug($tier, '_');
+                                $translatedTier = __($tierKey);
+                                if ($translatedTier === $tierKey) {
+                                    $translatedTier = $tier;
+                                }
+                            @endphp
+
+                            <div class="profile-account-summary mb-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="account-card balance-card h-100">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-info bg-opacity-10 p-3 rounded-circle flex-shrink-0">
+                                                    <i class="bi bi-wallet2 text-info fs-3"></i>
+                                                </div>
+                                                <div class="flex-grow-1 min-width-0">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <p class="account-label mb-0">{{ __('profile.my_balance') }}</p>
+                                                        <i class="bi bi-eye-slash text-primary" id="toggleBalanceIconBranch" style="cursor:pointer;" title="{{ __('profile.show_hide_balance') }}"></i>
+                                                    </div>
+                                                    <div class="account-value text-info" id="balanceAmountBranch" data-balance="{{ number_format($user->balance ?? 0) }}đ">
+                                                        ********
+                                                    </div>
+                                                    <a href="{{ route('wallet.topup') }}" class="btn btn-primary btn-sm fw-bold rounded-pill px-3 py-2 text-white shadow-sm mt-2">
+                                                        <i class="bi bi-plus-circle me-1"></i> {{ __('profile.top_up') }}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="account-card tier-card h-100 d-flex align-items-center">
+                                            <div class="tier-ring me-3" style="background-color: {{ $style['bg'] }};">
+                                                <i class="bi {{ $style['icon'] }} fs-3" style="color: {{ $style['color'] }}; text-shadow: 0 0 10px {{ $style['color'] }}50;"></i>
+                                            </div>
+                                            <div class="ms-1">
+                                                <p class="account-label mb-0">{{ __('profile.member_tier') }}</p>
+                                                <h4 class="fw-bold mb-0 text-uppercase mt-1" style="color: {{ $style['color'] }}; letter-spacing: 1px;">
+                                                    {{ $translatedTier }}
+                                                    <span class="fs-6 text-muted fw-normal text-capitalize" style="letter-spacing: 0;">
+                                                        ({{ $user->points ?? 0 }} {{ __('profile.points') }})
+                                                    </span>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <form action="{{ route('branch.profile.update', ['subdomain' => $subdomain]) }}" method="POST">
                                 @csrf
                                 <div class="row g-4">
@@ -790,6 +826,20 @@
                         });
                     }
                 });
+            });
+
+            $('#toggleBalanceIconBranch').click(function () {
+                let icon = $(this);
+                let balanceText = $('#balanceAmountBranch');
+                let realBalance = balanceText.data('balance');
+
+                if (icon.hasClass('bi-eye-slash')) {
+                    icon.removeClass('bi-eye-slash text-secondary').addClass('bi-eye text-info');
+                    balanceText.text(realBalance).hide().fadeIn(200);
+                } else {
+                    icon.removeClass('bi-eye text-info').addClass('bi-eye-slash text-secondary');
+                    balanceText.text('********');
+                }
             });
         });
     </script>

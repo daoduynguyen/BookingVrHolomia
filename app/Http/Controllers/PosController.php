@@ -110,31 +110,45 @@ class PosController extends Controller
             ->with('ticket')
             ->firstOrFail();
 
-        // Các đơn đã check-in (đang chơi)
-        $activeOrders = Order::where('slot_id', $slotId)
-            ->whereNotNull('checkin_at')
-            ->where('status', 'paid')
-            ->with('user')
+        $deadline = \Carbon\Carbon::parse($slot->date . ' ' . $slot->start_time)->addMinutes(15);
+        $now = now();
+
+        $orders = Order::where('slot_id', $slotId)
+            ->where('location_id', $location->id)
+            ->whereIn('status', ['paid', 'cancelled', 'refunded', 'expired'])
+            ->with(['user', 'device'])
+            ->orderByRaw('CASE WHEN checkin_at IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('checkin_at')
+            ->orderByDesc('created_at')
             ->get()
-            ->map(function ($order) use ($slot) {
-                $checkinAt      = \Carbon\Carbon::parse($order->checkin_at);
-                $endTime        = \Carbon\Carbon::parse($slot->date . ' ' . $slot->end_time);
-                $remainSeconds  = max(0, now()->diffInSeconds($endTime, false));
-                $order->remain_seconds = (int) $remainSeconds;
+            ->map(function ($order) use ($slot, $deadline, $now) {
+                $endTime = \Carbon\Carbon::parse($slot->date . ' ' . $slot->end_time);
+                $playingRemain = max(0, $now->diffInSeconds($endTime, false));
+                $waitingRemain = max(0, $now->diffInSeconds($deadline, false));
+
+                $order->device_name = $order->device->name ?? ($order->device_id ? 'Máy #' . $order->device_id : 'Chưa gán máy');
+                $order->state = match ($order->status) {
+                    'cancelled' => 'cancelled',
+                    'refunded' => 'refunded',
+                    'expired' => 'expired',
+                    default => $order->checkin_at ? 'playing' : ($waitingRemain <= 0 ? 'expired' : 'waiting'),
+                };
+                $order->deadline_seconds = $waitingRemain;
+                $order->remain_seconds = $playingRemain;
+                $order->deadline_at = $deadline->copy();
                 return $order;
             });
 
-        // Các đơn đã thanh toán nhưng chưa check-in
-        $waitingOrders = Order::where('slot_id', $slotId)
-            ->whereNull('checkin_at')
-            ->where('status', 'paid')
-            ->with('user')
-            ->get();
+        $playingOrders = $orders->where('state', 'playing')->values();
+        $waitingOrders = $orders->where('state', 'waiting')->values();
+        $expiredOrders = $orders->where('state', 'expired')->values();
+        $cancelledOrders = $orders->where('state', 'cancelled')->values();
+        $refundedOrders = $orders->where('state', 'refunded')->values();
 
         $activeShift = $this->getActiveShift($location->id);
 
         return view('pos.slot-detail', compact(
-            'location', 'subdomain', 'slot', 'activeOrders', 'waitingOrders', 'activeShift'
+            'location', 'subdomain', 'slot', 'orders', 'playingOrders', 'waitingOrders', 'expiredOrders', 'cancelledOrders', 'refundedOrders', 'activeShift'
         ));
     }
 
@@ -148,25 +162,49 @@ class PosController extends Controller
             ->where('location_id', $location->id)
             ->firstOrFail();
 
-        $activeOrders = Order::where('slot_id', $slotId)
-            ->whereNotNull('checkin_at')
-            ->where('status', 'paid')
+        $deadline = \Carbon\Carbon::parse($slot->date . ' ' . $slot->start_time)->addMinutes(15);
+        $now = now();
+
+        $allOrders = Order::where('slot_id', $slotId)
+            ->where('location_id', $location->id)
+            ->whereIn('status', ['paid', 'cancelled', 'refunded', 'expired'])
+            ->with('device')
             ->get()
-            ->map(function ($order) use ($slot) {
-                $endTime       = \Carbon\Carbon::parse($slot->date . ' ' . $slot->end_time);
-                $remainSeconds = max(0, now()->diffInSeconds($endTime, false));
+            ->map(function ($order) use ($slot, $deadline, $now) {
+                $endTime = \Carbon\Carbon::parse($slot->date . ' ' . $slot->end_time);
+                $playingRemain = max(0, $now->diffInSeconds($endTime, false));
+                $waitingRemain = max(0, $now->diffInSeconds($deadline, false));
+                $state = match ($order->status) {
+                    'cancelled' => 'cancelled',
+                    'refunded' => 'refunded',
+                    'expired' => 'expired',
+                    default => $order->checkin_at ? 'playing' : ($waitingRemain <= 0 ? 'expired' : 'waiting'),
+                };
                 return [
-                    'id'             => $order->id,
-                    'customer_name'  => $order->customer_name,
-                    'checkin_at'     => $order->checkin_at,
-                    'remain_seconds' => (int) $remainSeconds,
+                    'id' => $order->id,
+                    'state' => $state,
+                    'device_name' => $order->device->name ?? ($order->device_id ? 'Máy #' . $order->device_id : 'Máy chưa gán'),
+                    'customer_name' => $order->customer_name,
+                    'checkin_at' => $order->checkin_at,
+                    'remain_seconds' => (int) $playingRemain,
+                    'deadline_seconds' => (int) $waitingRemain,
                 ];
             });
+
+        $activeOrders = $allOrders->where('state', 'playing')->values();
+        $summary = [
+            'playing' => $allOrders->where('state', 'playing')->count(),
+            'waiting' => $allOrders->where('state', 'waiting')->count(),
+            'expired' => $allOrders->where('state', 'expired')->count(),
+            'cancelled' => $allOrders->where('state', 'cancelled')->count(),
+            'refunded' => $allOrders->where('state', 'refunded')->count(),
+        ];
 
         return response()->json([
             'slot_id'       => $slot->id,
             'available'     => $slot->capacity - $slot->booked_count,
             'active_orders' => $activeOrders,
+            'summary'       => $summary,
         ]);
     }
 
@@ -319,45 +357,84 @@ class PosController extends Controller
 
     public function checkinProcess(Request $request, string $subdomain)
     {
-        $request->validate(['qr_token' => 'required|string']);
+        $request->validate([
+            'qr_token' => 'nullable|string',
+            'order_id' => 'nullable|exists:orders,id',
+        ]);
 
         $location = $this->getLocation($subdomain);
 
-        $order = Order::where('qr_token', $request->qr_token)
-            ->where('location_id', $location->id)
-            ->where('status', 'paid')
-            ->with(['slot.ticket', 'user'])
-            ->first();
+        $result = DB::transaction(function () use ($location, $request) {
+            $query = Order::where('location_id', $location->id)
+                ->where('status', 'paid')
+                ->lockForUpdate()
+                ->with(['slot.ticket', 'user', 'device']);
 
-        if (!$order) {
-            return response()->json(['success' => false, 'message' => 'Mã QR không hợp lệ hoặc không thuộc chi nhánh này.']);
-        }
+            if ($request->filled('order_id')) {
+                $query->where('id', $request->order_id);
+            } else {
+                $query->where('qr_token', $request->qr_token);
+            }
 
-        if ($order->qr_used) {
-            return response()->json(['success' => false, 'message' => 'Mã QR này đã được sử dụng rồi.']);
-        }
+            $order = $query
+                ->where('location_id', $location->id)
+                ->first();
 
-        if (!$order->slot) {
-            return response()->json(['success' => false, 'message' => 'Không tìm thấy thông tin slot.']);
-        }
+            if (!$order) {
+                return ['success' => false, 'message' => 'Mã QR không hợp lệ hoặc không thuộc chi nhánh này.'];
+            }
 
-        // Cập nhật trạng thái check-in
-        $order->update([
-            'qr_used'       => true,
-            'checked_in_at' => now(), // Corrected column name if necessary, check Model
-        ]);
+            if ($order->qr_used) {
+                return ['success' => false, 'message' => 'Mã QR này đã được sử dụng rồi.'];
+            }
 
-        return response()->json([
-            'success'        => true,
-            'order_id'       => $order->id,
-            'customer_name'  => $order->customer_name,
-            'customer_phone' => $order->customer_phone,
-            'ticket_name'    => $order->slot->ticket->name ?? '',
-            'slot_time'      => \Carbon\Carbon::parse($order->slot->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($order->slot->end_time)->format('H:i'),
-            'slot_date'      => \Carbon\Carbon::parse($order->slot->date)->format('d/m/Y'),
-            'quantity'       => $order->quantity ?? 1,
-            'slot_id'        => $order->slot_id,
-        ]);
+            if (!$order->slot) {
+                return ['success' => false, 'message' => 'Không tìm thấy thông tin slot.'];
+            }
+
+            $deadline = \Carbon\Carbon::parse($order->slot->date . ' ' . $order->slot->start_time)->addMinutes(15);
+            if (!$order->checkin_at && now()->greaterThan($deadline)) {
+                $order->update(['status' => 'expired']);
+                return ['success' => false, 'message' => 'Đơn này đã hết hạn check-in.'];
+            }
+
+            $device = $order->device;
+            if (!$device) {
+                $device = PosDevice::where('location_id', $location->id)
+                    ->where('status', 'available')
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$device) {
+                    return ['success' => false, 'message' => 'Không còn thiết bị trống để gán cho khách này.'];
+                }
+
+                $device->update(['status' => 'in_use']);
+                $order->device_id = $device->id;
+            }
+
+            $order->update([
+                'qr_used'       => true,
+                'checkin_at'    => now(),
+                'device_id'     => $order->device_id,
+            ]);
+
+            return [
+                'success'        => true,
+                'order_id'       => $order->id,
+                'customer_name'  => $order->customer_name,
+                'customer_phone' => $order->customer_phone,
+                'ticket_name'    => $order->slot->ticket->name ?? '',
+                'slot_time'      => \Carbon\Carbon::parse($order->slot->start_time)->format('H:i') . ' - ' . \Carbon\Carbon::parse($order->slot->end_time)->format('H:i'),
+                'slot_date'      => \Carbon\Carbon::parse($order->slot->date)->format('d/m/Y'),
+                'quantity'       => $order->quantity ?? 1,
+                'slot_id'        => $order->slot_id,
+                'device_name'    => $device->name ?? 'Máy',
+            ];
+        });
+
+        return response()->json($result);
     }
 
     public function findCustomer(Request $request, string $subdomain)
@@ -454,6 +531,13 @@ class PosController extends Controller
         ]);
 
         DB::transaction(function () use ($order, $request) {
+            if ($order->device_id) {
+                $device = PosDevice::find($order->device_id);
+                if ($device) {
+                    $device->update(['status' => 'available']);
+                }
+            }
+
             // Hoàn lại slot
             if ($order->slot_id) {
                 $slot = TimeSlot::find($order->slot_id);
