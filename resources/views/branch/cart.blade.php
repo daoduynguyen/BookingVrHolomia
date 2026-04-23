@@ -231,6 +231,21 @@
         @else 
             {{-- GIỎ HÀNG TRỐNG --}}
             <div class="text-center py-5">
+                @if(isset($pendingOrder) && $pendingOrder)
+                    <div class="alert alert-warning mb-4 mx-auto text-start shadow-sm" style="max-width: 600px; border-radius: 12px; background-color: #fff8e1;">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Bạn có đơn hàng chờ thanh toán!</h5>
+                                <p class="mb-2 text-muted small">Hệ thống ghi nhận bạn vừa tạo đơn hàng <strong>#{{ $pendingOrder->id }}</strong> nhưng chưa hoàn tất thanh toán. Vui lòng tiếp tục thanh toán để nhận vé.</p>
+                                <a href="{{ route('branch.payment.banking', ['subdomain' => $subdomain, 'id' => $pendingOrder->id]) }}" class="btn btn-primary fw-bold px-4 rounded-pill btn-sm">
+                                    <i class="bi bi-qr-code-scan me-2"></i>Tiếp tục quét mã QR
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
                 <h3 class="mt-4 fw-bold text-dark">{{ __('cart.empty_cart') }}</h3>
                 <p class="text-muted">{{ __('cart.empty_desc_branch', ['name' => $location->name]) }}</p>

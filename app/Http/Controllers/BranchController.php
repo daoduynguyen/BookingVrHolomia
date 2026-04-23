@@ -354,7 +354,27 @@ class BranchController extends Controller
         foreach ($cart as $item) {
             $total += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
         }
-        return view('branch.cart', compact('location', 'subdomain', 'cart', 'total'));
+
+        // Kiểm tra xem có đơn hàng pending nào mới tạo không
+        $pendingOrder = null;
+        if (empty($cart)) {
+            $lastOrderId = session('last_pending_order_id_' . $subdomain);
+            if ($lastOrderId) {
+                $pendingOrder = \App\Models\Order::where('id', $lastOrderId)
+                    ->where('status', 'pending')
+                    ->where('payment_method', 'banking')
+                    ->first();
+            } elseif (Auth::check()) {
+                $pendingOrder = \App\Models\Order::where('user_id', Auth::id())
+                    ->where('location_id', $location->id)
+                    ->where('status', 'pending')
+                    ->where('payment_method', 'banking')
+                    ->latest()
+                    ->first();
+            }
+        }
+
+        return view('branch.cart', compact('location', 'subdomain', 'cart', 'total', 'pendingOrder'));
     }
 
     public function removeCart(Request $request, $subdomain, $id)
@@ -504,6 +524,7 @@ class BranchController extends Controller
             if (!Auth::check()) {
                 session(['guest_order_' . $order->id => true]);
             }
+            session(['last_pending_order_id_' . $subdomain => $order->id]);
             return redirect()->route('branch.payment.banking', ['subdomain' => $subdomain, 'id' => $order->id]);
         }
 
