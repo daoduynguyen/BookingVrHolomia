@@ -259,6 +259,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript">
 
+        // Xử lý BFCache khi ấn Back trên trình duyệt
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
         // Xác nhận COD
         function confirmCOD() {
             Swal.fire({

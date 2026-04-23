@@ -57,7 +57,7 @@ class CleanupOrders extends Command
         $this->info("Marked {$completedCount} orders as completed and freed devices.");
 
         // 2. Expire no-shows
-        $waitingOrders = Order::where('status', 'paid')
+        $waitingOrders = Order::whereIn('status', ['paid', 'pending'])
             ->whereNull('checkin_at')
             ->whereHas('slot')
             ->with('slot')

@@ -123,10 +123,14 @@ class PosController extends Controller
                     $state = 'completed';
                 } elseif ($order->checkin_at) {
                     $state = 'playing';
-                } elseif ($order->status === 'paid') {
-                    $state = $deadlineRemain <= 0 ? 'expired' : 'waiting';
+                } elseif ($order->status === 'paid' || $order->status === 'pending') {
+                    if ($deadlineRemain <= 0) {
+                        $state = 'expired';
+                    } else {
+                        $state = $order->status === 'paid' ? 'waiting' : 'pending';
+                    }
                 } else {
-                    $state = 'pending';
+                    $state = $order->status;
                 }
 
                 $order->work_state = $state;
@@ -186,7 +190,7 @@ class PosController extends Controller
 
         $orders = Order::where('slot_id', $slotId)
             ->where('location_id', $location->id)
-            ->whereIn('status', ['paid', 'cancelled', 'refunded', 'expired'])
+            ->whereIn('status', ['paid', 'pending', 'cancelled', 'refunded', 'expired', 'completed'])
             ->with(['user', 'device'])
             ->orderByRaw('CASE WHEN checkin_at IS NULL THEN 1 ELSE 0 END')
             ->orderByDesc('checkin_at')
@@ -239,7 +243,7 @@ class PosController extends Controller
 
         $allOrders = Order::where('slot_id', $slotId)
             ->where('location_id', $location->id)
-            ->whereIn('status', ['paid', 'cancelled', 'refunded', 'expired'])
+            ->whereIn('status', ['paid', 'pending', 'cancelled', 'refunded', 'expired', 'completed'])
             ->with('device')
             ->get()
             ->map(function ($order) use ($slot, $deadline, $now) {
