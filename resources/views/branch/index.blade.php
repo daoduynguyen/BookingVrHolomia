@@ -1,6 +1,6 @@
 @php
-    $locale = app()->getLocale();
-    $langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
+$locale = app()->getLocale();
+$langConfig = config('i18n.supported.' . $locale, config('i18n.supported.vi'));
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $langConfig['html_lang'] }}">
@@ -96,11 +96,16 @@
 
         <div class="row g-4">
             @forelse($tickets as $ticket)
+                @php $isMaintenance = strtolower(trim((string) ($ticket->status ?? ''))) === 'maintenance'; @endphp
                 <div class="col-md-4">
-                    <div class="card h-100 card-game overflow-hidden rounded-4 border-0 shadow-sm">
+                    <div class="card h-100 card-game overflow-hidden rounded-4 border-0 shadow-sm {{ $isMaintenance ? 'card-maintenance' : '' }}">
                         <div class="position-relative">
                             <img src="{{ $ticket->image_url ?? 'https://via.placeholder.com/640x480' }}"
-                                class="card-img-top" alt="{{ $ticket->name }}" style="height: 240px; object-fit: cover;">
+                                class="card-img-top {{ $isMaintenance ? 'opacity-50 grayscale' : '' }}" alt="{{ $ticket->name }}" style="height: 240px; object-fit: cover;">
+
+                            @if($isMaintenance)
+                                <div class="maintenance-overlay">{{ __('branch.maintenance') }}</div>
+                            @endif
 
                             <button class="btn btn-light rounded-circle position-absolute top-0 start-0 m-3 shadow-sm btn-wishlist"
                                 data-id="{{ $ticket->id }}" title="{{ __('branch.add_to_wishlist') }}">
@@ -132,7 +137,7 @@
                                     <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                                 </div>
 
-                                @if($ticket->status == 'maintenance')
+                                @if($isMaintenance)
                                     <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>{{ __('branch.maintenance') }}</button>
                                 @else
                                     <div class="d-flex gap-2">
@@ -289,8 +294,16 @@
                 success: function (response) {
                     if (response.is_favorited) {
                         icon.removeClass('bi-heart').addClass('bi-heart-fill');
+                        Swal.fire({
+                            toast: true, position: 'top-end', icon: 'success',
+                            title: 'Đã thêm vào yêu thích!', showConfirmButton: false, timer: 2000
+                        });
                     } else {
                         icon.removeClass('bi-heart-fill').addClass('bi-heart');
+                        Swal.fire({
+                            toast: true, position: 'top-end', icon: 'info',
+                            title: 'Đã xóa khỏi yêu thích!', showConfirmButton: false, timer: 2000
+                        });
                     }
                 }
             });

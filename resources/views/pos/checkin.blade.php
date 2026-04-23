@@ -105,7 +105,7 @@
         </div>
         
         <div class="manual-input">
-            <input type="text" id="qr-input" class="pos-form-group" placeholder="Nhập mã QR thủ công..."
+            <input type="text" id="qr-input" class="pos-form-group" placeholder="Nhập mã QR hoặc Mã đơn hàng..."
                    value=""
                    autofocus
                    onkeydown="if(event.key==='Enter') processQR(this.value)">
@@ -152,9 +152,22 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
 let html5QrCode;
-const recentCheckins = [];
+let recentCheckins = [
+    @foreach($recentCheckins as $chk)
+        {
+            name: "{{ $chk->customer_name }}",
+            ticket: "{{ $chk->slot->ticket->name ?? 'Vé' }}",
+            time: "{{ \Carbon\Carbon::parse($chk->slot->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($chk->slot->end_time)->format('H:i') }}",
+            timeStr: "{{ \Carbon\Carbon::parse($chk->checkin_at)->format('H:i') }}"
+        }@if(!$loop->last),@endif
+    @endforeach
+];
 
 document.addEventListener('DOMContentLoaded', function() {
+    if (recentCheckins.length > 0) {
+        renderRecentCheckins();
+    }
+    
     // Khởi tạo scanner
     const config = { fps: 10, qrbox: { width: 250, height: 250 } };
     
@@ -259,6 +272,10 @@ function addRecentCheckin(name, ticket, time) {
     recentCheckins.unshift({ name, ticket, time, timeStr });
     if (recentCheckins.length > 5) recentCheckins.pop();
 
+    renderRecentCheckins();
+}
+
+function renderRecentCheckins() {
     const html = recentCheckins.map(c => `
         <div class="checkin-item">
             <div class="ci-icon">✅</div>

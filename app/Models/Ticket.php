@@ -55,6 +55,6 @@ class Ticket extends Model
     // Quan hệ: 1 Vé có nhiều khung giờ (TimeSlots)
     public function timeSlots()
     {
-        return $this->hasMany(TimeSlot::class);
+         return $this->hasMany(TimeSlot::class)->orderBy('start_time');
     }
 }

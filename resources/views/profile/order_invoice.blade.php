@@ -208,25 +208,17 @@
         </div>
     </div>
 
-    <div class="receipt-qr no-print">
-        <div class="text-muted small mb-2">Nhấn để xem mã QR check-in</div>
-        <div class="d-inline-block" style="cursor:pointer;" onclick="const icon=this.querySelector('.qr-icon'); const real=this.querySelector('.qr-real'); if(icon) icon.style.display='none'; if(real) real.style.display='block';">
-            <div class="qr-icon btn btn-light border rounded-pill px-3 py-2 shadow-sm">
-                <i class="bi bi-qr-code-scan text-primary me-1"></i>
-                <span class="fw-bold text-dark" style="font-size:0.85rem;">Hiển thị QR</span>
-            </div>
-            <div class="qr-real" style="display:none; margin-top:8px;">
-                @php $qrData = route('ticket.scan', $order->id); @endphp
-                <div class="bg-white d-inline-block p-2 rounded border">
-                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(112)->margin(0)->generate($qrData) !!}
-                </div>
-            </div>
+    <div class="receipt-qr">
+        @php $qrData = route('ticket.scan', $order->id); @endphp
+        <div class="bg-white d-inline-block p-2 rounded" style="margin-top:10px;">
+            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->margin(1)->generate($qrData) !!}
         </div>
+        <div class="text-muted small mt-2">Vui lòng xem mã QR check-in</div>
     </div>
 
     <div class="receipt-actions no-print">
-        <button class="btn btn-outline-danger btn-sm rounded-pill fw-bold px-3" onclick="confirmRefund({{ $order->id }})">
-            <i class="bi bi-arrow-return-left me-1"></i>Hoàn vé
+        <button class="btn btn-outline-danger btn-sm rounded-pill fw-bold px-4 py-2 mt-3" onclick="confirmRefund({{ $order->id }})">
+            <i class="bi bi-arrow-return-left me-2"></i>Hoàn về
         </button>
     </div>
 

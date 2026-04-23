@@ -345,7 +345,7 @@
                                 <input type="text" name="end_time" class="form-control bg-light text-dark border-light time-picker" required value="21:00">
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label text-secondary small fw-bold text-uppercase">Khoảng nghỉ giữa các ca (Giấy nghỉ chờ 1-20 phút)</label>
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Khoảng nghỉ giữa các ca </label>
                                 <input type="number" name="gap_time" class="form-control bg-light text-dark border-light" required value="10" min="0" max="30">
                             </div>
                         </div>

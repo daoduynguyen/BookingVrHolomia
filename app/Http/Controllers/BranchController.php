@@ -22,13 +22,18 @@ class BranchController extends Controller
         return Location::where('slug', $subdomain)->firstOrFail();
     }
 
+    private function isMaintenanceStatus(?string $status): bool
+    {
+        return strtolower(trim((string) $status)) === 'maintenance';
+    }
+
     // ==================== TRANG CHỦ ====================
     public function index($subdomain)
     {
         $location = $this->getLocation($subdomain);
         $tickets = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
-        })->where('status', 'active')->get();
+        })->whereRaw('LOWER(TRIM(status)) IN (?, ?)', ['active', 'maintenance'])->get();
 
         return view('branch.index', compact('location', 'tickets', 'subdomain'));
     }
@@ -151,6 +156,10 @@ class BranchController extends Controller
     {
         $location = $this->getLocation($subdomain);
         $ticket = Ticket::findOrFail($id);
+        if ($this->isMaintenanceStatus($ticket->status)) {
+            return redirect()->route('branch.detail', ['subdomain' => $subdomain, 'id' => $ticket->id])
+                ->with('error', 'Trò chơi đang bảo trì, không thể đặt vé lúc này!');
+        }
         $selectedType = request('selected_ticket_type');
 
         // Lấy danh sách slot
@@ -189,6 +198,9 @@ class BranchController extends Controller
         ]);
 
         $ticket = Ticket::findOrFail($request->ticket_id);
+        if ($this->isMaintenanceStatus($ticket->status)) {
+            return back()->with('error', 'Trò chơi này đang bảo trì!')->withInput();
+        }
         $location = $this->getLocation($subdomain);
 
         $cart = session()->get('branch_cart_' . $subdomain, []);
@@ -307,6 +319,9 @@ class BranchController extends Controller
     public function quickAddToCart($subdomain, $id)
     {
         $ticket = Ticket::findOrFail($id);
+        if ($this->isMaintenanceStatus($ticket->status)) {
+            return back()->with('error', 'Trò chơi này đang bảo trì!');
+        }
         $cart = session()->get('branch_cart_' . $subdomain, []);
 
         if (isset($cart[$id])) {
@@ -699,7 +714,7 @@ class BranchController extends Controller
         $location = $this->getLocation($subdomain);
         $tickets = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
-        })->where('status', 'active')->get();
+        })->whereRaw('LOWER(TRIM(status)) IN (?, ?)', ['active', 'maintenance'])->get();
         return view('branch.info', compact('location', 'subdomain', 'tickets'));
     }
 
@@ -769,7 +784,7 @@ class BranchController extends Controller
         $location = $this->getLocation($subdomain);
         $tickets = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
-        })->where('status', 'active')->get();
+        })->whereRaw('LOWER(TRIM(status)) IN (?, ?)', ['active', 'maintenance'])->get();
         return view('branch.shop', compact('location', 'tickets', 'subdomain'));
     }
 }

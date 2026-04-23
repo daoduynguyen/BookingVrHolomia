@@ -217,13 +217,16 @@
                             </div>
                         </div>
                         <div class="col-4">
-                            <div
-                                class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100">
+                            <a href="{{ route('ticket.reviews', $ticket->id) }}" 
+                               class="p-3 rounded-4 bg-white shadow-sm border border-light text-center h-100 text-decoration-none" 
+                               style="cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: center;"
+                               onmouseover="this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'"
+                               onmouseout="this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,.075)'">
                                 <h5 class="fw-bold mb-1 text-primary">{{ $ticket->avg_rating }} <i
                                         class="bi bi-star-fill fs-6"></i></h5>
                                 <small class="text-muted"
                                     style="font-size: 0.75rem; text-transform: uppercase;">{{ __('detail.stat_rating') }}</small>
-                            </div>
+                            </a>
                         </div>
                         <div class="col-4">
                             <div

@@ -9,11 +9,15 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <style>
+        :root {
+            --primary: #FF7A00;
+            --primary-rgb: 255, 122, 0;
+        }
         /* ===== SIDEBAR ===== */
         .settings-sidebar-card {
-            background: linear-gradient(160deg, #0d1b3e 0%, #0a2a6e 45%, #1565c0 100%);
+            background: linear-gradient(160deg, #ffb366 0%, #ff7a00 45%, #ff9800 100%);
             border-radius: 18px;
-            box-shadow: 0 8px 32px rgba(13, 27, 62, 0.3);
+            box-shadow: 0 8px 32px rgba(255, 122, 0, 0.15);
             position: relative;
             overflow: hidden;
         }
@@ -170,7 +174,7 @@
             display: inline-block;
         }
         .color-swatch:hover { transform: scale(1.15); }
-        .color-swatch.selected { border-color: #1f2937; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+        .color-swatch.selected { border-color: #FF7A00; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #FF7A00; }
 
         /* ===== PAYMENT CARD ===== */
         .payment-card {

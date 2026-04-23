@@ -130,7 +130,7 @@
 
                                             {{-- 5. Nút xóa --}}
                                             <td class="text-end">
-                                                <form action="{{ route('cart.remove', $id) }}" method="POST" style="display:inline" onsubmit="return confirm('Bạn chắc chắn muốn xóa vé này?')">
+                                                <form action="{{ route('cart.remove', $id) }}" method="POST" style="display:inline" class="form-remove-item">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-link text-danger fs-5 p-0 border-0">
                                                         <i class="bi bi-trash"></i>
@@ -217,7 +217,7 @@
                             @csrf
                             @if($selectedMethod == 'cod')
                                 <button type="button" class="btn btn-warning w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm text-dark" onclick="confirmCOD()">
-                                    <i class="bi bi-shop me-2"></i>ĐẶT VÉ - THANH TOÁN TẠI QUẦY
+                                    <i class="bi bi-shop me-2"></i>THANH TOÁN TẠI QUẦY
                                 </button>
                             @elseif($selectedMethod == 'banking')
                                 <button type="submit" class="btn btn-primary w-100 py-3 fw-bold text-uppercase rounded-pill shadow-sm">
@@ -231,7 +231,7 @@
                         </form>
 
                         <div class="text-center mt-3">
-                            <form action="{{ route('cart.clear') }}" method="POST" style="display:inline" onsubmit="return confirm('Xóa sạch toàn bộ giỏ hàng?')">
+                            <form action="{{ route('cart.clear') }}" method="POST" style="display:inline" class="form-clear-cart">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-link text-muted small text-decoration-none p-0 border-0">
                                     <i class="bi bi-trash"></i> Xóa sạch giỏ hàng
@@ -337,6 +337,45 @@
                         console.log(xhr.responseText); 
                     }
                 });
+            });
+        });
+
+        // Xác nhận xóa từng vé
+        $(document).on('click', '.form-remove-item button[type=submit]', function(e) {
+            e.preventDefault();
+            var form = $(this).closest('form');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Xóa vé này?',
+                text: 'Bạn chắc chắn muốn xóa vé này khỏi giỏ hàng?',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-trash"></i> Xóa',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                width: '360px',
+                borderRadius: '16px',
+            }).then((result) => {
+                if (result.isConfirmed) form[0].submit();
+            });
+        });
+
+        // Xác nhận xóa toàn bộ giỏ hàng
+        $(document).on('click', '.form-clear-cart button[type=submit]', function(e) {
+            e.preventDefault();
+            var form = $(this).closest('form');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Xóa toàn bộ giỏ hàng?',
+                text: 'Tất cả vé trong giỏ sẽ bị xóa. Hành động này không thể hoàn tác!',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-trash"></i> Xóa tất cả',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                width: '380px',
+            }).then((result) => {
+                if (result.isConfirmed) form[0].submit();
             });
         });
     </script>

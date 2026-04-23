@@ -47,7 +47,7 @@ class PosController extends Controller
         // Vé thuộc chi nhánh
         $query = Ticket::whereHas('locations', function ($q) use ($location) {
             $q->where('locations.id', $location->id);
-        });
+        })->whereRaw('LOWER(TRIM(status)) IN (?, ?)', ['active', 'maintenance']);
 
         if (request()->has('search') && request()->search != '') {
             $query->where('name', 'like', '%' . request()->search . '%');
@@ -97,7 +97,11 @@ class PosController extends Controller
         $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, today()->format('Y-m-d'));
 
         $todayOrders = Order::where('location_id', $location->id)
-            ->whereDate('booking_date', today())
+            ->where(function ($q) {
+                $q->whereHas('slot', function ($slotQuery) {
+                    $slotQuery->whereDate('date', today());
+                })->orWhereDate('booking_date', today());
+            })
             ->with(['slot.ticket', 'device', 'user'])
             ->orderByRaw('CASE WHEN checkin_at IS NULL THEN 0 ELSE 1 END')
             ->orderByDesc('created_at')
@@ -115,6 +119,8 @@ class PosController extends Controller
                     $state = 'refunded';
                 } elseif ($order->status === 'expired') {
                     $state = 'expired';
+                } elseif ($order->status === 'completed') {
+                    $state = 'completed';
                 } elseif ($order->checkin_at) {
                     $state = 'playing';
                 } elseif ($order->status === 'paid') {
@@ -155,7 +161,7 @@ class PosController extends Controller
         })->take(6)->values();
 
         $taskStats = [
-            'waiting' => $todayOrders->where('work_state', 'waiting')->count(),
+            'waiting' => $todayOrders->whereIn('work_state', ['waiting', 'pending'])->count(),
             'playing' => $todayOrders->where('work_state', 'playing')->count(),
             'expired' => $todayOrders->where('work_state', 'expired')->count(),
             'closed' => $todayOrders->whereIn('work_state', ['cancelled', 'refunded'])->count(),
@@ -195,6 +201,7 @@ class PosController extends Controller
                 $order->state = match ($order->status) {
                     'cancelled' => 'cancelled',
                     'refunded' => 'refunded',
+                    'completed' => 'completed',
                     'expired' => 'expired',
                     default => $order->checkin_at ? 'playing' : ($waitingRemain <= 0 ? 'expired' : 'waiting'),
                 };
@@ -242,6 +249,7 @@ class PosController extends Controller
                 $state = match ($order->status) {
                     'cancelled' => 'cancelled',
                     'refunded' => 'refunded',
+                    'completed' => 'completed',
                     'expired' => 'expired',
                     default => $order->checkin_at ? 'playing' : ($waitingRemain <= 0 ? 'expired' : 'waiting'),
                 };
@@ -291,6 +299,10 @@ class PosController extends Controller
             ->with('ticket')
             ->firstOrFail();
 
+        if (($slot->ticket->status ?? null) === 'maintenance') {
+            return back()->with('error', 'Vé này đang bảo trì, tạm thời không thể bán.');
+        }
+
         $availabilities = \App\Models\TimeSlot::getTrueAvailabilitiesForDate($location->id, $slot->date);
         $available = $availabilities[$slot->id] ?? 0;
 
@@ -324,6 +336,10 @@ class PosController extends Controller
             ->where('location_id', $location->id)
             ->with('ticket')
             ->firstOrFail();
+
+        if (($slot->ticket->status ?? null) === 'maintenance') {
+            return back()->with('error', 'Vé này đang bảo trì, tạm thời không thể bán.');
+        }
 
         if (!$slot->isBookable($request->quantity)) {
             return back()->with('error', 'Slot này không còn đủ chỗ trống!');
@@ -417,7 +433,15 @@ class PosController extends Controller
         $location    = $this->getLocation($subdomain);
         $activeShift = $this->getActiveShift($location->id);
 
-        return view('pos.checkin', compact('location', 'subdomain', 'activeShift'));
+        $recentCheckins = \App\Models\Order::where('location_id', $location->id)
+            ->whereNotNull('checkin_at')
+            ->whereDate('checkin_at', today())
+            ->with('slot.ticket')
+            ->orderByDesc('checkin_at')
+            ->limit(5)
+            ->get();
+
+        return view('pos.checkin', compact('location', 'subdomain', 'activeShift', 'recentCheckins'));
     }
 
     public function checkinProcess(Request $request, string $subdomain)
@@ -437,6 +461,8 @@ class PosController extends Controller
 
             if ($request->filled('order_id')) {
                 $query->where('id', $request->order_id);
+            } elseif (is_numeric($request->qr_token)) {
+                $query->where('id', (int)$request->qr_token);
             } else {
                 $query->where('qr_token', $request->qr_token);
             }
@@ -477,6 +503,8 @@ class PosController extends Controller
 
                 $device->update(['status' => 'in_use']);
                 $order->device_id = $device->id;
+            } else {
+                $device->update(['status' => 'in_use']);
             }
 
             $order->update([
@@ -589,6 +617,10 @@ class PosController extends Controller
         DB::transaction(function () use ($order) {
             if ($order->device_id) {
                 PosDevice::where('id', $order->device_id)->update(['status' => 'available']);
+            }
+
+            if ($order->slot_id) {
+                $order->slot->decrementBooked($order->quantity ?? 1);
             }
 
             $order->update([

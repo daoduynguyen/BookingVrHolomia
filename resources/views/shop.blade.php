@@ -84,10 +84,13 @@
                             @endif
 
                             {{-- Badge rating góc trên phải --}}
-                            <div
-                                class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
+                            <a href="{{ route('ticket.reviews', $ticket->id) }}" 
+                               class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2 text-decoration-none" 
+                               style="cursor: pointer; transition: 0.2s;"
+                               onmouseover="this.style.transform='scale(1.1)'"
+                               onmouseout="this.style.transform='scale(1)'">
                                 <i class="bi bi-star-fill text-dark"></i> {{ $ticket->avg_rating }}
-                            </div>
+                            </a>
 
                             {{-- NÚT THẢ TIM góc trên trái --}}
                             <button
@@ -117,7 +120,7 @@
                                 {{ $ticket->name }}
                             </h5>
 
-                            <p class="small text-muted mb-4 fw-medium">
+                            <p class="small text-muted mb-4 fw-medium ">
                                 <i class="bi bi-geo-alt-fill text-danger me-1"></i>
                                 {{ $ticket->locations->pluck('name')->join(', ') ?: __('shop.multiple_branches') }}
                             </p>
@@ -136,7 +139,7 @@
                             @else
                                 <div class="d-flex gap-2 mt-3">
                                     <a href="{{ route('ticket.show', $ticket->id) }}"
-                                        class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm">
+                                        class="btn btn-primary flex-grow-1 fw-bold py-2 text-uppercase shadow-sm d-flex align-items-center justify-content-center">
                                         {{ __('shop.book_now') }}
                                     </a>
                                     <a href="{{ route('cart.add', $ticket->id) }}"

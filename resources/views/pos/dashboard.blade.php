@@ -22,6 +22,14 @@
         transform: translateY(-4px); 
         box-shadow: 0 12px 25px rgba(0,0,0,0.08); 
     }
+    .ticket-card.ticket-maintenance {
+        background: #e5e7eb;
+        border: 1px solid #cbd5e1;
+    }
+    .ticket-card.ticket-maintenance:hover {
+        transform: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
     .ticket-card-img-wrap {
         width: 100%;
         height: 160px;
@@ -37,11 +45,29 @@
     .ticket-card:hover .ticket-card-img-wrap img {
         transform: scale(1.05);
     }
+    .ticket-card.ticket-maintenance .ticket-card-img-wrap img {
+        transform: none;
+        opacity: .5;
+        filter: grayscale(100%);
+    }
     .ticket-card-body {
         padding: 16px 20px;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+    }
+    .ticket-maintenance-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.45);
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: .08em;
+        font-size: .9rem;
+        text-transform: uppercase;
     }
 
     .ticket-card-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; color: var(--pos-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -595,9 +621,9 @@ $totalDevices = $devices->count();
                             <div class="task-title">{{ $order->customer_name ?? 'Khách lẻ' }}</div>
                             <div class="task-sub">{{ $order->ticket_name }} • {{ $order->slot_label }}</div>
                         </div>
-                        <span class="task-chip {{ $order->work_state === 'playing' ? 'success' : ($order->work_state === 'waiting' ? 'primary' : ($order->work_state === 'expired' ? 'warning' : 'danger')) }}">
-                            <i class="bi bi-{{ $order->work_state === 'playing' ? 'play-fill' : ($order->work_state === 'waiting' ? 'hourglass-split' : ($order->work_state === 'expired' ? 'exclamation-triangle-fill' : 'x-circle-fill')) }}"></i>
-                            {{ $order->work_state === 'playing' ? 'Đang chơi' : ($order->work_state === 'waiting' ? 'Chờ bắt đầu' : ($order->work_state === 'expired' ? 'Hết hạn' : ucfirst($order->work_state))) }}
+                        <span class="task-chip {{ $order->work_state === 'playing' ? 'success' : (in_array($order->work_state, ['waiting', 'pending']) ? 'primary' : ($order->work_state === 'expired' ? 'warning' : 'danger')) }}">
+                            <i class="bi bi-{{ $order->work_state === 'playing' ? 'play-fill' : (in_array($order->work_state, ['waiting', 'pending']) ? 'hourglass-split' : ($order->work_state === 'expired' ? 'exclamation-triangle-fill' : 'x-circle-fill')) }}"></i>
+                            {{ $order->work_state === 'playing' ? 'Đang chơi' : (in_array($order->work_state, ['waiting', 'pending']) ? 'Chờ bắt đầu' : ($order->work_state === 'expired' ? 'Hết hạn' : ucfirst($order->work_state))) }}
                         </span>
                     </div>
 
@@ -605,7 +631,7 @@ $totalDevices = $devices->count();
                         <span class="task-chip"><i class="bi bi-person"></i> {{ $order->customer_phone ?? 'Không có SĐT' }}</span>
                         <span class="task-chip"><i class="bi bi-headset-vr"></i> {{ $order->device_name }}</span>
                         <span class="task-chip"><i class="bi bi-ticket-perforated"></i> SL {{ $order->quantity }}</span>
-                        @if($order->work_state === 'waiting')
+                        @if(in_array($order->work_state, ['waiting', 'pending']))
                             <span class="task-chip primary"><i class="bi bi-alarm"></i> {{ gmdate('i:s', $order->deadline_seconds) }}</span>
                         @elseif($order->work_state === 'playing')
                             <span class="task-chip success"><i class="bi bi-stopwatch"></i> {{ gmdate('i:s', $order->remain_seconds) }}</span>
@@ -797,25 +823,40 @@ $totalDevices = $devices->count();
 @endphp
 <div class="ticket-grid" id="ticket-grid">
     @foreach($tickets as $ticket)
-    <div class="ticket-card" data-ticket-id="{{ $ticket->id }}" onclick="openTicketModal({{ $ticket->id }}, '{{ htmlspecialchars($ticket->name) }}')">
+    @php $isMaintenance = strtolower(trim((string) ($ticket->status ?? ''))) === 'maintenance'; @endphp
+    <div class="ticket-card {{ $isMaintenance ? 'ticket-maintenance' : '' }}" data-ticket-id="{{ $ticket->id }}" @if(!$isMaintenance)onclick="openTicketModal({{ $ticket->id }}, '{{ htmlspecialchars($ticket->name) }}')"@endif>
         <div class="ticket-card-img-wrap">
             @php 
                 $img = Str::startsWith($ticket->image ?? $ticket->image_url, 'http') ? ($ticket->image ?? $ticket->image_url) : asset('storage/' . ($ticket->image ?? $ticket->image_url)); 
                 if(!$ticket->image && !$ticket->image_url) $img = "https://ui-avatars.com/api/?name=".urlencode($ticket->name)."&background=random&size=400";
             @endphp
             <img src="{{ $img }}" alt="{{ $ticket->name }}">
+            @if($isMaintenance)
+                <div class="ticket-maintenance-overlay">Bảo trì</div>
+            @endif
         </div>
         <div class="ticket-card-body">
             <div class="ticket-card-title">{{ $ticket->name }}</div>
             <div class="ticket-card-price"><i class="bi bi-tag-fill"></i> {{ number_format($ticket->price,0,',','.') }}₫ / người</div>
             
-            <button class="btn-pos w-100 mt-auto" style="padding: 10px; border-radius: 12px; font-weight: 600; display:flex; align-items:center; justify-content:center; gap:6px;">
-                <i class="bi bi-calendar2-range"></i> Xem Giờ Chơi
-            </button>
+            @if($isMaintenance)
+                <button class="btn btn-secondary w-100 mt-auto" style="padding: 10px; border-radius: 12px; font-weight: 700;" disabled>
+                    Bảo trì
+                </button>
+            @else
+                <button class="btn-pos w-100 mt-auto" style="padding: 10px; border-radius: 12px; font-weight: 600; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    <i class="bi bi-calendar2-range"></i> Xem Giờ Chơi
+                </button>
+            @endif
         </div>
 
         {{-- DOM ẩn chứa danh sách Slot để Load vào Modal --}}
         <div id="slots-data-{{ $ticket->id }}" class="d-none">
+            @if($isMaintenance)
+                <div style="color:var(--pos-text-muted);font-size:0.9rem;padding:16px;text-align:center;">
+                    <i class="bi bi-cone-striped me-1"></i> Vé này đang bảo trì.
+                </div>
+            @else
             <div class="slot-list p-0">
                 @php $hasVisibleSlots = false; @endphp
                 @foreach($ticket->timeSlots as $slot)
@@ -873,6 +914,7 @@ $totalDevices = $devices->count();
                 <div style="color:var(--pos-text-muted);font-size:0.85rem;padding:16px;text-align:center;">Không có giờ chơi nào phù hợp hôm nay.</div>
                 @endif
             </div>
+            @endif
         </div>
     </div>
     @endforeach
@@ -1135,7 +1177,7 @@ function openOrderModal(orderId) {
         expired: 'Hết hạn',
         cancelled: 'Đã hủy',
         refunded: 'Đã hoàn',
-        pending: 'Chờ xử lý'
+        pending: 'Chờ bắt đầu'
     };
 
     document.getElementById('orderQuickTitle').textContent = selectedOrder.customer_name + ' • ' + selectedOrder.ticket_name;
@@ -1143,7 +1185,7 @@ function openOrderModal(orderId) {
     document.getElementById('orderQuickCustomer').textContent = selectedOrder.customer_name || 'Khách lẻ';
     document.getElementById('orderQuickPhone').textContent = selectedOrder.customer_phone ? ('SĐT: ' + selectedOrder.customer_phone) : 'Không có SĐT';
     document.getElementById('orderQuickState').textContent = stateLabelMap[selectedOrder.work_state] || selectedOrder.work_state;
-    document.getElementById('orderQuickDeadline').textContent = selectedOrder.work_state === 'waiting'
+    document.getElementById('orderQuickDeadline').textContent = (selectedOrder.work_state === 'waiting' || selectedOrder.work_state === 'pending')
         ? ('Còn ' + formatCountdown(selectedOrder.deadline_seconds) + ' để bắt đầu')
         : (selectedOrder.work_state === 'playing'
             ? ('Còn ' + formatCountdown(selectedOrder.remain_seconds) + ' để kết thúc')
@@ -1180,7 +1222,8 @@ function filterTasks(state, button) {
 
     document.querySelectorAll('.task-card').forEach(card => {
         const cardState = card.dataset.state || 'all';
-        card.style.display = (state === 'all' || cardState === state) ? '' : 'none';
+        const matchWaiting = state === 'waiting' && (cardState === 'waiting' || cardState === 'pending');
+        card.style.display = (state === 'all' || cardState === state || matchWaiting) ? '' : 'none';
     });
 }
 

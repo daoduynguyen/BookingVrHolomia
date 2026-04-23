@@ -163,8 +163,8 @@
                             @elseif($selectedMethod == 'banking')
                                 <i class="bi bi-qr-code-scan text-primary fs-5"></i>
                                 <div>
-                                    <div class="fw-bold text-dark small">{{ __('checkout.banking_qr') }}</div>
-                                    <div class="text-muted" style="font-size:0.75rem;">{{ __('checkout.banking_qr_desc') }}</div>
+                                    <div class="fw-bold text-dark small">{{ __('Chuyển khoản / QR') }}</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">{{ __('Quét mã QR sau khi xác nhận') }}</div>
                                 </div>
                             @else
                                 <i class="bi bi-wallet2 text-success fs-5"></i>

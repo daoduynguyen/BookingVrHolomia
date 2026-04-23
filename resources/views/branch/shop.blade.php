@@ -133,11 +133,15 @@
 
         <div class="row g-4" id="ticketList">
             @forelse($tickets as $ticket)
+                @php $isMaintenance = strtolower(trim((string) ($ticket->status ?? ''))) === 'maintenance'; @endphp
                 <div class="col-md-4 ticket-card">
-                    <div class="card h-100 card-game overflow-hidden rounded-4 border-0 shadow-sm">
+                    <div class="card h-100 card-game overflow-hidden rounded-4 border-0 shadow-sm @if($isMaintenance) bg-light text-muted border border-2 border-secondary @endif">
                         <div class="position-relative">
                             <img src="{{ $ticket->image_url ?? 'https://via.placeholder.com/640x480' }}"
-                                class="card-img-top" alt="{{ $ticket->name }}" style="height: 240px; object-fit: cover;">
+                                class="card-img-top @if($isMaintenance) opacity-50 grayscale @endif" alt="{{ $ticket->name }}" style="height: 240px; object-fit: cover;">
+                            @if($isMaintenance)
+                                <div class="maintenance-overlay">{{ __('branch.maintenance') }}</div>
+                            @endif
 
                             {{-- NÚT TIM YÊU THÍCH --}}
                             <button
@@ -151,10 +155,13 @@
                             </button>
 
                             {{-- RATING --}}
-                            <div
-                                class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2">
+                            <a href="{{ route('branch.ticket.reviews', ['subdomain' => $subdomain, 'id' => $ticket->id]) }}" 
+                               class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark shadow rounded-pill px-3 py-2 text-decoration-none" 
+                               style="cursor: pointer; transition: 0.2s;"
+                               onmouseover="this.style.transform='scale(1.1)'"
+                               onmouseout="this.style.transform='scale(1)'">
                                 <i class="bi bi-star-fill text-dark"></i> {{ $ticket->avg_rating }}
-                            </div>
+                            </a>
                         </div>
 
                         <div class="card-body d-flex flex-column p-4">
@@ -177,7 +184,7 @@
                                 <span class="fw-bold text-primary fs-5">{{ number_format($ticket->price) }}đ</span>
                             </div>
 
-                            @if($ticket->status == 'maintenance')
+                            @if($isMaintenance)
                                 <button class="btn btn-secondary w-100 fw-bold py-2 text-uppercase" disabled>{{ __('branch.maintenance') }}</button>
                             @else
 
