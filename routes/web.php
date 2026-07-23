@@ -238,6 +238,7 @@ Route::get('/tro-choi/{id}', [TicketController::class, 'show'])->name('ticket.sh
 Route::get('/thong-tin', [TicketController::class, 'info'])->name('info');
 Route::get('/danh-sach-ve', [TicketController::class, 'shop'])->name('ticket.shop');
 
+Route::get('/tro-choi/{id}/danh-gia', [App\Http\Controllers\ReviewController::class, 'show'])->name('ticket.reviews');
 
 
 // Giỏ hàng — dùng DELETE thay GET để tránh prefetch/crawler xóa nhầm

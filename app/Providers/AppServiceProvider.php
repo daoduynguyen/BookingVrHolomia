@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             View::share('globalLocations', []);
         }
         if (env('APP_ENV') !== 'local') {
-            \URL::forceScheme('https');
+            \URL::forceScheme('http');
         }
 
         Paginator::useBootstrap();

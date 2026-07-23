@@ -22,7 +22,6 @@ class TicketController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // 🔥 CHỐT CHẶN 1: Nếu là Admin chi nhánh, chỉ lấy vé của chi nhánh đó
         if ($user->role !== 'super_admin' && $user->location_id) {
             $query->where('location_id', $user->location_id);
         }
@@ -46,63 +45,79 @@ class TicketController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Validate: 
+        // Validate — price là nullable vì có thể lấy từ ticket_types
         $request->validate([
-            'name' => 'required',
-            'location_ids' => 'nullable|array',
-            'price' => 'required|numeric|min:0',
+            'name'          => 'required',
+            'location_ids'  => 'nullable|array',
+            'price'         => 'nullable|numeric|min:0',
             'price_weekend' => 'nullable|numeric|min:0',
-            'category_id' => 'required',
-            'image_url' => 'required',
-            'rules'  => 'nullable|string',   
-            'notes'  => 'nullable|string',   
+            'category_id'   => 'required',
+            'image_url'     => 'required',
+            'rules'         => 'nullable|string',
+            'notes'         => 'nullable|string',
         ]);
 
-        // 3. Lưu vé
+        // Xử lý ticket_types trước để lấy giá nếu admin không điền price riêng
+        $ticket_types = [];
+        if ($request->has('type_name') && $request->has('type_price')) {
+            foreach ($request->type_name as $key => $name) {
+                if (!empty($name) && !empty($request->type_price[$key])) {
+                    $ticket_types[] = [
+                        'name'  => $name,
+                        'price' => (int) $request->type_price[$key],
+                    ];
+                }
+            }
+        }
+
+        // Tính giá: ưu tiên field price, nếu trống thì lấy giá thấp nhất từ ticket_types
+        $price = $request->price;
+        if (empty($price) && !empty($ticket_types)) {
+            $price = min(array_column($ticket_types, 'price'));
+        }
+        $price = (int) ($price ?? 0);
+
+        $price_weekend = $request->price_weekend;
+        if (empty($price_weekend)) {
+            $price_weekend = $price; // mặc định bằng giá thường nếu không nhập
+        }
+        $price_weekend = (int) $price_weekend;
+
+        // Xác định location_id chính
+        $locationIds = $request->location_ids ?? [];
+        if ($user->role !== 'super_admin' && $user->location_id) {
+            $locationIds = [$user->location_id];
+        }
+        $primaryLocationId = $locationIds[0] ?? null;
+
+        // Lưu vé
         $ticket = new Ticket();
-        $ticket->name = $request->name;
-        $ticket->category_id = $request->category_id;
-        $ticket->image_url = $request->image_url;
-        $ticket->duration = $request->duration;
-        $ticket->status = $request->status;
+        $ticket->name          = $request->name;
+        $ticket->category_id   = $request->category_id;
+        $ticket->location_id   = $primaryLocationId; // tránh lỗi NOT NULL
+        $ticket->image_url     = $request->image_url;
+        $ticket->duration      = $request->duration;
+        $ticket->status        = $request->status ?? 'active';
+        $ticket->price         = $price;
+        $ticket->price_weekend = $price_weekend;
+        $ticket->description   = $request->description;
+        $ticket->rules         = $request->rules;
+        $ticket->notes         = $request->notes;
+        $ticket->trailer_url   = $request->trailer_url;
+        $ticket->ticket_types  = $ticket_types;
 
-        // Lưu 2 loại giá
-        $ticket->price = $request->price;
-        $ticket->price_weekend = $request->price_weekend;
-
-        $ticket->description = $request->description;  // ← thêm
-$ticket->rules = $request->rules;               // ← thêm
-$ticket->notes = $request->notes;               // ← thêm
-$ticket->trailer_url = $request->trailer_url;
         if ($request->hasFile('gallery')) {
             $imagePaths = [];
             foreach ($request->file('gallery') as $file) {
                 $imagePaths[] = $file->store('tickets', 'public');
             }
-            $ticket->gallery = $imagePaths; // Sẽ tự động cast sang JSON nhờ Model
+            $ticket->gallery = $imagePaths;
         }
-
-        $ticket_types = [];
-        if ($request->has('type_name') && $request->has('type_price')) {
-            foreach ($request->type_name as $key => $name) {
-                // Chỉ lưu nếu Admin có nhập cả Tên và Giá
-                if (!empty($name) && !empty($request->type_price[$key])) {
-                    $ticket_types[] = [
-                        'name' => $name,
-                        'price' => $request->type_price[$key]
-                    ];
-                }
-            }
-        }
-        $ticket->ticket_types = $ticket_types;
 
         $ticket->save();
 
-        if ($user->role !== 'super_admin' && $user->location_id) {
-            $ticket->locations()->sync([$user->location_id]);
-        } else {
-            $ticket->locations()->sync($request->location_ids ?? []);
-        }
+        // Gán quan hệ nhiều-nhiều với locations
+        $ticket->locations()->sync($locationIds);
 
         Cache::forget('home_tickets');
 
@@ -115,7 +130,6 @@ $ticket->trailer_url = $request->trailer_url;
         $ticket = Ticket::findOrFail($id);
         $user = Auth::user();
 
-        //  CHỐT CHẶN 3: Không cho phép Admin cơ sở khác chui vào Form Sửa
         if ($user->role !== 'super_admin' && $user->location_id && !$ticket->locations->contains('id', $user->location_id)) {
             return redirect()->route('admin.tickets.index')->with('error', 'Bạn không có quyền sửa vé của cơ sở khác!');
         }
@@ -126,108 +140,121 @@ $ticket->trailer_url = $request->trailer_url;
         return view('admin.tickets.edit', compact('ticket', 'categories', 'locations'));
     }
 
-
     // Cập nhật
     public function update(Request $request, $id)
     {
         $ticket = Ticket::findOrFail($id);
         $user = Auth::user();
 
-        //  CHỐT CHẶN 4: Chống hack qua URL khi bấm Update
         if ($user->role !== 'super_admin' && $user->location_id && !$ticket->locations->contains('id', $user->location_id)) {
             return redirect()->route('admin.tickets.index')->with('error', 'Bạn không có quyền cập nhật vé của cơ sở khác!');
         }
 
-        // 1. Validate
         $request->validate([
-            'name' => 'required',
+            'name'         => 'required',
             'location_ids' => 'nullable|array',
-            'category_id' => 'required',
-            'image_url' => 'required',
+            'category_id'  => 'required',
+            'image_url'    => 'required',
         ]);
 
         $oldDuration = $ticket->duration;
 
-        // 3. Cập nhật dữ liệu
-        $ticket->name = $request->name;
-        $ticket->category_id = $request->category_id;
-        $ticket->image_url = $request->image_url;
-        $ticket->duration = $request->duration;
-        $ticket->status = $request->status;
-       $ticket->description = $request->description;
-$ticket->rules = $request->rules;   // ← thêm
-$ticket->notes = $request->notes;   // ← thêm
-
-        // 🔥 LOGIC MỚI: XỬ LÝ MẢNG JSON VÀ TỰ ĐỘNG GÁN GIÁ GỐC
+        // Xử lý ticket_types
         $ticket_types = [];
-        $base_price = 0; // Khởi tạo giá gốc mặc định
+        if ($request->has('type_name') && $request->has('type_price')) {
+            foreach ($request->type_name as $key => $name) {
+                if (!empty($name) && !empty($request->type_price[$key])) {
+                    $ticket_types[] = [
+                        'name'  => $name,
+                        'price' => (int) $request->type_price[$key],
+                    ];
+                }
+            }
+        }
 
-        $ticket->trailer_url = $request->trailer_url;
+        // Tính giá
+        $price = $request->price;
+        if (empty($price) && !empty($ticket_types)) {
+            $price = min(array_column($ticket_types, 'price'));
+        }
+        $price = (int) ($price ?? $ticket->price);
+
+        $price_weekend = $request->price_weekend;
+        if (empty($price_weekend)) {
+            $price_weekend = $price;
+        }
+        $price_weekend = (int) $price_weekend;
+
+        // Xác định location_id chính
+        $locationIds = $request->location_ids ?? [];
+        if ($user->role !== 'super_admin' && $user->location_id) {
+            $locationIds = [$user->location_id];
+        }
+        $primaryLocationId = $locationIds[0] ?? $ticket->location_id;
+
+        // Cập nhật dữ liệu
+        $ticket->name          = $request->name;
+        $ticket->category_id   = $request->category_id;
+        $ticket->location_id   = $primaryLocationId;
+        $ticket->image_url     = $request->image_url;
+        $ticket->duration      = $request->duration;
+        $ticket->status        = $request->status ?? $ticket->status;
+        $ticket->price         = $price;
+        $ticket->price_weekend = $price_weekend;
+        $ticket->description   = $request->description;
+        $ticket->rules         = $request->rules;
+        $ticket->notes         = $request->notes;
+        $ticket->trailer_url   = $request->trailer_url;
+        $ticket->ticket_types  = $ticket_types;
 
         if ($request->hasFile('gallery')) {
-            $imagePaths = $ticket->gallery ?? []; // Giữ lại ảnh cũ
+            $imagePaths = $ticket->gallery ?? [];
             foreach ($request->file('gallery') as $file) {
                 $imagePaths[] = $file->store('tickets', 'public');
             }
             $ticket->gallery = $imagePaths;
         }
 
-        $ticket_types = [];
-        if ($request->has('type_name') && $request->has('type_price')) {
-            foreach ($request->type_name as $key => $name) {
-                // Chỉ lưu nếu Admin có nhập cả Tên và Giá
-                if (!empty($name) && !empty($request->type_price[$key])) {
-                    $ticket_types[] = [
-                        'name' => $name,
-                        'price' => $request->type_price[$key]
-                    ];
-                }
-            }
-        }
-        $ticket->ticket_types = $ticket_types;
-
         $ticket->save();
 
-        // TỰ ĐỘNG TÁI TẠO LỊCH KHI DURATION THAY ĐỔI
+        // Cập nhật locations
+        $ticket->locations()->sync($locationIds);
+
+        // Tái tạo lịch nếu duration thay đổi
         $newDuration = (int) $request->duration;
         if ($newDuration > 0 && (int) $oldDuration !== $newDuration) {
 
             $today = \Carbon\Carbon::today()->format('Y-m-d');
 
-            // Xóa slot tương lai chưa có ai đặt
             \App\Models\TimeSlot::where('ticket_id', $ticket->id)
                 ->where('date', '>=', $today)
                 ->where('booked_count', 0)
                 ->delete();
 
-            // Làm tròn duration lên bội 5 tiếp theo
             $duration = (int) (floor($newDuration / 5) + 1) * 5;
 
-            // Lấy ngày còn slot khách đặt để tái tạo đúng ngày đó
             $existingDates = \App\Models\TimeSlot::where('ticket_id', $ticket->id)
                 ->where('date', '>=', $today)
                 ->pluck('date')->unique()->toArray();
 
-            // Tái tạo 7 ngày tới + các ngày đang có khách đặt
             $futureDates = [];
             for ($i = 0; $i < 7; $i++) {
                 $futureDates[] = \Carbon\Carbon::today()->addDays($i)->format('Y-m-d');
             }
-            $allDates = array_unique(array_merge($futureDates, $existingDates));
-            $locationId = $ticket->locations->first()->id ?? 1;
-            $dailyStart = '08:00:00';
-            $dailyEnd = '21:00:00';
+            $allDates    = array_unique(array_merge($futureDates, $existingDates));
+            $locationId  = $ticket->locations->first()->id ?? 1;
+            $dailyStart  = '08:00:00';
+            $dailyEnd    = '21:00:00';
 
             foreach ($allDates as $date) {
                 $currentTimeStr = $dailyStart;
                 while (strtotime($currentTimeStr) < strtotime($dailyEnd)) {
                     $slotStart = \Carbon\Carbon::parse($currentTimeStr);
-                    $slotEnd = (clone $slotStart)->addMinutes($duration);
-                    if ($slotEnd->format('H:i:s') > $dailyEnd)
-                        break;
+                    $slotEnd   = (clone $slotStart)->addMinutes($duration);
+                    if ($slotEnd->format('H:i:s') > $dailyEnd) break;
 
                     $startTime = $slotStart->format('H:i:s');
-                    $endTime = $slotEnd->format('H:i:s');
+                    $endTime   = $slotEnd->format('H:i:s');
 
                     $exists = \App\Models\TimeSlot::where('ticket_id', $ticket->id)
                         ->where('date', $date)
@@ -236,13 +263,13 @@ $ticket->notes = $request->notes;   // ← thêm
 
                     if (!$exists) {
                         \App\Models\TimeSlot::create([
-                            'ticket_id' => $ticket->id,
-                            'location_id' => $locationId,
-                            'date' => $date,
-                            'start_time' => $startTime,
-                            'end_time' => $endTime,
-                            'capacity' => 15,
-                            'status' => 'open',
+                            'ticket_id'    => $ticket->id,
+                            'location_id'  => $locationId,
+                            'date'         => $date,
+                            'start_time'   => $startTime,
+                            'end_time'     => $endTime,
+                            'capacity'     => 15,
+                            'status'       => 'open',
                             'booked_count' => 0,
                         ]);
                     }
@@ -256,13 +283,6 @@ $ticket->notes = $request->notes;   // ← thêm
                 ->with('success', 'Cập nhật vé thành công! Đã tái tạo lịch theo thời lượng mới (' . $newDuration . ' phút → ca ' . $duration . ' phút).');
         }
 
-        // Cập nhật locations
-        if ($user->role !== 'super_admin' && $user->location_id) {
-            $ticket->locations()->sync([$user->location_id]);
-        } else {
-            $ticket->locations()->sync($request->location_ids ?? []);
-        }
-
         Cache::forget('home_tickets');
 
         return redirect()->route('admin.tickets.index')->with('success', 'Cập nhật vé thành công!');
@@ -274,7 +294,6 @@ $ticket->notes = $request->notes;   // ← thêm
         $ticket = Ticket::findOrFail($id);
         $user = Auth::user();
 
-        //  CHỐT CHẶN 5: Chống xóa trộm
         if ($user->role !== 'super_admin' && $user->location_id && !$ticket->locations->contains('id', $user->location_id)) {
             return redirect()->route('admin.tickets.index')->with('error', 'Bạn không có quyền xóa vé của cơ sở khác!');
         }
