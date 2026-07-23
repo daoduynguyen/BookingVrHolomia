@@ -96,6 +96,13 @@
             opacity: 0.9;
         }
 
+        .sidebar-brand-logo {
+            width: 160px;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+        }
+
         /* 5. Menu scroll */
         .sidebar-menu-wrapper {
             flex-grow: 1;
@@ -236,7 +243,7 @@
 
             {{-- LOGO --}}
             <div class="sidebar-brand">
-                <h3>Holomia <br><span class="highlight">Admin</span></h3>
+                <img src="{{ asset('images/logo.png') }}" alt="Holomia Admin" class="sidebar-brand-logo">
             </div>
 
             {{-- MENU --}}

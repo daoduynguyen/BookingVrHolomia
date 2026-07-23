@@ -10,21 +10,14 @@
     }
 
     .holomia-navbar .navbar-brand {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.45rem;
-        font-weight: 900;
-        letter-spacing: 2.5px;
-        color: #ffffff !important;
-        text-shadow: 0 0 20px rgba(56, 189, 248, 0.55);
         display: flex;
         align-items: center;
-        gap: 12px;
     }
 
-    .holomia-navbar .navbar-brand i {
-        color: #38bdf8;
-        font-size: 1.8rem;
-        filter: drop-shadow(0 0 7px rgba(56,189,248,0.7));
+    .holomia-navbar .navbar-logo {
+        width: 120px;
+        height: auto;
+        display: block;
     }
 
     .holomia-navbar .nav-link {
@@ -197,7 +190,7 @@
     <div class="container">
         <div class="d-flex flex-column justify-content-center">
             <a class="navbar-brand m-0 lh-1" href="{{ route('home') }}" style="padding-bottom: 2px;">
-                <i class="bi bi-vr"></i> HOLOMIA VR
+                <img src="{{ asset('images/logo.png') }}" alt="Holomia Logo" class="navbar-logo">
             </a>
         </div>
 

@@ -4,9 +4,7 @@
 
             {{-- CỘT 1: THƯƠNG HIỆU --}}
             <div class="col-md-4">
-                <h4 class="text-info fw-bold mb-3">
-                    <i class="bi bi-badge-vr-fill me-2"></i>HOLOMIA VR
-                </h4>
+                <img src="{{ asset('images/logo.png') }}" alt="Holomia Logo" class="mb-3" style="width: 150px; height: auto;">
                 <p class="text-secondary small mb-3">
                     {{ __('common.footer_desc') }}
                 </p>
@@ -63,12 +61,12 @@
                     {{ __('common.footer_branches') }}
                 </h6>
                 <ul class="list-unstyled">
-                    <li class="mb-2 text-secondary small">
+                    {{-- <li class="mb-2 text-secondary small">
                         <i class="bi bi-geo-alt-fill text-danger me-2"></i>Holomia Royal City
                     </li>
                     <li class="mb-2 text-secondary small">
                         <i class="bi bi-geo-alt-fill text-danger me-2"></i>Holomia Aeon Mall
-                    </li>
+                    </li> --}}
                     <li class="mb-2 text-secondary small">
                         <i class="bi bi-geo-alt-fill text-danger me-2"></i>Lotte HaNoi Sky
                     </li>

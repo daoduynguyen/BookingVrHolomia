@@ -24,9 +24,15 @@
         }
 
         .page-hero h1 {
-            font-family: 'Orbitron', monospace;
-            font-weight: 900;
-            letter-spacing: 3px;
+            margin: 0 auto;
+        }
+
+        .page-hero-logo {
+            width: min(320px, 72vw);
+            aspect-ratio: 615 / 328;
+            background: #428bca;
+            display: block;
+            margin: 0 auto;
         }
 
         .loc-card {
@@ -88,7 +94,9 @@
         <p class="text-info mb-2" style="font-size:.8rem; font-weight:600; letter-spacing:3px; text-transform:uppercase;">
             HỆ THỐNG CƠ SỞ
         </p>
-        <h1 class="mb-3">HOLOMIA <span style="color:#38bdf8;">VR</span></h1>
+        <h1 class="mb-3" aria-label="Holomia VR">
+            <span class="page-hero-logo"></span>
+        </h1>
         <p class="text-light opacity-75 fs-5 mb-0">
             {{ $locations->count() }} cơ sở trên toàn quốc – Chọn cơ sở gần bạn nhất
         </p>

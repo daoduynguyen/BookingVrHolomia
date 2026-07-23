@@ -135,15 +135,17 @@
         }
 
         .landing-nav .brand {
-            font-family: 'Orbitron', monospace;
-            font-weight: 900;
-            color: #fff;
-            font-size: 1.3rem;
-            letter-spacing: 2px;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
 
-        .landing-nav .brand span { color: #38bdf8; }
+        .landing-logo {
+            width: 150px;
+            aspect-ratio: 615 / 328;
+            background: #428bca;
+            display: block;
+        }
 
         .nav-btn {
             background: rgba(255,255,255,.15);
@@ -172,7 +174,9 @@
     {{-- Navbar nổi trên hero --}}
     <nav class="landing-nav">
         <div class="container d-flex justify-content-between align-items-center">
-            <a href="{{ route('home') }}" class="brand">HOLOMIA <span>VR</span></a>
+            <a href="{{ route('home') }}" class="brand" aria-label="Holomia VR">
+                <span class="landing-logo"></span>
+            </a>
             <div class="d-flex gap-2">
                 <a href="{{ route('location.all') }}" class="nav-btn">
                     <i class="bi bi-geo-alt me-1"></i>Hệ thống cơ sở
