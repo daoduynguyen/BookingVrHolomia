@@ -74,7 +74,11 @@
 
                     <div class="content-box">
                         <h5 class="section-title text-primary"><i class="bi bi-file-text-fill me-2"></i> {{ __('detail.description_title') }}</h5>
-                        <div class="text-muted" style="text-align:justify;line-height:1.7;">{!! $ticket->description !!}</div>
+                        @php
+                            $description = $ticket->description ?? '';
+                            $descriptionHasHtml = $description !== strip_tags($description);
+                        @endphp
+                        <div class="text-muted" style="text-align:justify;line-height:1.7;white-space:pre-line;">{!! $descriptionHasHtml ? $description : e($description) !!}</div>
 
                         <div class="mt-5">
                             <h5 class="section-title text-primary"><i class="bi bi-controller me-2"></i> {{ __('detail.rules_title') }}</h5>
